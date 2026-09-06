@@ -1,28 +1,92 @@
+import { Suspense } from "react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { BookMarked } from "lucide-react";
-import { PageHeading, ComingSoon } from "@/components/ui/page-heading";
+import { PageHeading } from "@/components/ui/page-heading";
 import { CardSearchBox } from "@/components/cards/card-search-box";
+import { CardResults } from "@/components/cards/card-results";
+import { CardFilterBar } from "@/components/cards/card-filter-bar";
 import { findGlossaryMatches } from "@/content/glossary";
-import { CARD_DOMAINS, CARD_TYPES } from "@/lib/constants";
+import {
+  CARD_DOMAIN_SLUGS,
+  CARD_RARITY_SLUGS,
+  CARD_SET_CODES,
+  CARD_TYPE_SLUGS,
+  type CardSearchQuery,
+} from "@/lib/types/card";
 
 export const metadata: Metadata = { title: "카드 정보" };
+
+// searchParams 기반 필터 + useSearchParams 클라이언트 필터바 → 동적 렌더.
+export const dynamic = "force-dynamic";
 
 /**
  * 카드 검색 계약:
  *   ?q=<텍스트>   카드명(name/name_en) + 룰 텍스트(text) 전문 검색 — 용어(영문 canonical)로도 검색 가능
- *   ?domain=<slug> ?type=<slug> ?cost=<n> ?rarity=<slug>   필터
- * 용어를 검색하면 아래처럼 관련 용어 설명으로 안내한다(카드 데이터 연동 전에도 동작).
+ *   ?domain=<slug> ?type=<slug> ?cost=<n> ?rarity=<slug> ?setCode=<code>   필터
+ * 용어를 검색하면 아래처럼 관련 용어 설명으로 안내한다.
+ *
+ * 카드 데이터는 서비스 어댑터(@/lib/services/cardService)를 통해 가져온다.
+ * 소스(오픈소스 JSON / Riot 공식 API)는 NEXT_PUBLIC_DATA_SOURCE 로 결정되며 이 페이지는 무관하다.
  */
-export default function CardsPage({ searchParams }: { searchParams: { q?: string } }) {
-  const q = (searchParams.q ?? "").trim();
+type RawSearchParams = Record<string, string | string[] | undefined>;
+
+function pick<T extends readonly string[]>(
+  value: string | string[] | undefined,
+  allowed: T,
+): T[number] | undefined {
+  const v = Array.isArray(value) ? value[0] : value;
+  return v && (allowed as readonly string[]).includes(v) ? (v as T[number]) : undefined;
+}
+
+function buildQuery(sp: RawSearchParams): CardSearchQuery {
+  const q = (Array.isArray(sp.q) ? sp.q[0] : sp.q)?.trim() || undefined;
+  const costRaw = Array.isArray(sp.cost) ? sp.cost[0] : sp.cost;
+  const cost = costRaw != null && Number.isFinite(Number(costRaw)) ? Number(costRaw) : undefined;
+  const setRaw = (Array.isArray(sp.setCode) ? sp.setCode[0] : sp.setCode)?.trim().toUpperCase();
+
+  return {
+    q,
+    domain: pick(sp.domain, CARD_DOMAIN_SLUGS),
+    type: pick(sp.type, CARD_TYPE_SLUGS),
+    rarity: pick(sp.rarity, CARD_RARITY_SLUGS),
+    cost,
+    setCode: setRaw && (CARD_SET_CODES as readonly string[]).includes(setRaw) ? setRaw : undefined,
+  };
+}
+
+const PER_PAGE = 36;
+
+export default function CardsPage({ searchParams }: { searchParams: RawSearchParams }) {
+  const query = buildQuery(searchParams);
+  const q = query.q ?? "";
   const termHits = q ? findGlossaryMatches(q).slice(0, 4) : [];
+
+  const pageRaw = Number(Array.isArray(searchParams.page) ? searchParams.page[0] : searchParams.page);
+  const page = Number.isFinite(pageRaw) && pageRaw >= 1 ? Math.floor(pageRaw) : 1;
+
+  // 필터가 걸린 쿼리스트링을 유지하며 page 만 바꾸는 링크 생성기
+  const hrefForPage = (next: number) => {
+    const sp = new URLSearchParams();
+    if (query.q) sp.set("q", query.q);
+    if (query.domain) sp.set("domain", query.domain);
+    if (query.type) sp.set("type", query.type);
+    if (query.rarity) sp.set("rarity", String(query.rarity));
+    if (typeof query.cost === "number") sp.set("cost", String(query.cost));
+    if (query.setCode) sp.set("setCode", query.setCode);
+    if (next > 1) sp.set("page", String(next));
+    const qs = sp.toString();
+    return qs ? `/cards?${qs}` : "/cards";
+  };
+
+  // Suspense 재마운트 키 — 질의/페이지가 바뀌면 로딩 상태를 다시 보여준다.
+  const resultsKey = `${JSON.stringify(query)}#${page}`;
 
   return (
     <div>
       <PageHeading
         title="카드 정보 (Card DB)"
-        description="카드명·효과 텍스트 검색 + 도메인/코스트/타입/레어도 필터"
+        description="카드명·효과 텍스트 검색 + 도메인 / 타입 / 확장팩 / 레어도 필터"
       />
 
       <CardSearchBox initial={q} />
@@ -47,26 +111,31 @@ export default function CardsPage({ searchParams }: { searchParams: { q?: string
         </div>
       )}
 
-      <div className="mt-6 flex flex-wrap gap-1.5">
-        {CARD_DOMAINS.map((d) => (
-          <span
-            key={d.slug}
-            className="inline-flex items-center gap-1.5 rounded-full border border-line bg-card px-2.5 py-1 text-body-sm text-ink-soft"
-          >
-            <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: d.color }} />
-            {d.label}
-          </span>
-        ))}
-        {CARD_TYPES.map((t) => (
-          <span key={t.slug} className="chip">
-            {t.label}
-          </span>
-        ))}
+      <div className="mt-5">
+        <Suspense fallback={<div className="h-28" />}>
+          <CardFilterBar />
+        </Suspense>
       </div>
 
       <div className="mt-6">
-        <ComingSoon note="카드 데이터(Riot API / 수기 임포트) 연동 후 이 자리에 카드 그리드(5:7, 레어도 테두리)와 상세 모달이 들어갑니다. 데이터: cards 테이블, 검색은 search_tsv + pg_trgm." />
+        <Suspense key={resultsKey} fallback={<CardResultsSkeleton />}>
+          <CardResults query={query} page={page} perPage={PER_PAGE} hrefForPage={hrefForPage} />
+        </Suspense>
       </div>
     </div>
+  );
+}
+
+/** 로딩 상태 — 카드 그리드 자리를 잡아 레이아웃 시프트를 막는다. */
+function CardResultsSkeleton() {
+  return (
+    <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4" aria-hidden>
+      {Array.from({ length: 8 }).map((_, i) => (
+        <li
+          key={i}
+          className="aspect-[5/7] animate-pulse rounded-2xl border border-line bg-subcanvas/60"
+        />
+      ))}
+    </ul>
   );
 }

@@ -9,6 +9,7 @@ export const NAV_ITEMS = [
   { href: "/", label: "홈" },
   { href: "/tiers", label: "덱 티어리스트" },
   { href: "/cards", label: "카드 정보" },
+  { href: "/deck-simulator", label: "덱 시뮬레이터" },
   { href: "/rules", label: "룰 & 용어" },
   { href: "/community", label: "커뮤니티" },
   { href: "/trading", label: "카드 거래" },
@@ -125,11 +126,41 @@ export const CARD_TYPES = [
   { slug: "champion", label: "챔피언" },
   { slug: "unit", label: "유닛" },
   { slug: "spell", label: "주문" },
-  { slug: "gear", label: "장비" },
+  { slug: "gear", label: "도구" },
   { slug: "rune", label: "룬" },
   { slug: "battlefield", label: "전장" },
   { slug: "legend", label: "레전드" },
 ] as const;
+
+/**
+ * 확장팩(세트) — Riftcodex set_id 기준. 발매 순.
+ * 카드 검색·덱 빌더의 확장팩 태그 필터에 사용.
+ */
+export const CARD_SETS = [
+  { code: "OGN", label: "오리진스", name: "Origins" },
+  { code: "OGS", label: "프루빙 그라운드", name: "Origins: Proving Grounds" },
+  { code: "SFD", label: "스피릿포지드", name: "Spiritforged" },
+  { code: "UNL", label: "언리쉬드", name: "Unleashed" },
+  { code: "VEN", label: "벤데타", name: "Vendetta" },
+  { code: "OPP", label: "OP 프로모", name: "Organized Play Promotional" },
+  { code: "PR", label: "프로모", name: "Promotional" },
+  { code: "JDG", label: "저지 프로모", name: "Judge Promotional" },
+] as const;
+
+/**
+ * 리프트바운드 덱 구성 규칙 (Core Rules 기준).
+ *  - 레전드 1 · 메인덱 40장 이상(카드 이름당 최대 3장) · 룬덱 정확히 12 · 전장 3
+ *  - 오프닝 핸드 4장, 멀리건 1회(최대 2장 덱 아래로).
+ */
+export const DECK_RULES = {
+  mainMin: 40,
+  maxCopies: 3,
+  runeCount: 12,
+  battlefieldCount: 3,
+  legendCount: 1,
+  openingHand: 4,
+  mulliganMax: 2,
+} as const;
 
 export const CARD_RARITIES = [
   { slug: "common", label: "커먼" },
@@ -137,4 +168,6 @@ export const CARD_RARITIES = [
   { slug: "rare", label: "레어" },
   { slug: "epic", label: "에픽" },
   { slug: "overnumbered", label: "오버넘버드" },
+  { slug: "promo", label: "프로모" },
+  { slug: "showcase", label: "쇼케이스" },
 ] as const;

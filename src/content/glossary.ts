@@ -123,7 +123,7 @@ export const GLOSSARY: GlossaryTerm[] = [
     en: "Main Deck",
     category: "덱빌딩",
     definition:
-      "40장 이상. 유닛·장비·주문으로 구성. 같은 이름 카드는 최대 3장. 게임 중 비밀 정보. 카드 효과에서 '카드'는 메인 덱 카드만 가리킨다.",
+      "40장 이상. 유닛·도구·주문으로 구성. 같은 이름 카드는 최대 3장. 게임 중 비밀 정보. 카드 효과에서 '카드'는 메인 덱 카드만 가리킨다.",
     related: ["Rune Deck", "Signature"],
   },
   {
@@ -241,7 +241,7 @@ export const GLOSSARY: GlossaryTerm[] = [
     en: "Base",
     category: "존",
     definition:
-      "플레이어마다 하나. 유닛·장비를 항상 플레이할 수 있는 자기 위치. 룬도 여기 놓인다. 다른 플레이어는 내 베이스에 오브젝트를 둘 수 없다.",
+      "플레이어마다 하나. 유닛·도구를 항상 플레이할 수 있는 자기 위치. 룬도 여기 놓인다. 다른 플레이어는 내 베이스에 오브젝트를 둘 수 없다.",
     related: ["Battlefield", "Recall"],
     cardSearchable: true,
   },
@@ -303,7 +303,7 @@ export const GLOSSARY: GlossaryTerm[] = [
     en: "Kill",
     category: "전투",
     definition:
-      "유닛·장비가 트래시로 가는 것. 데미지가 Might 이상이거나 직접 처치 효과로 발생.",
+      "유닛·도구가 트래시로 가는 것. 데미지가 Might 이상이거나 직접 처치 효과로 발생.",
     related: ["Damage", "Trash", "Deathknell"],
     cardSearchable: true,
   },
