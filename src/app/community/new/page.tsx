@@ -1,19 +1,33 @@
 import { redirect } from "next/navigation";
+import type { Metadata } from "next";
 import { createClient } from "@/lib/supabase/server";
 import { hasSupabaseEnv } from "@/lib/supabase/env";
-import { PageHeading, ComingSoon } from "@/components/ui/page-heading";
+import { PageHeading } from "@/components/ui/page-heading";
+import { PostForm } from "@/components/community/post-form";
+import { COMMUNITY_CATEGORIES } from "@/lib/constants";
 
-export default async function NewPostPage() {
-  // 보안: 비로그인 접근 차단 (RLS와 별개로 UX 레벨 가드)
+export const metadata: Metadata = { title: "글쓰기" };
+
+export default async function NewPostPage({ searchParams }: { searchParams: { category?: string } }) {
   if (!hasSupabaseEnv) redirect("/login?next=/community/new");
+
   const supabase = createClient();
   const { data } = await supabase.auth.getUser();
   if (!data.user) redirect("/login?next=/community/new");
 
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("role")
+    .eq("id", data.user.id)
+    .maybeSingle();
+  const canWriteNotice = profile?.role === "editor" || profile?.role === "admin";
+
+  const defaultCategory = COMMUNITY_CATEGORIES.find((c) => c.slug === searchParams.category)?.slug;
+
   return (
-    <div>
+    <div className="mx-auto max-w-3xl">
       <PageHeading title="글쓰기" />
-      <ComingSoon note="카테고리 선택, 제목, 본문 에디터, (덱 분석 시) deck_id 연결. 제출은 Server Action → posts insert (author_id = auth.uid())." />
+      <PostForm defaultCategory={defaultCategory} canWriteNotice={canWriteNotice} />
     </div>
   );
 }

@@ -29,10 +29,19 @@ export const TIER_STYLES: Record<
 };
 
 export const COMMUNITY_CATEGORIES = [
-  { slug: "free", label: "자유" },
-  { slug: "guide", label: "공략/팁" },
-  { slug: "deck-analysis", label: "덱 분석" },
+  { slug: "riftbound", label: "리프트바운드 게시판", desc: "자유 주제 · 잡담 · 질문" },
+  { slug: "report", label: "리프트 리포트", desc: "메타 분석 · 뉴스 · 번역" },
+  { slug: "deck-guide", label: "덱 공략 게시판", desc: "덱 리스트 · 운영법 · 매치업" },
+  { slug: "tournament", label: "대회 정보", desc: "대회 소식 · 후기 · 참가 모집" },
+  { slug: "recruit", label: "구인구직", desc: "팀원 · 길드 · 듀오 · 스태프" },
 ] as const;
+
+export type CommunityCategorySlug = (typeof COMMUNITY_CATEGORIES)[number]["slug"];
+
+/** 인기글 탭 기준: 최근 N일 내 추천 M개 이상 */
+export const POPULAR_POST = { days: 30, minLikes: 3 } as const;
+
+export const POSTS_PER_PAGE = 20;
 
 export const TRADING_CATEGORIES = [
   { slug: "sell", label: "팝니다" },

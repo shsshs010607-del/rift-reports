@@ -7,7 +7,7 @@
 export type Json = string | number | boolean | null | { [key: string]: Json | undefined } | Json[];
 
 export type Tier = "S" | "A" | "B" | "C";
-export type CommunityCategory = "free" | "guide" | "deck-analysis";
+export type CommunityCategory = "riftbound" | "report" | "deck-guide" | "tournament" | "recruit";
 export type TradingCategory = "sell" | "buy" | "trade";
 export type TradeStatus = "open" | "reserved" | "closed";
 export type TournamentStatus = "upcoming" | "ongoing" | "finished";
@@ -148,15 +148,37 @@ export interface Database {
           view_count: number;
           like_count: number;
           comment_count: number;
+          is_notice: boolean;
           is_pinned: boolean;
           created_at: string;
           updated_at: string;
         };
         Insert: Omit<
           Database["public"]["Tables"]["posts"]["Row"],
-          "id" | "view_count" | "like_count" | "comment_count" | "is_pinned" | "created_at" | "updated_at"
-        > & { id?: string; created_at?: string; updated_at?: string };
+          | "id"
+          | "deck_id"
+          | "view_count"
+          | "like_count"
+          | "comment_count"
+          | "is_notice"
+          | "is_pinned"
+          | "created_at"
+          | "updated_at"
+        > & {
+          id?: string;
+          deck_id?: string | null;
+          is_notice?: boolean;
+          is_pinned?: boolean;
+          created_at?: string;
+          updated_at?: string;
+        };
         Update: Partial<Database["public"]["Tables"]["posts"]["Insert"]>;
+        Relationships: [];
+      };
+      post_likes: {
+        Row: { post_id: string; user_id: string; created_at: string };
+        Insert: { post_id: string; user_id: string; created_at?: string };
+        Update: Partial<Database["public"]["Tables"]["post_likes"]["Row"]>;
         Relationships: [];
       };
       comments: {

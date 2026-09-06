@@ -55,12 +55,21 @@ create policy "용어 공개 읽기"        on glossary_terms for select using (
 create policy "스태프 용어 쓰기"      on glossary_terms for all using (is_staff()) with check (is_staff());
 
 -- ─────────────────────────── posts ─────────────────────────────────────────
+-- 공지(is_notice=true)는 스태프만 작성/수정 가능. 일반 글은 본인만.
 create policy "게시글 공개 읽기"      on posts for select using (true);
 create policy "로그인 게시글 작성"    on posts for insert
-  with check (auth.uid() = author_id);
+  with check (
+    auth.uid() = author_id
+    and (is_notice = false or is_staff())
+    and (is_pinned = false or is_staff())
+  );
 create policy "본인 게시글 수정"      on posts for update
   using (auth.uid() = author_id or is_staff())
-  with check (auth.uid() = author_id or is_staff());
+  with check (
+    (auth.uid() = author_id or is_staff())
+    and (is_notice = false or is_staff())
+    and (is_pinned = false or is_staff())
+  );
 create policy "본인 게시글 삭제"      on posts for delete
   using (auth.uid() = author_id or is_staff());
 

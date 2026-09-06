@@ -12,7 +12,7 @@ create type user_role           as enum ('user', 'editor', 'admin');
 create type report_status       as enum ('draft', 'published');
 create type tier                as enum ('S', 'A', 'B', 'C');
 create type deck_board          as enum ('main', 'rune', 'sideboard');
-create type community_category  as enum ('free', 'guide', 'deck-analysis');
+create type community_category  as enum ('riftbound', 'report', 'deck-guide', 'tournament', 'recruit');
 create type trading_category    as enum ('sell', 'buy', 'trade');
 create type trade_status        as enum ('open', 'reserved', 'closed');
 create type tournament_status   as enum ('upcoming', 'ongoing', 'finished');
@@ -170,15 +170,23 @@ create table posts (
   title         text not null check (char_length(title) between 2 and 150),
   body          text not null,
   author_id     uuid not null references profiles (id) on delete cascade,
-  deck_id       uuid references decks (id) on delete set null,   -- '덱 분석'용
+  deck_id       uuid references decks (id) on delete set null,   -- 덱 공략용
   view_count    integer not null default 0,
   like_count    integer not null default 0,
   comment_count integer not null default 0,
-  is_pinned     boolean not null default false,
+  is_notice     boolean not null default false,   -- 관리자 공지 (다른 색상 표시)
+  is_pinned     boolean not null default false,   -- 상단 고정(비공지)
+  search_tsv    tsvector generated always as (
+                  to_tsvector('simple', coalesce(title,'') || ' ' || coalesce(body,''))
+                ) stored,
   created_at    timestamptz not null default now(),
   updated_at    timestamptz not null default now()
 );
-create index posts_list_idx on posts (category, is_pinned desc, created_at desc);
+create index posts_list_idx    on posts (category, is_notice desc, is_pinned desc, created_at desc);
+create index posts_popular_idx on posts (like_count desc, created_at desc);
+create index posts_recent_idx  on posts (created_at desc);
+create index posts_search_idx  on posts using gin (search_tsv);
+create index posts_title_trgm  on posts using gin (title gin_trgm_ops);
 create trigger posts_updated before update on posts for each row execute function set_updated_at();
 
 create table comments (
