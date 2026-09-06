@@ -33,20 +33,22 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#F5F3FF",
+  themeColor: "#fcf8ff",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="ko" className={`${display.variable} ${body.variable}`}>
-      <body className="min-h-screen bg-canvas">
+      <body className="flex min-h-screen flex-col bg-background">
         {/* 한글 글리프 — Pretendard 폴백 (App Router 가 <head> 로 호이스팅) */}
         <link
           rel="stylesheet"
           href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css"
         />
         <Navbar />
-        <main className="container py-8 lg:py-10">{children}</main>
+        <main className="w-full flex-1 pt-20">
+          <div className="mx-auto w-full max-w-[1280px] px-gutter-desktop py-space-xl">{children}</div>
+        </main>
         <Footer />
       </body>
     </html>
