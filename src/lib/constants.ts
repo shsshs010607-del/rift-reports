@@ -153,12 +153,13 @@ export const CARD_SETS = [
 ] as const;
 
 /**
- * 리프트바운드 덱 구성 규칙 (Core Rules 기준).
- *  - 레전드 1 · 메인덱 40장 이상(카드 이름당 최대 3장) · 룬덱 정확히 12 · 전장 3
+ * 리프트바운드 덱 구성 규칙.
+ *  - 레전드 1 · 지정 챔피언 1 · 메인덱 39~59장(카드 이름당 최대 3장) · 룬덱 12 · 전장 3
  *  - 오프닝 핸드 4장, 멀리건 1회(최대 2장 덱 아래로).
  */
 export const DECK_RULES = {
-  mainMin: 40,
+  mainMin: 39,
+  mainMax: 59,
   maxCopies: 3,
   runeCount: 12,
   battlefieldCount: 3,

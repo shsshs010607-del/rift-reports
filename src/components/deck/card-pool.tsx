@@ -5,14 +5,15 @@ import { Plus, Search } from "lucide-react";
 
 import type { Card, CardType } from "@/lib/types/card";
 import type { Deck, ResolvedDeck } from "@/lib/types/deck";
-import { planAdd } from "@/lib/deck/deck-model";
+import { matchesIdentity, planAdd } from "@/lib/deck/deck-model";
 import { CARD_DOMAINS, CARD_SETS } from "@/lib/constants";
 import { LocalizedCard } from "@/components/cards/localized-card";
 import { cn } from "@/lib/utils";
 
 type ApiResponse = { count: number; cards: Card[] };
 
-export type PoolTab = "all" | "legend" | "champion" | "main" | "battlefield" | "rune";
+export type PoolTab =
+  "all" | "legend" | "champion" | "main" | "battlefield" | "rune";
 
 const TABS: { key: PoolTab; label: string; apiType?: CardType }[] = [
   { key: "all", label: "전체" },
@@ -80,12 +81,16 @@ export function CardPool({
         const res = await fetch(`/api/cards?${sp}`, { signal: ctrl.signal });
         if (!res.ok) throw new Error(String(res.status));
         const data = (await res.json()) as ApiResponse;
-        const filtered = tab === "main" ? data.cards.filter((c) => MAIN_TYPES.includes(c.type)) : data.cards;
+        const filtered =
+          tab === "main"
+            ? data.cards.filter((c) => MAIN_TYPES.includes(c.type))
+            : data.cards;
         setCards(filtered);
         setCount(tab === "main" ? filtered.length : data.count);
         onResultsRef.current(data.cards);
       } catch (err) {
-        if ((err as Error).name !== "AbortError") setError("카드를 불러오지 못했습니다.");
+        if ((err as Error).name !== "AbortError")
+          setError("카드를 불러오지 못했습니다.");
       } finally {
         setLoading(false);
       }
@@ -134,15 +139,27 @@ export function CardPool({
       {/* 도메인 · 확장팩 */}
       <div className="flex flex-wrap gap-1">
         {CARD_DOMAINS.map((d) => (
-          <PoolChip key={d.slug} on={domain === d.slug} onClick={() => setDomain(domain === d.slug ? "" : d.slug)}>
-            <span className="h-2 w-2 rounded-full" style={{ backgroundColor: d.color }} />
+          <PoolChip
+            key={d.slug}
+            on={domain === d.slug}
+            onClick={() => setDomain(domain === d.slug ? "" : d.slug)}
+          >
+            <span
+              className="h-2 w-2 rounded-full"
+              style={{ backgroundColor: d.color }}
+            />
             {d.label}
           </PoolChip>
         ))}
       </div>
       <div className="flex flex-wrap gap-1">
         {CARD_SETS.map((s) => (
-          <PoolChip key={s.code} on={setCode === s.code} onClick={() => setSetCode(setCode === s.code ? "" : s.code)} title={s.name}>
+          <PoolChip
+            key={s.code}
+            on={setCode === s.code}
+            onClick={() => setSetCode(setCode === s.code ? "" : s.code)}
+            title={s.name}
+          >
             <span className="font-mono text-[11px] font-bold">{s.code}</span>
           </PoolChip>
         ))}
@@ -150,14 +167,24 @@ export function CardPool({
 
       <div className="flex items-center justify-between gap-2">
         <p className="text-label-sm text-ink-soft">
-          {loading ? "검색 중…" : error ? error : `${count.toLocaleString("ko-KR")}장`}
+          {loading
+            ? "검색 중…"
+            : error
+              ? error
+              : `${count.toLocaleString("ko-KR")}장`}
         </p>
         {idLabels.length > 0 && (
           <p className="flex items-center gap-1 text-label-sm text-ink-soft">
             덱 색:
             {idLabels.map((d) => (
-              <span key={d.slug} className="inline-flex items-center gap-1 font-semibold text-ink">
-                <span className="h-2 w-2 rounded-full" style={{ backgroundColor: d.color }} />
+              <span
+                key={d.slug}
+                className="inline-flex items-center gap-1 font-semibold text-ink"
+              >
+                <span
+                  className="h-2 w-2 rounded-full"
+                  style={{ backgroundColor: d.color }}
+                />
                 {d.label}
               </span>
             ))}
@@ -165,48 +192,66 @@ export function CardPool({
         )}
       </div>
 
-      {/* 결과 */}
+      {/* 결과 — "전체"를 제외한 탭에서는 넣을 수 있는 카드만 보여준다 */}
       <ul className="grid max-h-[62vh] grid-cols-2 gap-2 overflow-y-auto pr-1 sm:grid-cols-3">
-        {cards.map((card) => {
-          const inDeck = qtyById.get(card.id) ?? 0;
-          const plan = planAdd(deck, rd, card);
-          const blocked = plan.kind === "blocked";
-          return (
-            <li key={card.id}>
-              <button
-                type="button"
-                onClick={() => !blocked && onPick(card)}
-                disabled={blocked}
-                title={blocked ? plan.reason : "덱에 추가"}
-                className={cn(
-                  "group relative block w-full overflow-hidden rounded-xl border border-line bg-subcanvas text-left transition",
-                  blocked ? "cursor-not-allowed opacity-45" : "hover:border-primary/50",
-                )}
-              >
-                <div className="relative">
-                  <LocalizedCard card={card} sizes="150px" className="!rounded-none" />
-                  {typeof card.cost === "number" && (
-                    <span className="absolute left-1 top-1 grid h-5 w-5 place-items-center rounded-full bg-ink/80 text-label-sm font-bold text-card">
-                      {card.cost}
-                    </span>
+        {cards
+          .filter((card) => {
+            if (tab === "all") return true;
+            if (tab === "rune") return matchesIdentity(rd, card); // 색 맞는 룬 (가득 차도 표시)
+            return planAdd(deck, rd, card).kind !== "blocked";
+          })
+          .map((card) => {
+            const inDeck = qtyById.get(card.id) ?? 0;
+            const plan = planAdd(deck, rd, card);
+            const blocked = plan.kind === "blocked";
+            return (
+              <li key={card.id}>
+                <button
+                  type="button"
+                  onClick={() => !blocked && onPick(card)}
+                  disabled={blocked}
+                  title={blocked ? plan.reason : "덱에 추가"}
+                  className={cn(
+                    "group relative block w-full overflow-hidden rounded-xl border border-line bg-subcanvas text-left transition",
+                    blocked
+                      ? "cursor-not-allowed opacity-45"
+                      : "hover:border-primary/50",
                   )}
-                  {inDeck > 0 && (
-                    <span className="absolute right-1 top-1 rounded-full bg-primary px-1.5 text-label-sm font-bold text-white">
-                      ×{inDeck}
-                    </span>
-                  )}
-                  {!blocked && (
-                    <span className="absolute inset-x-0 bottom-0 flex items-center justify-center gap-1 bg-primary/90 py-1 text-label-sm font-bold text-white opacity-0 transition group-hover:opacity-100">
-                      <Plus className="h-3 w-3" />
-                      {plan.kind === "legend" ? "레전드" : plan.kind === "champion" ? "챔피언" : "추가"}
-                    </span>
-                  )}
-                </div>
-                <p className="truncate px-1.5 py-1 text-label-sm text-ink">{card.name}</p>
-              </button>
-            </li>
-          );
-        })}
+                >
+                  <div className="relative">
+                    <LocalizedCard
+                      card={card}
+                      sizes="150px"
+                      className="!rounded-none"
+                    />
+                    {typeof card.cost === "number" && (
+                      <span className="absolute left-1 top-1 grid h-5 w-5 place-items-center rounded-full bg-ink/80 text-label-sm font-bold text-card">
+                        {card.cost}
+                      </span>
+                    )}
+                    {inDeck > 0 && (
+                      <span className="absolute right-1 top-1 rounded-full bg-primary px-1.5 text-label-sm font-bold text-white">
+                        ×{inDeck}
+                      </span>
+                    )}
+                    {!blocked && (
+                      <span className="absolute inset-x-0 bottom-0 flex items-center justify-center gap-1 bg-primary/90 py-1 text-label-sm font-bold text-white opacity-0 transition group-hover:opacity-100">
+                        <Plus className="h-3 w-3" />
+                        {plan.kind === "legend"
+                          ? "레전드"
+                          : plan.kind === "champion"
+                            ? "챔피언"
+                            : "추가"}
+                      </span>
+                    )}
+                  </div>
+                  <p className="truncate px-1.5 py-1 text-label-sm text-ink">
+                    {card.name}
+                  </p>
+                </button>
+              </li>
+            );
+          })}
       </ul>
     </div>
   );
@@ -230,7 +275,9 @@ function PoolChip({
       title={title}
       className={cn(
         "inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-label-sm transition",
-        on ? "border-primary bg-primary/10 font-bold text-primary-strong" : "border-line text-ink-soft hover:border-primary/40",
+        on
+          ? "border-primary bg-primary/10 font-bold text-primary-strong"
+          : "border-line text-ink-soft hover:border-primary/40",
       )}
     >
       {children}

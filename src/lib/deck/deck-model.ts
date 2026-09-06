@@ -105,6 +105,21 @@ export function matchesIdentity(rd: ResolvedDeck, card: Card): boolean {
   return card.domains.some((d) => id.includes(d));
 }
 
+/** "Jinx - Loose Cannon" → "jinx" (챔피언 이름 = " - " 앞부분). */
+export function championName(name: string): string {
+  return name.split(/\s+[-–]\s+/)[0].trim().toLowerCase();
+}
+
+/**
+ * 지정 챔피언은 레전드와 같은 챔피언 이름이어야 한다.
+ * (레전드 "Jinx - Loose Cannon" → 챔피언은 "Jinx - …" 만)
+ */
+export function matchesLegendChampion(rd: ResolvedDeck, card: Card): boolean {
+  if (card.type !== "champion") return true;
+  if (!rd.legend) return true; // 레전드 미정이면 제한 없음
+  return championName(card.localization.en.name) === championName(rd.legend.localization.en.name);
+}
+
 // ── 검증 ───────────────────────────────────────────────────────
 
 export interface DeckIssue {
@@ -120,6 +135,8 @@ export function validateDeck(rd: ResolvedDeck): DeckIssue[] {
   if (!rd.champion) issues.push({ level: "warn", message: "지정 챔피언을 선택하세요." });
   if (c.main < DECK_RULES.mainMin)
     issues.push({ level: "error", message: `메인덱이 ${DECK_RULES.mainMin}장 미만입니다 (현재 ${c.main}장).` });
+  if (c.main > DECK_RULES.mainMax)
+    issues.push({ level: "error", message: `메인덱이 ${DECK_RULES.mainMax}장을 넘습니다 (현재 ${c.main}장).` });
   if (c.rune !== DECK_RULES.runeCount)
     issues.push({
       level: c.rune === 0 ? "warn" : "error",
@@ -150,6 +167,20 @@ export function validateDeck(rd: ResolvedDeck): DeckIssue[] {
       if (!matchesIdentity(rd, card))
         issues.push({ level: "error", message: `"${card.name}" 은(는) 덱 색이 아닙니다.` });
   }
+
+  if (rd.champion && rd.legend && !matchesLegendChampion(rd, rd.champion))
+    issues.push({
+      level: "error",
+      message: `지정 챔피언은 레전드(${rd.legend.name})와 같은 챔피언이어야 합니다.`,
+    });
+
+  for (const e of rd.sections.main)
+    if (e.card.type === "champion" && rd.legend && !matchesLegendChampion(rd, e.card))
+      issues.push({
+        level: "error",
+        message: `"${e.card.name}" — 레전드와 다른 챔피언은 넣을 수 없습니다.`,
+      });
+
   return issues;
 }
 
@@ -170,14 +201,21 @@ export function planAdd(deck: Deck, rd: ResolvedDeck, card: Card): AddAction {
 
   if (!matchesIdentity(rd, card)) return { kind: "blocked", reason: "덱 색과 다릅니다" };
 
-  if (card.type === "champion" && !rd.champion) return { kind: "champion", id: card.id };
+  if (card.type === "champion") {
+    if (!matchesLegendChampion(rd, card))
+      return { kind: "blocked", reason: "레전드와 같은 챔피언만" };
+    if (!rd.champion) return { kind: "champion", id: card.id };
+  }
 
   const zone = entryZoneOf(card.type);
   const current = deck.entries.find((e) => e.id === card.id)?.qty ?? 0;
-  if (zone === "main" && current >= DECK_RULES.maxCopies)
+  // 모든 카드 이름당 최대 3장 (룬 제외 — 룬은 6+6 자동)
+  if (zone !== "rune" && current >= DECK_RULES.maxCopies)
     return { kind: "blocked", reason: `이름당 최대 ${DECK_RULES.maxCopies}장` };
-  if (zone === "rune" && zoneCounts(rd).rune >= DECK_RULES.runeCount && current === 0)
-    return { kind: "blocked", reason: `룬은 ${DECK_RULES.runeCount}장까지` };
+  if (zone === "main" && zoneCounts(rd).main >= DECK_RULES.mainMax)
+    return { kind: "blocked", reason: `메인덱은 ${DECK_RULES.mainMax}장까지` };
+  if (zone === "rune" && zoneCounts(rd).rune >= DECK_RULES.runeCount)
+    return { kind: "blocked", reason: `룬은 ${DECK_RULES.runeCount}장 (레전드 색 자동)` };
   if (zone === "battlefield" && zoneCounts(rd).battlefield >= DECK_RULES.battlefieldCount && current === 0)
     return { kind: "blocked", reason: `전장은 ${DECK_RULES.battlefieldCount}장까지` };
 

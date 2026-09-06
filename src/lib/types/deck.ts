@@ -42,7 +42,7 @@ export const ZONE_META: Record<DeckZone, ZoneMeta> = {
   champion: { label: "챔피언", target: 1, targetLabel: "1", exact: true },
   battlefield: { label: "전장", target: 3, targetLabel: "3", exact: true },
   rune: { label: "룬", target: 12, targetLabel: "12", exact: true },
-  main: { label: "메인덱", target: 40, targetLabel: "40+", exact: false },
+  main: { label: "메인덱", target: 39, targetLabel: "39~59", exact: false },
 };
 
 /** entries 카드 타입 → 존 (레전드/챔피언 슬롯은 별도라 여기선 안 나온다). */

@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { Check, Copy, Download, Eraser, Layers, Sparkles, Upload } from "lucide-react";
 
 import type { Card } from "@/lib/types/card";
-import { type Deck } from "@/lib/types/deck";
+import type { Deck } from "@/lib/types/deck";
 import { encodeDeck, decodeDeck } from "@/lib/deck/deck-code";
 import {
   addEntry,
@@ -28,6 +28,35 @@ import { cn } from "@/lib/utils";
 
 const LS_KEY = "rr:deck-simulator:last";
 
+/**
+ * 레전드의 도메인에 맞춰 룬을 자동으로 채운다.
+ * 2색 → 6+6, 1색 → 12. 기존 룬 엔트리는 먼저 비운다.
+ */
+function fillRunes(
+  d: Deck,
+  legend: Card | undefined,
+  runesByDomain: Map<string, Card>,
+): Deck {
+  const withoutRunes = {
+    ...d,
+    entries: d.entries.filter((e) => !runeIds(runesByDomain).has(e.id)),
+  };
+  if (!legend) return withoutRunes;
+  const doms = legend.domains;
+  let out = withoutRunes;
+  if (doms.length >= 2) {
+    for (const dm of doms.slice(0, 2)) {
+      const rc = runesByDomain.get(dm);
+      if (rc) out = addEntry(out, rc.id, 6);
+    }
+  } else if (doms.length === 1) {
+    const rc = runesByDomain.get(doms[0]);
+    if (rc) out = addEntry(out, rc.id, 12);
+  }
+  return out;
+}
+const runeIds = (m: Map<string, Card>) => new Set([...m.values()].map((c) => c.id));
+
 export function DeckSimulator({
   initialDeck,
   initialCards,
@@ -38,7 +67,8 @@ export function DeckSimulator({
   const router = useRouter();
 
   const [deck, setDeck] = useState<Deck>(initialDeck);
-  const [poolTab, setPoolTab] = useState<PoolTab>("all");
+  // 새 덱이면 레전드 칸부터 시작 (가이드 흐름)
+  const [poolTab, setPoolTab] = useState<PoolTab>(initialDeck.legendId ? "main" : "legend");
   const [rightTab, setRightTab] = useState<"deck" | "hand">("deck");
   const [copied, setCopied] = useState(false);
   const [importOpen, setImportOpen] = useState(false);
@@ -46,6 +76,38 @@ export function DeckSimulator({
   const cacheRef = useRef<Map<string, Card>>(new Map(initialCards.map((c) => [c.id, c])));
   const registerCards = useCallback((cards: Card[]) => {
     for (const c of cards) cacheRef.current.set(c.id, c);
+  }, []);
+
+  // 도메인별 기본 룬 카드 (레전드 선택 시 6+6 자동 채우기용)
+  const runesByDomain = useRef<Map<string, Card>>(new Map());
+  useEffect(() => {
+    (async () => {
+      try {
+        const res = await fetch("/api/cards?type=rune&limit=60");
+        if (!res.ok) return;
+        const data = (await res.json()) as { cards: Card[] };
+        for (const c of data.cards) {
+          if (c.domains.length === 1 && !runesByDomain.current.has(c.domains[0])) {
+            runesByDomain.current.set(c.domains[0], c);
+            cacheRef.current.set(c.id, c);
+          }
+        }
+        // 이미 레전드가 있는데 룬이 비었으면 지금 채운다
+        setDeck((d) => (d.legendId ? fillRunes(d, cacheRef.current.get(d.legendId), runesByDomain.current) : d));
+      } catch {
+        /* 무시 */
+      }
+    })();
+  }, []);
+
+  // 가이드 흐름: 사용자가 탭을 직접 누르면 자동 이동 중단
+  const autoFlow = useRef(true);
+  const advance = (to: PoolTab) => {
+    if (autoFlow.current) setPoolTab(to);
+  };
+  const handleTabChange = useCallback((t: PoolTab) => {
+    autoFlow.current = false;
+    setPoolTab(t);
   }, []);
 
   // 최초: URL에 덱 없고 localStorage에 있으면 복원
@@ -85,25 +147,28 @@ export function DeckSimulator({
   const errorCount = issues.filter((i) => i.level === "error").length;
   const total = totalCards(rd);
 
-  // 풀에서 카드 클릭
+  // 풀에서 카드 클릭 — 슬롯/존 배치 + 가이드 흐름(레전드→챔피언→메인덱까지만 자동 이동)
   const handlePick = useCallback(
     (card: Card) => {
       cacheRef.current.set(card.id, card);
-      setDeck((d) => {
-        const plan = planAdd(d, resolveDeck(d, cacheRef.current), card);
-        switch (plan.kind) {
-          case "legend":
-            return setLegend(d, plan.id);
-          case "champion":
-            return setChampion(d, plan.id);
-          case "entry":
-            return addEntry(d, plan.id, 1);
-          default:
-            return d; // blocked
-        }
-      });
+      const plan = planAdd(deck, rd, card);
+      switch (plan.kind) {
+        case "legend":
+          setDeck((d) => fillRunes(setLegend(d, plan.id), card, runesByDomain.current));
+          advance("champion");
+          break;
+        case "champion":
+          setDeck((d) => setChampion(d, plan.id));
+          advance("main");
+          break;
+        case "entry":
+          setDeck((d) => addEntry(d, plan.id, 1));
+          break;
+        default:
+          break; // blocked
+      }
     },
-    [],
+    [deck, rd],
   );
 
   const changeEntry = useCallback((id: string, delta: number) => {
@@ -155,7 +220,7 @@ export function DeckSimulator({
         {/* 좌: 카드 풀 */}
         <CardPool
           tab={poolTab}
-          onTabChange={setPoolTab}
+          onTabChange={handleTabChange}
           rd={rd}
           deck={deck}
           onPick={handlePick}
@@ -180,9 +245,9 @@ export function DeckSimulator({
                 rd={rd}
                 issues={issues}
                 onChangeEntry={changeEntry}
-                onClearLegend={() => setDeck((d) => setLegend(d, null))}
+                onClearLegend={() => setDeck((d) => fillRunes(setLegend(d, null), undefined, runesByDomain.current))}
                 onClearChampion={() => setDeck((d) => setChampion(d, null))}
-                onFocusPool={setPoolTab}
+                onFocusPool={handleTabChange}
               />
               <div className="mt-1 grid grid-cols-2 gap-1.5 border-t border-line pt-3 sm:grid-cols-4">
                 <ActionButton onClick={() => setImportOpen(true)} icon={<Upload className="h-4 w-4" />}>
@@ -254,7 +319,7 @@ function ZoneSummary({ counts }: { counts: ReturnType<typeof zoneCounts> }) {
     { key: "champion", label: "챔피언", n: counts.champion, target: "1", ok: counts.champion === 1 },
     { key: "battlefield", label: "전장", n: counts.battlefield, target: "3", ok: counts.battlefield === 3 },
     { key: "rune", label: "룬", n: counts.rune, target: "12", ok: counts.rune === 12 },
-    { key: "main", label: "메인덱", n: counts.main, target: "40+", ok: counts.main >= 40 },
+    { key: "main", label: "메인덱", n: counts.main, target: "39~59", ok: counts.main >= 39 && counts.main <= 59 },
   ];
   return (
     <div className="flex flex-wrap gap-1.5">
