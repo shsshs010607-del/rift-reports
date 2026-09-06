@@ -124,8 +124,10 @@ export function applyCardQuery(cards: Card[], query: CardSearchQuery): Card[] {
 // ════════════════════════════════════════════════════════════════════
 
 function normalizeType(type: string | undefined, supertype: string | undefined): CardType {
-  if ((supertype ?? "").toLowerCase() === "champion") return "champion";
   const s = (type ?? "").toLowerCase();
+  // 레전드는 챔피언 태그가 붙어 있어도 레전드다 (레전드는 위력이 없음).
+  if (s.includes("legend")) return "legend";
+  if ((supertype ?? "").toLowerCase() === "champion") return "champion";
   return CARD_TYPE_SLUGS.find((slug) => s.includes(slug)) ?? "unit";
 }
 

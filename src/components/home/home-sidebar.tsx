@@ -85,11 +85,10 @@ export async function HomeSidebar() {
             : "공인 매장 대회 · 공식 대회 일정이 여기 표시됩니다."}
         </p>
         <Link
-          href="/tournaments"
+          href="/shops"
           className="btn-primary mt-3 !w-full !justify-center !py-2 !text-label-md"
         >
-          <MapPin className="h-4 w-4" />
-          {tournament ? "대회 상세" : "대회 정보 보기"}
+          <MapPin className="h-4 w-4" />내 주변 공인 카드샵 찾기
         </Link>
       </div>
     </aside>

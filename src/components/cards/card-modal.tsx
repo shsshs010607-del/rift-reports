@@ -6,13 +6,14 @@ import { ExternalLink, X } from "lucide-react";
 
 import type { Card } from "@/lib/types/card";
 import { resolveCardText } from "@/lib/types/card";
-import { CARD_DOMAINS, CARD_RARITIES, CARD_TREATMENTS, CARD_TYPES } from "@/lib/constants";
+import { CARD_DOMAINS, CARD_RARITIES, CARD_SETS, CARD_TREATMENTS, CARD_TYPES } from "@/lib/constants";
 import { LocalizedCard } from "@/components/cards/localized-card";
 import { cn } from "@/lib/utils";
 
 const DOMAIN_BY_SLUG = new Map(CARD_DOMAINS.map((d) => [d.slug, d]));
 const TYPE_LABEL = new Map(CARD_TYPES.map((t) => [t.slug, t.label]));
 const RARITY_LABEL = new Map<string, string>(CARD_RARITIES.map((r) => [r.slug, r.label]));
+const SET_LABEL = new Map<string, string>(CARD_SETS.map((s) => [s.code, s.label]));
 
 /**
  * 카드 비교 모달 — 페이지 이동 없이 그 자리에서 카드를 크게 보고,
@@ -117,6 +118,10 @@ export function CardModal({ card, onClose }: { card: Card; onClose: () => void }
           )}
 
           <dl className="grid grid-cols-[4.5rem_1fr] gap-x-3 gap-y-2 text-body-sm">
+            <Row label="확장팩">
+              {SET_LABEL.get(card.setCode) ?? card.setCode}
+              {card.collectorNumber ? ` · ${card.collectorNumber}번` : ""}
+            </Row>
             <Row label="타입">{TYPE_LABEL.get(card.type) ?? card.type}</Row>
             <Row label="레어도">{RARITY_LABEL.get(card.rarity) ?? card.rarity}</Row>
             <Row label="코스트">{card.cost ?? "—"}</Row>

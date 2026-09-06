@@ -1,17 +1,17 @@
 "use client";
 
 import { useState } from "react";
-import Image from "next/image";
 
 import type { Card } from "@/lib/types/card";
 import { resolveCardText } from "@/lib/types/card";
-import { CARD_DOMAINS, CARD_RARITIES, CARD_TYPES } from "@/lib/constants";
+import { CARD_DOMAINS, CARD_RARITIES, CARD_SETS, CARD_TYPES } from "@/lib/constants";
 import { CardModal } from "@/components/cards/card-modal";
-import { cn } from "@/lib/utils";
+import { LocalizedCard } from "@/components/cards/localized-card";
 
 const DOMAIN_BY_SLUG = new Map(CARD_DOMAINS.map((d) => [d.slug, d]));
 const TYPE_LABEL = new Map(CARD_TYPES.map((t) => [t.slug, t.label]));
 const RARITY_LABEL = new Map<string, string>(CARD_RARITIES.map((r) => [r.slug, r.label]));
+const SET_LABEL = new Map<string, string>(CARD_SETS.map((s) => [s.code, s.label]));
 
 /**
  * 카드 그리드 (클라이언트). 카드를 누르면 페이지 이동 없이 비교 모달을 연다.
@@ -44,20 +44,12 @@ function CardTile({ card, onOpen }: { card: Card; onOpen: () => void }) {
       onClick={onOpen}
       className="flex h-full w-full flex-col overflow-hidden rounded-2xl border border-line bg-card text-left transition hover:-translate-y-0.5 hover:border-primary/40"
     >
-      <div className="relative aspect-[5/7] bg-subcanvas">
-        {card.imageUrl ? (
-          <Image
-            src={card.imageUrl}
-            alt={ko.name}
-            fill
-            sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
-            className="object-cover"
-          />
-        ) : (
-          <div className="grid h-full place-items-center p-2 text-center text-label-lg text-ink-soft">
-            {ko.name}
-          </div>
-        )}
+      <div className="relative bg-subcanvas">
+        <LocalizedCard
+          card={card}
+          sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
+          className="!rounded-none"
+        />
         {typeof card.cost === "number" && (
           <span className="absolute left-1.5 top-1.5 grid h-6 w-6 place-items-center rounded-full bg-ink/80 text-label-sm font-bold text-card">
             {card.cost}
@@ -70,39 +62,28 @@ function CardTile({ card, onOpen }: { card: Card; onOpen: () => void }) {
         )}
       </div>
 
-      <div className="flex flex-1 flex-col gap-1.5 p-2.5">
-        <div className="flex items-start justify-between gap-1.5">
-          <h3 className="text-label-lg font-semibold leading-tight text-ink">{ko.name}</h3>
-          {typeof card.power === "number" && (
-            <span className="shrink-0 text-label-sm text-ink-soft">⚔ {card.power}</span>
-          )}
-        </div>
-
-        <div className="flex flex-wrap gap-1">
-          {card.domains.map((slug) => {
-            const d = DOMAIN_BY_SLUG.get(slug);
-            return (
-              <span
-                key={slug}
-                className="inline-flex items-center gap-1 rounded-full border border-line px-1.5 py-0.5 text-label-sm text-ink-soft"
-              >
-                <span className="h-2 w-2 rounded-full" style={{ backgroundColor: d?.color ?? "#999" }} />
-                {d?.label ?? slug}
-              </span>
-            );
-          })}
-          <span className="chip">{TYPE_LABEL.get(card.type) ?? card.type}</span>
-          <span className={cn("rounded-full bg-subcanvas px-1.5 py-0.5 text-label-sm text-ink-soft")}>
+      <div className="flex items-center gap-2 p-2">
+        <span className="flex shrink-0 gap-0.5">
+          {card.domains.length === 0 && <span className="h-3.5 w-1 rounded-full bg-line" />}
+          {card.domains.map((slug) => (
+            <span
+              key={slug}
+              className="h-3.5 w-1 rounded-full"
+              style={{ backgroundColor: DOMAIN_BY_SLUG.get(slug)?.color ?? "#999" }}
+            />
+          ))}
+        </span>
+        <span className="min-w-0 flex-1">
+          <span className="block truncate text-label-md font-bold text-ink">{ko.name}</span>
+          <span className="block truncate text-label-sm text-ink-soft">
+            {SET_LABEL.get(card.setCode) ?? card.setCode}
+            {" · "}
+            {TYPE_LABEL.get(card.type) ?? card.type}
+            {" · "}
             {RARITY_LABEL.get(card.rarity) ?? card.rarity}
+            {typeof card.power === "number" && ` · ⚔ ${card.power}`}
           </span>
-        </div>
-
-        {ko.text && <p className="mt-0.5 line-clamp-3 text-body-sm text-ink-soft">{ko.text}</p>}
-
-        <p className="mt-auto pt-1 text-label-sm text-ink-soft/70">
-          {card.setCode}
-          {card.collectorNumber ? ` · ${card.collectorNumber}` : ""}
-        </p>
+        </span>
       </div>
     </button>
   );

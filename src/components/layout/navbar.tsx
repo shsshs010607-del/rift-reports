@@ -3,8 +3,9 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
-import { Menu, X, Sparkles, Search, Bell, PenSquare } from "lucide-react";
-import { NAV_ITEMS, SITE } from "@/lib/constants";
+import { Menu, X, Search, Bell, PenSquare } from "lucide-react";
+import { NAV_ITEMS } from "@/lib/constants";
+import { LogoMark } from "@/components/ui/logo";
 import { cn } from "@/lib/utils";
 import { createClient } from "@/lib/supabase/client";
 import { hasSupabaseEnv } from "@/lib/supabase/env";
@@ -32,17 +33,10 @@ export function Navbar() {
     <header className="fixed inset-x-0 top-0 z-50 bg-surface/90 shadow-header backdrop-blur-xl">
       <div className="mx-auto flex h-20 max-w-[1280px] items-center justify-between gap-space-md px-gutter-desktop">
         <div className="flex items-center gap-space-lg">
-          <Link href="/" className="flex shrink-0 items-center gap-space-xs">
-            <span className="grid h-8 w-8 place-items-center rounded-lg bg-primary text-on-primary shadow-e1">
-              <Sparkles className="h-4 w-4" />
-            </span>
-            <span className="flex items-center gap-space-2xs">
-              <span className="font-display text-headline-sm font-extrabold tracking-tight text-on-surface">
-                {SITE.nameEn.toUpperCase().replace(" ", "")}
-              </span>
-              <span className="rounded-full bg-primary-fixed px-space-xs py-0.5 text-label-sm uppercase text-on-primary-fixed-variant">
-                HUB
-              </span>
+          <Link href="/" className="flex shrink-0 items-center gap-2.5">
+            <LogoMark className="h-9 w-auto rounded-lg shadow-e1" />
+            <span className="font-display text-headline-sm font-extrabold tracking-tight text-on-surface">
+              리프트 리포트
             </span>
           </Link>
 

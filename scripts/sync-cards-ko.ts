@@ -28,6 +28,9 @@ interface RnItem {
 
 const hangul = /[가-힣]/;
 
+/** 이형/스타터 접미사 `(Alternate Art)` `(Starter)` `(입문자)` … 제거 → 기본 카드명 키. */
+const baseName = (n: string) => n.replace(/\s*\([^)]*\)\s*$/, "").trim();
+
 /** "카드명. 룰텍스트" 에서 앞의 카드명 부분을 떼고 룰텍스트만.
  *  주의: `:` 는 심볼 코드(:rb_*:)의 시작이라 벗겨내지 않는다. */
 function stripLeadName(text: string, name: string): string {
@@ -38,6 +41,7 @@ function stripLeadName(text: string, name: string): string {
 
 async function main() {
   const map: Record<string, { n: string; t: string }> = {};
+  const variantKeys = new Set<string>(); // 현재 값이 이형(접미사)에서 온 키
   let page = 1;
   let total = Infinity;
   let seen = 0;
@@ -52,16 +56,21 @@ async function main() {
       const setId = (it.image?.setId ?? "").toUpperCase();
       if (setId && !SUPPORTED.has(setId)) continue; // 미지원 세트 스킵
 
-      const en = it.names?.en?.trim();
-      const ko = it.names?.ko?.trim();
-      if (!en || !ko || ko === en || !hangul.test(ko)) continue; // 번역 없음 → 스킵
+      const enRaw = it.names?.en?.trim();
+      const koRaw = it.names?.ko?.trim();
+      if (!enRaw || !koRaw || koRaw === enRaw || !hangul.test(koRaw)) continue; // 번역 없음 → 스킵
 
-      const key = en.toLowerCase();
-      if (map[key]) continue; // 첫 인쇄판만
+      const key = baseName(enRaw).toLowerCase();
+      const isVariant = enRaw !== baseName(enRaw);
+      // 접미사 없는 기본 인쇄판을 우선: 이미 기본으로 채워졌으면 이형으로 덮어쓰지 않음
+      if (map[key] && (isVariant || !variantKeys.has(key))) continue;
 
+      const ko = baseName(koRaw);
       const rawText = it.koreanImage?.accessibilityText ?? "";
-      const text = stripLeadName(rawText, it.koreanImage?.name ?? ko);
+      const text = stripLeadName(rawText, it.koreanImage?.name ?? koRaw);
 
+      if (isVariant) variantKeys.add(key);
+      else variantKeys.delete(key);
       map[key] = {
         n: ko,
         t: hangul.test(text) ? text : "", // 텍스트가 한글이 아니면(미번역) 비움

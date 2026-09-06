@@ -1,12 +1,12 @@
 "use client";
 
 import { useCallback, useState } from "react";
-import Image from "next/image";
 import { RotateCcw, Shuffle } from "lucide-react";
 
 import type { ResolvedEntry } from "@/lib/types/deck";
 import { type DrawState, openingDraw, mulligan, buildLibrary } from "@/lib/deck/draw";
 import { DECK_RULES, CARD_DOMAINS, CARD_TYPES } from "@/lib/constants";
+import { LocalizedCard } from "@/components/cards/localized-card";
 import { cn } from "@/lib/utils";
 
 const DOMAIN_COLOR = new Map(CARD_DOMAINS.map((d) => [d.slug, d.color]));
@@ -93,14 +93,8 @@ export function SampleHand({
                     !state.mulliganed && "hover:border-primary/50",
                   )}
                 >
-                  <div className="relative aspect-[5/7]">
-                    {card.imageUrl ? (
-                      <Image src={card.imageUrl} alt={card.name} fill sizes="150px" className="object-cover" />
-                    ) : (
-                      <span className="grid h-full place-items-center p-1 text-center text-label-sm text-ink-soft">
-                        {card.name}
-                      </span>
-                    )}
+                  <div className="relative">
+                    <LocalizedCard card={card} sizes="150px" className="!rounded-none" />
                     {typeof card.cost === "number" && (
                       <span className="absolute left-1 top-1 grid h-5 w-5 place-items-center rounded-full bg-ink/80 text-label-sm font-bold text-card">
                         {card.cost}

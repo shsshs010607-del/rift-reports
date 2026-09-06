@@ -13,8 +13,15 @@ export const NAV_ITEMS = [
   { href: "/rules", label: "룰 & 용어" },
   { href: "/community", label: "커뮤니티" },
   { href: "/trading", label: "카드 거래" },
-  { href: "/tournaments", label: "대회 정보" },
+  { href: "/shops", label: "주변 매장 및 대회" },
 ] as const;
+
+/** 대한민국 시/도 (카드샵 지역 필터). */
+export const KR_SIDO = [
+  "서울", "부산", "대구", "인천", "광주", "대전", "울산", "세종",
+  "경기", "강원", "충북", "충남", "전북", "전남", "경북", "경남", "제주",
+] as const;
+export type KrSido = (typeof KR_SIDO)[number];
 
 export const TIERS = ["S", "A", "B", "C"] as const;
 export type Tier = (typeof TIERS)[number];

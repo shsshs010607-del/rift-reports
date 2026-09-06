@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { MessageSquare, Youtube, Mail } from "lucide-react";
 import { NAV_ITEMS, SITE } from "@/lib/constants";
+import { LogoMark } from "@/components/ui/logo";
 
 const TOOLS = [
   { href: "/tiers", label: "덱 티어리스트" },
@@ -16,9 +17,10 @@ export function Footer() {
       <div className="mx-auto max-w-[1280px] px-gutter-desktop py-space-2xl">
         <div className="mb-space-2xl grid grid-cols-1 gap-space-xl md:grid-cols-4">
           <div className="space-y-space-sm md:col-span-2">
-            <div className="flex items-center gap-space-xs">
+            <div className="flex items-center gap-2.5">
+              <LogoMark className="h-8 w-auto rounded-md" />
               <span className="font-display text-headline-sm font-extrabold text-primary">
-                {SITE.nameEn.toUpperCase().replace(" ", "")} HUB
+                리프트 리포트
               </span>
               <span className="rounded-full bg-surface-container-high px-space-xs py-0.5 text-label-sm text-on-surface-variant">
                 커뮤니티
