@@ -47,12 +47,14 @@ export interface CardLocalizedText {
   text: string;
   /** 감성 문구(flavor). 선택. */
   flavor?: string;
+  /** 이 로케일의 카드 이미지(한글 인쇄판 등). 없으면 대표 imageUrl 사용. */
+  imageUrl?: string | null;
 }
 
 /**
  * 로케일별 원문 모음.
- * - `en` 은 항상 존재한다(공식 영문 canonical — 안정적).
- * - `ko` 는 Riot 공식 한글 번역이 확정되기 전까지 비어 있을 수 있다.
+ * - `en` 은 항상 존재한다(공식 영문 canonical — 안정적). 카드 거래소 등 영문이 필요한 곳은 이걸 쓴다.
+ * - `ko` 는 한글 번역이 있는 카드만 채워진다(리프트나루 데이터 기준). 없으면 en 으로 폴백.
  */
 export interface CardLocalization {
   en: CardLocalizedText;
@@ -86,6 +88,8 @@ export interface Card {
   toughness: number | null;
 
   type: CardType;
+  /** 카드 방향. 전장은 landscape, 그 외 portrait. */
+  orientation: "portrait" | "landscape";
   /** 세부 태그(지역, 종족, 키워드 등). */
   subtypes: string[];
   /** 카드가 속한 도메인(색). 다색 가능, 무색은 빈 배열. */

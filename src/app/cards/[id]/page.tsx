@@ -1,9 +1,9 @@
 import { notFound } from "next/navigation";
-import Image from "next/image";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 
 import { PageHeading } from "@/components/ui/page-heading";
+import { LocalizedCard } from "@/components/cards/localized-card";
 import { getCardService, CardServiceError } from "@/lib/services/cardService";
 import { resolveCardText } from "@/lib/types/card";
 import { CARD_DOMAINS, CARD_RARITIES, CARD_TYPES } from "@/lib/constants";
@@ -57,14 +57,13 @@ export default async function CardDetailPage({ params }: { params: { id: string 
         description={`${en.name} · ${card.setCode}${card.collectorNumber ? ` #${card.collectorNumber}` : ""}`}
       />
 
-      <div className="grid gap-6 sm:grid-cols-[minmax(0,240px)_1fr]">
-        <div className="relative aspect-[5/7] overflow-hidden rounded-2xl border border-line bg-subcanvas">
-          {card.imageUrl ? (
-            <Image src={card.imageUrl} alt={ko.name} fill sizes="240px" className="object-cover" />
-          ) : (
-            <div className="grid h-full place-items-center p-4 text-center text-title-md text-ink-soft">
-              {ko.name}
-            </div>
+      <div className="grid gap-6 sm:grid-cols-[minmax(0,260px)_1fr]">
+        <div>
+          <LocalizedCard card={card} sizes="(max-width: 640px) 90vw, 260px" priority />
+          {hasKo && card.orientation === "portrait" && (
+            <p className="mt-1.5 text-label-sm text-ink-soft">
+              공식 영문 카드에 리프트나루 한글 번역을 얹은 이미지입니다.
+            </p>
           )}
         </div>
 
@@ -98,7 +97,7 @@ export default async function CardDetailPage({ params }: { params: { id: string 
             {en.text || "—"}
             {!hasKo && (
               <span className="mt-1 block text-label-sm text-ink-soft/70">
-                공식 한국어 번역 대기 중
+                한국어 번역 준비 중 — 나오면 자동 반영됩니다.
               </span>
             )}
           </Row>

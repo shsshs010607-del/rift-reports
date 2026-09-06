@@ -5,15 +5,19 @@
  *
  * 이 파일은 OpenSourceCardService 의 "원격 실패 시 폴백" 데이터다.
  * 평상시 앱은 https://api.riftcodex.com/cards 를 직접 호출(ISR 24h)하므로,
- * 스냅샷은 오프라인 개발 / API 장애 대비용. 세트 추가될 때 한 번씩 돌리면 된다.
+ * 스냅샷은 오프라인 개발 / API 장애 대비용.
  *
+ * **지원 세트(constants.CARD_SETS)만** 받는다. 새 세트 추가하면 constants 수정 후 재실행.
  * env 불필요(Riftcodex 는 인증 없음).
  */
 import { writeFileSync } from "node:fs";
 
+import { CARD_SETS } from "../src/lib/constants";
+
 const ENDPOINT = process.env.OPENSOURCE_CARDS_ENDPOINT ?? "https://api.riftcodex.com/cards";
 const OUT = new URL("../data/cards.json", import.meta.url);
 const PAGE_SIZE = 100;
+const SET_CODES = CARD_SETS.map((s) => s.code);
 
 interface RiftcodexCard {
   id: string;
@@ -52,19 +56,21 @@ function slim(c: RiftcodexCard) {
 
 async function main() {
   const items: RiftcodexCard[] = [];
-  let page = 1;
-  let pages = 1;
 
-  do {
-    const url = `${ENDPOINT}?page=${page}&size=${PAGE_SIZE}`;
-    const res = await fetch(url);
-    if (!res.ok) throw new Error(`Riftcodex ${res.status} ${res.statusText} — ${url}`);
-    const body = (await res.json()) as { items: RiftcodexCard[]; pages: number; total: number };
-    items.push(...body.items);
-    pages = body.pages || page;
-    console.log(`  page ${page}/${pages} … 누적 ${items.length}`);
-    page += 1;
-  } while (page <= pages && page <= 100);
+  for (const code of SET_CODES) {
+    let page = 1;
+    let pages = 1;
+    do {
+      const url = `${ENDPOINT}?set_id=${code.toLowerCase()}&page=${page}&size=${PAGE_SIZE}`;
+      const res = await fetch(url);
+      if (!res.ok) throw new Error(`Riftcodex ${res.status} ${res.statusText} — ${url}`);
+      const body = (await res.json()) as { items: RiftcodexCard[]; pages: number; total: number };
+      items.push(...body.items);
+      pages = body.pages || page;
+      console.log(`  ${code} page ${page}/${pages} … 누적 ${items.length}`);
+      page += 1;
+    } while (page <= pages && page <= 100);
+  }
 
   if (items.length === 0) throw new Error("카드 0건 — 엔드포인트 확인");
 

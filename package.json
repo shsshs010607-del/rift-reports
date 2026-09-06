@@ -10,7 +10,8 @@
     "typecheck": "tsc --noEmit",
     "sync:glossary": "tsx scripts/sync-glossary.ts",
     "sync:prices": "tsx scripts/sync-prices.ts",
-    "sync:cards": "tsx scripts/sync-cards.ts"
+    "sync:cards": "tsx scripts/sync-cards.ts",
+    "sync:cards-ko": "tsx scripts/sync-cards-ko.ts"
   },
   "dependencies": {
     "@supabase/ssr": "^0.12.6",

@@ -11,9 +11,13 @@ import {
   type CardSearchQuery,
   type CardType,
   CARD_RARITY_SLUGS,
+  CARD_SET_CODES,
   CARD_TYPE_SLUGS,
 } from "@/lib/types/card";
 import { CARD_DOMAINS } from "@/lib/constants";
+
+/** 카드 DB 에 담을 세트 화이트리스트 (constants.CARD_SETS). 그 외 세트 카드는 로드 시 제외. */
+const SUPPORTED_SETS = new Set<string>(CARD_SET_CODES);
 
 /**
  * 카드 데이터 접근 계층 (어댑터 패턴).
@@ -219,26 +223,66 @@ interface RiftcodexPage {
 
 type LocalSnapshot = RiftcodexPage | { items: RiftcodexCard[] } | RiftcodexCard[];
 
-/** Riftcodex 룰 텍스트의 심볼 코드(:rb_xxx:)를 읽기 쉬운 형태로. */
-const SYMBOL_MAP: Record<string, string> = {
-  rb_exhaust: "[휴식]",
-  rb_might: "위력",
-  rb_power: "파워",
-  rb_rune_rainbow: "[룬]",
-  rb_recycle: "[재활용]",
+// ── 한글 번역 (리프트나루 스냅샷) ────────────────────────────────
+//
+//  data/cards-ko.json = 영문 카드명(소문자) → { n: 한글명, t: 한글 룰텍스트, img: 한글 카드이미지 }.
+//  `npm run sync:cards-ko` 로 갱신. 번역이 없는 카드는 맵에 없음 → 영문 그대로 표시.
+
+interface KoEntry {
+  n: string;
+  t?: string;
+}
+
+let koCache: Promise<Map<string, KoEntry>> | null = null;
+
+/** 이형(Alternate Art / Signature / Overnumbered …) 접미사를 뗀 소문자 이름 = 번역 키. */
+function baseNameKey(name: string): string {
+  return name
+    .replace(/\s*\([^)]*\)\s*$/, "")
+    .trim()
+    .toLowerCase();
+}
+
+function loadKoTranslations(): Promise<Map<string, KoEntry>> {
+  if (!koCache) {
+    koCache = (async () => {
+      try {
+        const p = path.join(process.cwd(), "data", "cards-ko.json");
+        const raw = JSON.parse(await readFile(p, "utf8")) as { map?: Record<string, KoEntry> };
+        return new Map(Object.entries(raw.map ?? {}));
+      } catch (err) {
+        console.warn("[cardService] 한글 번역(cards-ko.json) 로드 실패 — 영문으로 진행:", err);
+        return new Map<string, KoEntry>();
+      }
+    })();
+  }
+  return koCache;
+}
+
+/** 룰 텍스트의 심볼 코드(:rb_xxx:)를 읽기 쉬운 형태로. 로케일별 어휘. */
+const RUNE_WORDS: Record<"ko" | "en", Record<string, string>> = {
+  ko: { fury: "분노", calm: "침착", mind: "지혜", body: "육체", chaos: "혼돈", order: "질서", rainbow: "무지개" },
+  en: { fury: "Fury", calm: "Calm", mind: "Mind", body: "Body", chaos: "Chaos", order: "Order", rainbow: "Any" },
 };
-function humanizeSymbols(text: string): string {
+const SYMBOL_WORDS: Record<"ko" | "en", Record<string, string>> = {
+  ko: { rb_exhaust: "[휴식]", rb_might: "위력", rb_power: "파워", rb_recycle: "[재활용]" },
+  en: { rb_exhaust: "[Exhaust]", rb_might: "Might", rb_power: "Power", rb_recycle: "[Recycle]" },
+};
+function humanizeSymbols(text: string, locale: "ko" | "en" = "ko"): string {
+  const runes = RUNE_WORDS[locale];
+  const words = SYMBOL_WORDS[locale];
+  const runeLabel = locale === "ko" ? (c: string) => `[${c} 룬]` : (c: string) => `[${c} Rune]`;
   return text
     .replace(/:rb_energy_(\d+):/g, "($1)") // 에너지 비용
-    .replace(/:rb_rune_(\w+):/g, "[$1 룬]")
-    .replace(/:(rb_\w+):/g, (_m, code: string) => SYMBOL_MAP[code] ?? `[${code.replace(/^rb_/, "")}]`);
+    .replace(/:rb_rune_(\w+):/g, (_m, c: string) => runeLabel(runes[c] ?? c))
+    .replace(/:(rb_\w+):/g, (_m, code: string) => words[code] ?? `[${code.replace(/^rb_/, "")}]`);
 }
 
 /** Riftcodex 는 룰 텍스트가 없을 때 "[NO TEXT]" 를 준다. */
-function cleanText(plain: string | undefined | null): string {
+function cleanText(plain: string | undefined | null, locale: "ko" | "en" = "en"): string {
   const t = (plain ?? "").trim();
   if (t === "" || t === "[NO TEXT]") return "";
-  return humanizeSymbols(t);
+  return humanizeSymbols(t, locale);
 }
 
 /**
@@ -249,31 +293,53 @@ function cleanText(plain: string | undefined | null): string {
  *   type      = supertype "Champion" 이면 "champion", 아니면 classification.type
  *   rarity    = metadata.overnumbered 면 "overnumbered", 아니면 classification.rarity(소문자)
  *   domains   = classification.domain (Colorless 는 무색 → 빈 배열)
- *   localization.ko 없음(Riftcodex 는 영문만)
+ *   localization.ko = 리프트나루 번역 맵에서 영문명으로 조회 (없으면 en 만)
+ *
+ * ─ 이미지 정책 ─
+ *   imageUrl 은 **항상 Riftcodex 의 고화질 공식(rgpub) 이미지**. 리프트나루 한글판 이미지는
+ *   저해상(320×448)이라 안 쓴다. 한글 카드는 `<LocalizedCard>` 가 이 영문 이미지 위에
+ *   한글 이름·룰텍스트를 얹어 렌더한다.
  */
-function mapRiftcodexCard(raw: RiftcodexCard): Card {
+function mapRiftcodexCard(raw: RiftcodexCard, ko?: Map<string, KoEntry>): Card {
   const nameEn = raw.name?.trim() || raw.id;
   const textEn = cleanText(raw.text?.plain);
   const flavour = raw.text?.flavour?.trim();
+  const imageEn = raw.media?.image_url ?? null;
 
-  const en = { name: nameEn, text: textEn, ...(flavour ? { flavor: flavour } : {}) };
+  const en = {
+    name: nameEn,
+    text: textEn,
+    imageUrl: imageEn,
+    ...(flavour ? { flavor: flavour } : {}),
+  };
+
+  const koEntry = ko?.get(baseNameKey(nameEn));
+  const koLoc = koEntry
+    ? {
+        name: koEntry.n,
+        text: koEntry.t ? humanizeSymbols(koEntry.t) : textEn,
+        ...(flavour ? { flavor: flavour } : {}),
+      }
+    : undefined;
 
   return {
     id: raw.id, // Riftcodex 고유 id (riftbound_id/수집번호는 이형 카드끼리 중복됨)
     setCode: raw.set?.set_id?.toUpperCase() || "UNKNOWN",
     collectorNumber: raw.collector_number != null ? String(raw.collector_number) : null,
-    name: en.name,
-    text: en.text,
+    // 이름·텍스트는 한글 우선. 영문은 localization.en 에 항상 보존 → 카드 거래소 등에서 사용.
+    name: koLoc?.name ?? en.name,
+    text: koLoc?.text ?? en.text,
     cost: raw.attributes?.energy ?? null,
     power: raw.attributes?.might ?? null,
     toughness: null,
     type: normalizeType(raw.classification?.type, raw.classification?.supertype ?? undefined),
+    orientation: raw.orientation === "landscape" ? "landscape" : "portrait",
     subtypes: raw.tags ?? [],
     domains: normalizeDomains(raw.classification?.domain),
     rarity: normalizeRarity(raw.classification?.rarity, raw.metadata?.overnumbered ?? false),
-    imageUrl: raw.media?.image_url ?? null,
+    imageUrl: imageEn, // 항상 고화질 공식 이미지
     artist: raw.media?.artist ?? null,
-    localization: { en },
+    localization: { en, ...(koLoc ? { ko: koLoc } : {}) },
     source: "opensource",
   };
 }
@@ -351,25 +417,30 @@ export class OpenSourceCardService implements ICardService {
     );
   }
 
-  /** 페이지를 끝까지 순회해 전체 카드를 모은다. */
+  /** 지원 세트별로 페이지를 순회해 카드를 모은다 (constants.CARD_SETS 만). */
   private async fetchAllRemote(endpoint: string): Promise<Card[]> {
     const out: Card[] = [];
-    let page = 1;
-    let totalPages = 1;
+    const ko = await loadKoTranslations();
 
-    do {
-      const url = new URL(endpoint);
-      url.searchParams.set("page", String(page));
-      url.searchParams.set("size", String(this.config.pageSize));
+    for (const setCode of CARD_SET_CODES) {
+      let page = 1;
+      let totalPages = 1;
+      do {
+        const url = new URL(endpoint);
+        url.searchParams.set("set_id", setCode.toLowerCase());
+        url.searchParams.set("page", String(page));
+        url.searchParams.set("size", String(this.config.pageSize));
 
-      const body = await this.fetchPage(url);
-      out.push(...body.items.map(mapRiftcodexCard));
+        const body = await this.fetchPage(url);
+        out.push(...body.items.map((c) => mapRiftcodexCard(c, ko)));
 
-      totalPages = Number.isFinite(body.pages) && body.pages > 0 ? body.pages : page;
-      page += 1;
-    } while (page <= totalPages && page <= this.config.maxPages);
+        totalPages = Number.isFinite(body.pages) && body.pages > 0 ? body.pages : page;
+        page += 1;
+      } while (page <= totalPages && page <= this.config.maxPages);
+    }
 
-    return out;
+    // set_id 필터를 못 거는 소스 대비 안전망
+    return out.filter((c) => SUPPORTED_SETS.has(c.setCode));
   }
 
   private async fetchPage(url: URL): Promise<RiftcodexPage> {
@@ -412,7 +483,10 @@ export class OpenSourceCardService implements ICardService {
 
     try {
       const snapshot = JSON.parse(text) as LocalSnapshot;
-      return itemsOf(snapshot).map(mapRiftcodexCard);
+      const ko = await loadKoTranslations();
+      return itemsOf(snapshot)
+        .map((c) => mapRiftcodexCard(c, ko))
+        .filter((c) => SUPPORTED_SETS.has(c.setCode));
     } catch (err) {
       throw new CardServiceError(`로컬 카드 스냅샷 파싱 실패: ${filePath}`, err);
     }

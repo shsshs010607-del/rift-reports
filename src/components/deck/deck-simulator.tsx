@@ -2,23 +2,29 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Check, Copy, Sparkles, Trash2 } from "lucide-react";
+import { Check, Copy, Download, Eraser, Layers, Sparkles, Upload } from "lucide-react";
 
 import type { Card } from "@/lib/types/card";
-import type { Deck } from "@/lib/types/deck";
+import { type Deck } from "@/lib/types/deck";
 import { encodeDeck, decodeDeck } from "@/lib/deck/deck-code";
 import {
-  addCard,
+  addEntry,
   clearDeck,
+  planAdd,
   renameDeck,
-  resolveEntries,
+  resolveDeck,
+  setChampion,
+  setLegend,
   validateDeck,
-  mainCount,
-  zoneCount,
+  zoneCounts,
+  totalCards,
 } from "@/lib/deck/deck-model";
-import { CardPicker } from "@/components/deck/card-picker";
-import { DeckPanel } from "@/components/deck/deck-panel";
-import { OpeningHandModal } from "@/components/deck/opening-hand-modal";
+import { formatDecklist } from "@/lib/deck/deck-text";
+import { CardPool, type PoolTab } from "@/components/deck/card-pool";
+import { DeckList } from "@/components/deck/deck-list";
+import { SampleHand } from "@/components/deck/sample-hand";
+import { ImportDialog } from "@/components/deck/import-dialog";
+import { cn } from "@/lib/utils";
 
 const LS_KEY = "rr:deck-simulator:last";
 
@@ -32,31 +38,33 @@ export function DeckSimulator({
   const router = useRouter();
 
   const [deck, setDeck] = useState<Deck>(initialDeck);
-  const [handOpen, setHandOpen] = useState(false);
+  const [poolTab, setPoolTab] = useState<PoolTab>("all");
+  const [rightTab, setRightTab] = useState<"deck" | "hand">("deck");
   const [copied, setCopied] = useState(false);
+  const [importOpen, setImportOpen] = useState(false);
 
-  // id → Card 캐시. URL 덱의 해석 결과 + 검색으로 만난 카드가 쌓인다.
   const cacheRef = useRef<Map<string, Card>>(new Map(initialCards.map((c) => [c.id, c])));
   const registerCards = useCallback((cards: Card[]) => {
     for (const c of cards) cacheRef.current.set(c.id, c);
   }, []);
 
-  // 최초 마운트: URL에 덱이 없고 localStorage에 저장된 덱이 있으면 복원
-  const hydratedRef = useRef(false);
+  // 최초: URL에 덱 없고 localStorage에 있으면 복원
+  const hydrated = useRef(false);
   useEffect(() => {
-    if (hydratedRef.current) return;
-    hydratedRef.current = true;
-    if (initialDeck.entries.length > 0) return;
+    if (hydrated.current) return;
+    hydrated.current = true;
+    if (initialDeck.legendId || initialDeck.championId || initialDeck.entries.length > 0) return;
     try {
       const saved = localStorage.getItem(LS_KEY);
       const restored = saved && decodeDeck(saved);
-      if (restored && restored.entries.length > 0) setDeck(restored);
+      if (restored && (restored.legendId || restored.championId || restored.entries.length > 0))
+        setDeck(restored);
     } catch {
-      /* localStorage 접근 불가 — 무시 */
+      /* 무시 */
     }
   }, [initialDeck]);
 
-  // 덱 변경 → URL(?deck=) 동기화 + localStorage 저장 (디바운스)
+  // 덱 변경 → URL + localStorage (디바운스)
   const code = useMemo(() => encodeDeck(deck), [deck]);
   useEffect(() => {
     const t = setTimeout(() => {
@@ -71,17 +79,35 @@ export function DeckSimulator({
     return () => clearTimeout(t);
   }, [code, router]);
 
-  const resolved = useMemo(() => resolveEntries(deck, cacheRef.current), [deck]);
-  const issues = useMemo(() => validateDeck(resolved), [resolved]);
+  const rd = useMemo(() => resolveDeck(deck, cacheRef.current), [deck]);
+  const counts = useMemo(() => zoneCounts(rd), [rd]);
+  const issues = useMemo(() => validateDeck(rd), [rd]);
   const errorCount = issues.filter((i) => i.level === "error").length;
+  const total = totalCards(rd);
 
-  const total = resolved.reduce((s, e) => s + e.qty, 0);
-  const main = mainCount(resolved);
-  const runes = zoneCount(resolved, "rune");
+  // 풀에서 카드 클릭
+  const handlePick = useCallback(
+    (card: Card) => {
+      cacheRef.current.set(card.id, card);
+      setDeck((d) => {
+        const plan = planAdd(d, resolveDeck(d, cacheRef.current), card);
+        switch (plan.kind) {
+          case "legend":
+            return setLegend(d, plan.id);
+          case "champion":
+            return setChampion(d, plan.id);
+          case "entry":
+            return addEntry(d, plan.id, 1);
+          default:
+            return d; // blocked
+        }
+      });
+    },
+    [],
+  );
 
-  const handleAdd = useCallback((card: Card, delta = 1) => {
-    cacheRef.current.set(card.id, card);
-    setDeck((d) => addCard(d, card.id, delta));
+  const changeEntry = useCallback((id: string, delta: number) => {
+    setDeck((d) => addEntry(d, id, delta));
   }, []);
 
   async function copyShareLink() {
@@ -90,71 +116,185 @@ export function DeckSimulator({
       setCopied(true);
       setTimeout(() => setCopied(false), 1500);
     } catch {
-      /* 클립보드 불가 — 무시 */
+      /* 무시 */
     }
+  }
+
+  async function exportText() {
+    try {
+      await navigator.clipboard.writeText(formatDecklist(rd));
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1500);
+    } catch {
+      /* 무시 */
+    }
+  }
+
+  function applyImport(next: Deck) {
+    // 가져온 덱의 카드는 ImportDialog 가 이미 캐시에 등록함
+    setDeck(next);
+    setImportOpen(false);
   }
 
   return (
     <div className="flex flex-col gap-4">
-      {/* 헤더: 덱 이름 + 요약 + 액션 */}
+      {/* 헤더 */}
       <div className="flex flex-wrap items-center gap-3 rounded-2xl border border-line bg-card p-3">
         <input
           value={deck.name}
           onChange={(e) => setDeck((d) => renameDeck(d, e.target.value))}
           aria-label="덱 이름"
-          className="min-w-0 flex-1 rounded-xl border border-line bg-subcanvas/50 px-3 py-2 text-title-md font-bold text-ink focus:border-primary focus:outline-none"
+          className="min-w-40 flex-1 rounded-xl border border-line bg-subcanvas/50 px-3 py-2 text-title-md font-bold text-ink focus:border-primary focus:outline-none"
         />
-        <div className="flex items-center gap-1.5 text-body-sm text-ink-soft">
-          <span className={main >= 40 ? "text-emerald" : "text-ink-soft"}>메인 {main}</span>
-          <span className="text-line">·</span>
-          <span className={runes === 12 ? "text-emerald" : "text-ink-soft"}>룬 {runes}</span>
-          <span className="text-line">·</span>
-          <span>총 {total}장</span>
-          {errorCount > 0 && (
-            <span className="rounded-full bg-error/10 px-2 py-0.5 text-label-sm font-bold text-error">
-              규칙 위반 {errorCount}
-            </span>
+        <span className="text-body-sm text-ink-soft">
+          총 {total}장{errorCount > 0 && <span className="ml-1.5 rounded-full bg-error/10 px-2 py-0.5 text-label-sm font-bold text-error">규칙 위반 {errorCount}</span>}
+        </span>
+      </div>
+
+      <div className="grid gap-4 lg:grid-cols-[1fr_minmax(340px,420px)]">
+        {/* 좌: 카드 풀 */}
+        <CardPool
+          tab={poolTab}
+          onTabChange={setPoolTab}
+          rd={rd}
+          deck={deck}
+          onPick={handlePick}
+          onResults={registerCards}
+        />
+
+        {/* 우: 덱 / 샘플 핸드 */}
+        <div className="flex flex-col rounded-2xl border border-line bg-card">
+          <div className="flex border-b border-line">
+            <TabButton active={rightTab === "deck"} onClick={() => setRightTab("deck")}>
+              <Layers className="h-4 w-4" /> 덱
+            </TabButton>
+            <TabButton active={rightTab === "hand"} onClick={() => setRightTab("hand")}>
+              <Sparkles className="h-4 w-4" /> 샘플 핸드
+            </TabButton>
+          </div>
+
+          {rightTab === "deck" ? (
+            <div className="flex flex-col gap-3 p-3">
+              <ZoneSummary counts={counts} />
+              <DeckList
+                rd={rd}
+                issues={issues}
+                onChangeEntry={changeEntry}
+                onClearLegend={() => setDeck((d) => setLegend(d, null))}
+                onClearChampion={() => setDeck((d) => setChampion(d, null))}
+                onFocusPool={setPoolTab}
+              />
+              <div className="mt-1 grid grid-cols-2 gap-1.5 border-t border-line pt-3 sm:grid-cols-4">
+                <ActionButton onClick={() => setImportOpen(true)} icon={<Upload className="h-4 w-4" />}>
+                  가져오기
+                </ActionButton>
+                <ActionButton onClick={exportText} icon={<Download className="h-4 w-4" />}>
+                  내보내기
+                </ActionButton>
+                <ActionButton onClick={copyShareLink} icon={copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}>
+                  {copied ? "복사됨" : "공유"}
+                </ActionButton>
+                <ActionButton
+                  onClick={() => setDeck((d) => clearDeck(d))}
+                  icon={<Eraser className="h-4 w-4" />}
+                  danger
+                >
+                  비우기
+                </ActionButton>
+              </div>
+            </div>
+          ) : (
+            <div className="p-3">
+              <SampleHand mainEntries={rd.sections.main} deckName={deck.name} />
+            </div>
           )}
         </div>
-        <div className="flex items-center gap-1.5">
-          <button
-            type="button"
-            onClick={() => setHandOpen(true)}
-            disabled={main === 0}
-            className="btn-primary !py-2 !text-label-md disabled:opacity-40"
-          >
-            <Sparkles className="h-4 w-4" />
-            오프닝 핸드
-          </button>
-          <button
-            type="button"
-            onClick={copyShareLink}
-            className="btn-ghost !py-2 !text-label-md"
-            title="공유 링크 복사"
-          >
-            {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
-            {copied ? "복사됨" : "공유"}
-          </button>
-          <button
-            type="button"
-            onClick={() => setDeck((d) => clearDeck(d))}
-            disabled={deck.entries.length === 0}
-            className="grid h-9 w-9 place-items-center rounded-full border border-line text-ink-soft hover:text-error disabled:opacity-40"
-            title="덱 비우기"
-          >
-            <Trash2 className="h-4 w-4" />
-          </button>
-        </div>
       </div>
 
-      <div className="grid gap-4 lg:grid-cols-[1fr_minmax(320px,380px)]">
-        <CardPicker resolved={resolved} onAdd={handleAdd} onResults={registerCards} />
-        <DeckPanel resolved={resolved} issues={issues} onChange={handleAdd} />
-      </div>
-
-      {handOpen && (
-        <OpeningHandModal resolved={resolved} deckName={deck.name} onClose={() => setHandOpen(false)} />
+      {importOpen && (
+        <ImportDialog
+          current={deck}
+          onCache={registerCards}
+          onApply={applyImport}
+          onClose={() => setImportOpen(false)}
+        />
       )}
     </div>
+  );
+}
+
+function TabButton({
+  active,
+  onClick,
+  children,
+}: {
+  active: boolean;
+  onClick: () => void;
+  children: React.ReactNode;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={cn(
+        "flex flex-1 items-center justify-center gap-1.5 py-2.5 text-label-lg font-bold transition",
+        active
+          ? "border-b-2 border-primary text-primary-strong"
+          : "text-ink-soft hover:text-ink",
+      )}
+    >
+      {children}
+    </button>
+  );
+}
+
+function ZoneSummary({ counts }: { counts: ReturnType<typeof zoneCounts> }) {
+  const items: { key: string; label: string; n: number; target: string; ok: boolean }[] = [
+    { key: "legend", label: "레전드", n: counts.legend, target: "1", ok: counts.legend === 1 },
+    { key: "champion", label: "챔피언", n: counts.champion, target: "1", ok: counts.champion === 1 },
+    { key: "battlefield", label: "전장", n: counts.battlefield, target: "3", ok: counts.battlefield === 3 },
+    { key: "rune", label: "룬", n: counts.rune, target: "12", ok: counts.rune === 12 },
+    { key: "main", label: "메인덱", n: counts.main, target: "40+", ok: counts.main >= 40 },
+  ];
+  return (
+    <div className="flex flex-wrap gap-1.5">
+      {items.map((it) => (
+        <span
+          key={it.key}
+          className={cn(
+            "inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-label-sm",
+            it.ok ? "border-emerald/40 bg-emerald/10 text-emerald" : "border-line text-ink-soft",
+          )}
+        >
+          {it.label} <span className="font-bold">{it.n}/{it.target}</span>
+        </span>
+      ))}
+    </div>
+  );
+}
+
+function ActionButton({
+  onClick,
+  icon,
+  children,
+  danger,
+}: {
+  onClick: () => void;
+  icon: React.ReactNode;
+  children: React.ReactNode;
+  danger?: boolean;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={cn(
+        "inline-flex items-center justify-center gap-1.5 rounded-lg border border-line py-2 text-label-md font-semibold transition",
+        danger ? "text-ink-soft hover:border-error/40 hover:text-error" : "text-ink-soft hover:border-primary/40 hover:text-ink",
+      )}
+    >
+      {icon}
+      {children}
+    </button>
   );
 }

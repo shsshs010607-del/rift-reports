@@ -1,13 +1,13 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
-  // data/cards.json (OpenSourceCardService 폴백)을 서버리스 번들에 포함
+  // data/*.json (카드 스냅샷·한글 번역)을 서버리스 번들에 포함
   experimental: {
     outputFileTracingIncludes: {
-      "/cards": ["./data/cards.json"],
-      "/cards/[id]": ["./data/cards.json"],
-      "/api/cards": ["./data/cards.json"],
-      "/deck-simulator": ["./data/cards.json"],
+      "/cards": ["./data/cards.json", "./data/cards-ko.json"],
+      "/cards/[id]": ["./data/cards.json", "./data/cards-ko.json"],
+      "/api/cards": ["./data/cards.json", "./data/cards-ko.json"],
+      "/deck-simulator": ["./data/cards.json", "./data/cards-ko.json"],
     },
   },
   images: {
