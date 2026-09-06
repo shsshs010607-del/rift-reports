@@ -138,20 +138,28 @@ create table deck_cards (
 -- ============================================================================
 --  5. glossary_terms  — 룰 & 용어
 -- ============================================================================
+-- name_en = 공식 영문 canonical(안정). term = 표시용 한글명(is_official=false 면 임시 번역).
+-- Riot API 도입 시 term/is_official 을 일괄 업데이트한다(name_en 은 매칭 키).
 create table glossary_terms (
-  id            uuid primary key default gen_random_uuid(),
-  term          text not null unique,
-  reading       text,                            -- 발음/영문
-  category      text,                            -- '전투', '자원', '키워드' 등
-  definition    text not null,
-  related_terms text[] not null default '{}',
-  search_tsv    tsvector generated always as (
-                  to_tsvector('simple', coalesce(term,'') || ' ' || coalesce(reading,'') || ' ' || coalesce(definition,''))
-                ) stored,
-  created_at    timestamptz not null default now()
+  id              uuid primary key default gen_random_uuid(),
+  name_en         text not null unique,            -- 공식 영문명 (매칭/링크 키)
+  term            text not null,                   -- 표시용 한글명 (임시 가능)
+  is_official     boolean not null default false,  -- 한글명 공식 확정 여부
+  symbol          text,                            -- 카드 기호 예: '[M]'
+  category        text,                            -- '전투', '자원', '키워드' 등
+  definition      text not null,
+  related_terms   text[] not null default '{}',    -- name_en 값들
+  card_searchable boolean not null default false,  -- 카드 텍스트에 등장 → 카드 검색 연동
+  search_tsv      tsvector generated always as (
+                    to_tsvector('simple',
+                      coalesce(term,'') || ' ' || coalesce(name_en,'') || ' ' ||
+                      coalesce(symbol,'') || ' ' || coalesce(definition,''))
+                  ) stored,
+  created_at      timestamptz not null default now()
 );
 create index glossary_search_idx on glossary_terms using gin (search_tsv);
 create index glossary_term_trgm  on glossary_terms using gin (term gin_trgm_ops);
+create index glossary_en_trgm    on glossary_terms using gin (name_en gin_trgm_ops);
 
 -- ============================================================================
 --  6. posts + comments  — 커뮤니티 게시판

@@ -120,11 +120,14 @@ export interface Database {
       glossary_terms: {
         Row: {
           id: string;
+          name_en: string;
           term: string;
-          reading: string | null;
+          is_official: boolean;
+          symbol: string | null;
           category: string | null;
           definition: string;
           related_terms: string[];
+          card_searchable: boolean;
           created_at: string;
         };
         Insert: Omit<Database["public"]["Tables"]["glossary_terms"]["Row"], "id" | "created_at"> & {

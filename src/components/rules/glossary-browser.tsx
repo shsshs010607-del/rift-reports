@@ -1,8 +1,14 @@
 "use client";
 
+import Link from "next/link";
 import { useMemo, useState } from "react";
-import { Search } from "lucide-react";
-import { GLOSSARY, GLOSSARY_CATEGORIES, type GlossaryCategory } from "@/content/glossary";
+import { Search, Info, ExternalLink } from "lucide-react";
+import {
+  GLOSSARY,
+  GLOSSARY_CATEGORIES,
+  glossaryToCardHref,
+  type GlossaryCategory,
+} from "@/content/glossary";
 import { cn } from "@/lib/utils";
 
 function norm(s: string) {
@@ -20,7 +26,8 @@ export function GlossaryBrowser() {
       if (!q) return true;
       return (
         norm(t.term).includes(q) ||
-        norm(t.reading ?? "").includes(q) ||
+        norm(t.en).includes(q) ||
+        norm(t.symbol ?? "").includes(q) ||
         norm(t.definition).includes(q)
       );
     }).sort((a, b) => a.term.localeCompare(b.term, "ko"));
@@ -28,6 +35,13 @@ export function GlossaryBrowser() {
 
   return (
     <div>
+      {/* 임시 번역 안내 */}
+      <p className="mb-4 flex items-start gap-2 rounded-xl bg-amber/10 px-3.5 py-2.5 text-body-sm text-[#B45309]">
+        <Info className="mt-0.5 h-4 w-4 shrink-0" />
+        한글 용어명은 <b className="mx-0.5 font-semibold">임시 번역</b>입니다. Riot 공식 API/한글판이 나오면 공식
+        번역명으로 일괄 교체됩니다. 영문명(작은 글씨)이 정식 명칭입니다.
+      </p>
+
       <div className="sticky top-16 z-10 -mx-1 bg-canvas/90 px-1 py-3 backdrop-blur">
         <div className="relative">
           <Search className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-soft" />
@@ -35,7 +49,7 @@ export function GlossaryBrowser() {
             type="search"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="용어 검색 (예: 파워, Showdown, 점령)"
+            placeholder="용어 검색 — 한글·영문 모두 (예: 파워 / Power / Showdown)"
             className="field pl-10"
           />
         </div>
@@ -59,17 +73,32 @@ export function GlossaryBrowser() {
       <p className="mb-3 mt-1 text-body-sm text-ink-soft">{results.length}개 용어</p>
 
       <div className="grid gap-3 sm:grid-cols-2">
-        {results.map((t) => (
-          <article key={t.term} id={`term-${t.term}`} className="surface scroll-mt-40 p-4">
-            <div className="flex items-baseline justify-between gap-2">
-              <h3 className="font-display text-title-md text-ink">{t.term}</h3>
-              <span className="chip shrink-0">{t.category}</span>
-            </div>
-            {t.reading && <p className="text-body-sm text-ink-soft">{t.reading}</p>}
-            <p className="mt-2 text-body-md text-ink-soft">{t.definition}</p>
-            {t.related && t.related.length > 0 && (
-              <p className="mt-2.5 flex flex-wrap gap-1.5">
-                {t.related.map((r) => (
+        {results.map((t) => {
+          const provisional = !t.official && t.term !== t.en;
+          return (
+            <article key={t.en} id={`term-${t.en}`} className="surface scroll-mt-44 p-4">
+              <div className="flex items-baseline justify-between gap-2">
+                <div className="min-w-0">
+                  <h3 className="font-display text-title-md text-ink">
+                    {t.term}
+                    {provisional && (
+                      <span className="ml-1.5 align-middle rounded bg-amber/15 px-1 py-0.5 text-[10px] font-bold text-[#B45309]">
+                        임시
+                      </span>
+                    )}
+                  </h3>
+                  <p className="text-body-sm text-ink-soft">
+                    {t.en}
+                    {t.symbol && <span className="ml-1.5 font-mono text-primary-strong">{t.symbol}</span>}
+                  </p>
+                </div>
+                <span className="chip shrink-0">{t.category}</span>
+              </div>
+
+              <p className="mt-2 text-body-md text-ink-soft">{t.definition}</p>
+
+              <div className="mt-2.5 flex flex-wrap items-center gap-1.5">
+                {t.related?.map((r) => (
                   <button
                     key={r}
                     type="button"
@@ -82,10 +111,19 @@ export function GlossaryBrowser() {
                     #{r}
                   </button>
                 ))}
-              </p>
-            )}
-          </article>
-        ))}
+                {t.cardSearchable && (
+                  <Link
+                    href={glossaryToCardHref(t)}
+                    className="inline-flex items-center gap-1 rounded-full bg-primary-wash px-2 py-0.5 text-body-sm font-semibold text-primary-strong hover:bg-line"
+                  >
+                    카드에서 찾기
+                    <ExternalLink className="h-3 w-3" />
+                  </Link>
+                )}
+              </div>
+            </article>
+          );
+        })}
       </div>
 
       {results.length === 0 && (

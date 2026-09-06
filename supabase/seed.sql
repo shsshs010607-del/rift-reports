@@ -14,11 +14,13 @@ insert into decks (slug, name, archetype, tier, tier_rank, summary, champion_car
   ('garen-order', '가렌 질서',   'Midrange','A', 0, '광역 버프와 튼튼한 보드로 압박.',       array(select id from cards where code = 'OGN-014'))
 on conflict (slug) do nothing;
 
-insert into glossary_terms (term, reading, category, definition) values
-  ('룬', 'Rune', '자원', '매 턴 배치해 마나처럼 사용하는 자원 카드.'),
-  ('전장', 'Battlefield', '규칙', '점령 시 점수를 얻는 중립 목표 지점.'),
-  ('오버넘버드', 'Overnumbered', '레어도', '한 세트에 소량만 존재하는 최고 희귀도 등급.')
-on conflict (term) do nothing;
+-- 용어집은 src/content/glossary.ts 를 정식 소스로 쓰고, 아래 스크립트로 동기화한다:
+--   npx tsx scripts/sync-glossary.ts   (glossary.ts → glossary_terms upsert, name_en 기준)
+insert into glossary_terms (name_en, term, is_official, category, definition, card_searchable) values
+  ('Rune', '룬', false, '자원', '자원을 만드는 카드. 매 턴 2장 충전.', true),
+  ('Battlefield', '전장', false, '존', '점령 시 점수를 얻는 중립 목표 지점.', true),
+  ('Showdown', '결투', false, '전투', 'Action/Reaction 을 번갈아 쓰는 창구.', true)
+on conflict (name_en) do nothing;
 
 insert into tournaments (slug, name, format, status, starts_at, location, is_online, organizer) values
   ('rift-open-1', '리프트 오픈 #1', 'Swiss 5R + Top8', 'upcoming', now() + interval '10 days', '서울 강남', false, '리프트 리포트'),
