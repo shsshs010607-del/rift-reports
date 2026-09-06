@@ -43,6 +43,48 @@ export const POPULAR_POST = { days: 30, minLikes: 3 } as const;
 
 export const POSTS_PER_PAGE = 20;
 
+// ── 시세 (JustTCG) ──────────────────────────────────────
+export const PRICE = {
+  /** JustTCG 게임 식별자 (2026-09 확인). */
+  justtcgGame: "riftbound-league-of-legends-trading-card-game",
+  /**
+   * 동기화 대상 세트 (JustTCG set id). 무료 플랜은 페이지당 20장 제한이라
+   * 전체(11세트·1500장+)를 자주 돌리면 월 1,000콜을 넘긴다 → 주요 컨스트럭티드 세트만.
+   * 프로모/실드 제외. 신규 세트 나오면 여기 추가.
+   */
+  sets: [
+    "origins-riftbound-league-of-legends-trading-card-game",
+    "origins-proving-grounds-riftbound-league-of-legends-trading-card-game",
+    "spiritforged-riftbound-league-of-legends-trading-card-game",
+    "unleashed-riftbound-league-of-legends-trading-card-game",
+    "vendetta-riftbound-league-of-legends-trading-card-game",
+  ],
+  /** 무료 플랜 페이지 크기 제한. */
+  pageLimit: 20,
+  /** 우리 DB 스냅샷 보관 기간(일). */
+  historyDays: 90,
+  /** 갱신 주기 참고값(시간) — 실제 스케줄은 .github/workflows/sync-prices.yml.
+   *  ~1,250장 / 20 ≈ 63콜/회. 월 1,000콜 → 2일마다 (약 15회/월). */
+  refreshHours: 48,
+  /** "N시간 전 기준" 경고 임계값. */
+  staleHours: 60,
+} as const;
+
+export const CARD_CONDITIONS = [
+  { slug: "NM", label: "니어민트" },
+  { slug: "LP", label: "라이트플레이" },
+  { slug: "MP", label: "모더레이트플레이" },
+  { slug: "HP", label: "헤비플레이" },
+  { slug: "DM", label: "손상" },
+] as const;
+
+export const PRINT_LANGUAGES = [
+  { slug: "en", label: "영어" },
+  { slug: "ja", label: "일본어" },
+  { slug: "zh", label: "중국어" },
+  { slug: "ko", label: "한국어" },
+] as const;
+
 export const TRADING_CATEGORIES = [
   { slug: "sell", label: "팝니다" },
   { slug: "buy", label: "삽니다" },

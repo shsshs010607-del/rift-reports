@@ -1,0 +1,33 @@
+name: sync-prices
+
+# 시세 동기화 — JustTCG → Supabase. 서버 없이 GitHub Actions 로 실행.
+# 필요 secrets (repo Settings → Secrets and variables → Actions):
+#   JUSTTCG_API_KEY, SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY
+
+on:
+  schedule:
+    # 주요 세트 ~1,250장 / 20(무료 페이지 제한) ≈ 63콜/회.
+    # 무료 1,000콜/월 → 2일마다 (03:00 UTC). 유료 전환 시 더 자주.
+    - cron: "0 3 */2 * *"
+  workflow_dispatch: {} # 수동 실행 버튼
+
+concurrency:
+  group: sync-prices
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+      - run: npx tsx scripts/sync-prices.ts
+        env:
+          JUSTTCG_API_KEY: ${{ secrets.JUSTTCG_API_KEY }}
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}

@@ -28,6 +28,8 @@ alter table comments       enable row level security;
 alter table post_likes     enable row level security;
 alter table trade_listings enable row level security;
 alter table tournaments    enable row level security;
+alter table card_prints     enable row level security;
+alter table price_snapshots enable row level security;
 
 -- ─────────────────────────── profiles ──────────────────────────────────────
 create policy "프로필 공개 읽기"      on profiles for select using (true);
@@ -99,6 +101,13 @@ create policy "본인 거래글 삭제"      on trade_listings for delete
 -- ─────────────────────────── tournaments ───────────────────────────────────
 create policy "대회 공개 읽기"        on tournaments for select using (true);
 create policy "스태프 대회 쓰기"      on tournaments for all using (is_staff()) with check (is_staff());
+
+-- ─────────────────────────── card_prints / price_snapshots ─────────────────
+-- 시세 동기화는 service_role 키로 실행되어 RLS 를 우회한다. 읽기는 전체 공개.
+create policy "프린트 공개 읽기"      on card_prints for select using (true);
+create policy "스태프 프린트 쓰기"    on card_prints for all using (is_staff()) with check (is_staff());
+create policy "시세 공개 읽기"        on price_snapshots for select using (true);
+create policy "스태프 시세 쓰기"      on price_snapshots for all using (is_staff()) with check (is_staff());
 
 -- ============================================================================
 --  Storage 버킷 정책 (Dashboard 에서 버킷 생성 후 적용)

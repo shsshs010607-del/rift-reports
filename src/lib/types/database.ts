@@ -246,6 +246,73 @@ export interface Database {
         Update: Partial<Database["public"]["Tables"]["tournaments"]["Insert"]>;
         Relationships: [];
       };
+      card_prints: {
+        Row: {
+          id: string;
+          card_id: string | null;
+          group_id: string;
+          name: string;
+          name_en: string | null;
+          set_code: string | null;
+          number: string | null;
+          rarity: string | null;
+          art_variant: string | null;
+          language: string;
+          finish: string;
+          image_url: string | null;
+          justtcg_card_id: string | null;
+          tcgplayer_url: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: Omit<
+          Database["public"]["Tables"]["card_prints"]["Row"],
+          "id" | "card_id" | "art_variant" | "language" | "finish" | "created_at" | "updated_at"
+        > & {
+          id?: string;
+          card_id?: string | null;
+          art_variant?: string | null;
+          language?: string;
+          finish?: string;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: Partial<Database["public"]["Tables"]["card_prints"]["Insert"]>;
+        Relationships: [];
+      };
+      price_snapshots: {
+        Row: {
+          id: string;
+          print_id: string;
+          captured_at: string;
+          is_current: boolean;
+          is_headline: boolean;
+          condition: string;
+          printing: string;
+          market_price: number | null;
+          change_24h: number | null;
+          change_7d: number | null;
+          change_30d: number | null;
+          change_90d: number | null;
+          avg_price_30d: number | null;
+          min_price_90d: number | null;
+          max_price_90d: number | null;
+          history: { t: number; p: number }[];
+          currency: string;
+          tcgplayer_sku: string | null;
+        };
+        Insert: Omit<
+          Database["public"]["Tables"]["price_snapshots"]["Row"],
+          "id" | "captured_at" | "is_headline" | "history"
+        > & {
+          id?: string;
+          captured_at?: string;
+          is_headline?: boolean;
+          history?: { t: number; p: number }[];
+        };
+        Update: Partial<Database["public"]["Tables"]["price_snapshots"]["Insert"]>;
+        Relationships: [];
+      };
     };
     Views: { [_ in never]: never };
     Functions: {
@@ -278,3 +345,5 @@ export type Comment = Database["public"]["Tables"]["comments"]["Row"];
 export type TradeListing = Database["public"]["Tables"]["trade_listings"]["Row"];
 export type Tournament = Database["public"]["Tables"]["tournaments"]["Row"];
 export type Profile = Database["public"]["Tables"]["profiles"]["Row"];
+export type CardPrint = Database["public"]["Tables"]["card_prints"]["Row"];
+export type PriceSnapshot = Database["public"]["Tables"]["price_snapshots"]["Row"];

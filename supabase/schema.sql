@@ -289,3 +289,58 @@ begin
   end if;
   execute format('update %I set view_count = view_count + 1 where id = $1', table_name) using row_id;
 end $$;
+
+-- ============================================================================
+--  9. card_prints + price_snapshots  — 시세 (JustTCG 미러)
+--     card_prints  = 언어·일러스트·레어도별 프린트 1행
+--     price_snapshots = 프린트별 시세 스냅샷 (6시간마다 GitHub Actions 로 누적)
+-- ============================================================================
+create table card_prints (
+  id                 uuid primary key default gen_random_uuid(),
+  card_id            uuid references cards (id) on delete set null,  -- 카드 DB 연동 시
+  group_id           text not null,                 -- 같은 카드(이름) 묶음 키 — 다른 언어/일러스트 그룹핑
+  name               text not null,
+  name_en            text,
+  set_code           text,
+  number             text,                          -- 수집 번호 (alt-art 는 '123a' 식)
+  rarity             text,
+  art_variant        text,                          -- 일러스트 구분 (없으면 null)
+  language           text not null default 'en',    -- en | ja | zh | ko ...
+  finish             text not null default 'normal',-- normal | foil
+  image_url          text,
+  justtcg_card_id    text unique,                   -- 시세 매칭 키
+  tcgplayer_url      text,                          -- "거래 사이트로 이동" 링크
+  created_at         timestamptz not null default now(),
+  updated_at         timestamptz not null default now()
+);
+create index card_prints_group_idx on card_prints (group_id);
+create index card_prints_card_idx  on card_prints (card_id) where card_id is not null;
+create index card_prints_name_trgm on card_prints using gin (name gin_trgm_ops);
+create trigger card_prints_updated before update on card_prints for each row execute function set_updated_at();
+
+-- JustTCG 는 단일 블렌디드 시세(price)만 제공한다. 별도 매수/매도 호가는 없음.
+-- market_price = 시세(체결가 대용). 변형별(condition·printing) 로 여러 행.
+-- is_headline = 프린트 대표 시세(NM·Normal 우선) — Top5/목록에서 이 행만 사용.
+create table price_snapshots (
+  id             uuid primary key default gen_random_uuid(),
+  print_id       uuid not null references card_prints (id) on delete cascade,
+  captured_at    timestamptz not null default now(),
+  is_current     boolean not null default true,
+  is_headline    boolean not null default false,
+  condition      text not null default 'NM',      -- NM | LP | MP | HP | DM
+  printing       text not null default 'normal',  -- normal | foil
+  market_price   numeric(12,2),
+  change_24h     numeric(7,2),                    -- %
+  change_7d      numeric(7,2),                    -- % — 급등 Top5 기준
+  change_30d     numeric(7,2),                    -- %
+  change_90d     numeric(7,2),                    -- %
+  avg_price_30d  numeric(12,2),
+  min_price_90d  numeric(12,2),
+  max_price_90d  numeric(12,2),
+  history        jsonb not null default '[]',     -- [{t: unix, p: price}] — 스파크라인용 (JustTCG 제공 구간)
+  currency       text not null default 'USD',
+  tcgplayer_sku  text                             -- 변형별 딥링크용
+);
+create index price_current_mover_idx on price_snapshots (change_7d desc) where is_current and is_headline;
+create index price_current_idx       on price_snapshots (print_id) where is_current;
+create index price_history_idx       on price_snapshots (print_id, captured_at desc);
