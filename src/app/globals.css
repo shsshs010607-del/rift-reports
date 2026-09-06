@@ -1,0 +1,104 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/*
+ * Rift Report — "Tactile Neo-Arcade" 토큰 (DESIGN.md).
+ * 값은 "R G B" (공백 구분). Tailwind <alpha-value> 호환.
+ * 라이트 전용 시스템. 다크모드는 향후 별도 팔레트로 확장.
+ */
+:root {
+  --canvas: 245 243 255;      /* #F5F3FF */
+  --subcanvas: 238 242 255;   /* #EEF2FF */
+  --card: 255 255 255;        /* #FFFFFF */
+  --card-alt: 250 248 255;    /* #FAF8FF */
+  --line: 224 231 255;        /* #E0E7FF */
+  --ink: 30 27 75;            /* #1E1B4B */
+  --ink-soft: 70 69 84;       /* #464554 */
+
+  --primary: 99 102 241;      /* #6366F1 */
+  --primary-strong: 79 70 229;/* #4F46E5 */
+  --primary-wash: 238 242 255;/* #EEF2FF */
+
+  --amber: 245 158 11;        /* #F59E0B */
+  --emerald: 16 185 129;      /* #10B981 */
+  --coral: 244 63 94;         /* #F43F5E */
+
+  --tier-s: 245 158 11;       /* Amber  */
+  --tier-a: 14 165 233;       /* Sky    */
+  --tier-b: 16 185 129;       /* Emerald*/
+  --tier-c: 148 163 184;      /* Slate  */
+
+  /* --font-display, --font-sans 은 next/font 가 <html> 에 주입 (layout.tsx) */
+  color-scheme: light;
+}
+
+html {
+  @apply bg-canvas text-ink;
+}
+
+body {
+  @apply bg-canvas font-sans text-body-md text-ink antialiased;
+}
+
+h1, h2, h3, h4 {
+  @apply font-display text-ink;
+}
+
+::selection {
+  background: rgb(var(--primary) / 0.18);
+}
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgb(var(--line)) transparent;
+}
+*::-webkit-scrollbar { width: 10px; height: 10px; }
+*::-webkit-scrollbar-thumb { background: rgb(var(--line)); border-radius: 9999px; }
+
+@layer components {
+  /* Tier 1 표면 */
+  .surface {
+    @apply rounded-2xl border border-line/80 bg-card shadow-e1;
+  }
+  .surface-hover {
+    @apply transition duration-200 hover:-translate-y-0.5 hover:shadow-e2;
+  }
+
+  .section-title {
+    @apply font-display text-headline-sm text-ink;
+  }
+
+  /* 커뮤니티 태그 / 메타 칩 */
+  .chip {
+    @apply inline-flex items-center gap-1 rounded-full bg-primary-wash px-2.5 py-1 text-body-sm font-semibold text-primary-strong;
+  }
+
+  /* 티어 캡슐 */
+  .tier-badge {
+    @apply inline-flex items-center justify-center rounded-full border px-2.5 py-0.5 text-label-sm uppercase;
+  }
+  .tier-badge-s { @apply border-amber/40 bg-amber/10 text-[#B45309]; }
+  .tier-badge-a { @apply border-tier-a/40 bg-tier-a/10 text-[#0369A1]; }
+  .tier-badge-b { @apply border-emerald/40 bg-emerald/10 text-[#047857]; }
+  .tier-badge-c { @apply border-tier-c/40 bg-tier-c/10 text-ink-soft; }
+
+  /* 버튼 — 물리적 푸시 버튼 느낌 (bottom bevel) */
+  .btn {
+    @apply inline-flex select-none items-center justify-center gap-2 rounded-full px-5 py-2.5 text-label-lg transition active:translate-y-0.5 disabled:opacity-50;
+  }
+  .btn-primary {
+    @apply btn border-b-4 border-primary-strong bg-primary text-white hover:bg-primary/95 active:border-b-2;
+  }
+  .btn-ghost {
+    @apply btn bg-primary-wash text-primary-strong hover:bg-line;
+  }
+  .btn-loot {
+    @apply btn bg-gradient-to-r from-amber to-coral text-white shadow-glow-amber;
+  }
+
+  /* 입력 */
+  .field {
+    @apply w-full rounded-xl border-2 border-line bg-card px-3.5 py-2.5 text-body-md text-ink placeholder:text-ink-soft/60 focus:border-primary focus:outline-none focus:ring-4 focus:ring-primary/15;
+  }
+}
