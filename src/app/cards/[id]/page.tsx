@@ -4,6 +4,7 @@ import { ArrowLeft } from "lucide-react";
 
 import { PageHeading } from "@/components/ui/page-heading";
 import { LocalizedCard } from "@/components/cards/localized-card";
+import { CardText } from "@/components/cards/card-text";
 import { getCardService, CardServiceError } from "@/lib/services/cardService";
 import { resolveCardText } from "@/lib/types/card";
 import { CARD_DOMAINS, CARD_RARITIES, CARD_SETS, CARD_TYPES } from "@/lib/constants";
@@ -92,7 +93,11 @@ export default async function CardDetailPage({ params }: { params: { id: string 
             </span>
           </Row>
           {card.subtypes.length > 0 && <Row label="태그">{card.subtypes.join(", ")}</Row>}
-          {hasKo && <Row label="효과 (한국어)">{ko.text || "—"}</Row>}
+          {hasKo && (
+            <Row label="효과 (한국어)">
+              {ko.text ? <CardText text={ko.text} className="whitespace-pre-line" /> : "—"}
+            </Row>
+          )}
           <Row label={hasKo ? "효과 (영문)" : "효과"}>
             {en.text || "—"}
             {!hasKo && (

@@ -4,7 +4,7 @@ import { NAV_ITEMS, SITE } from "@/lib/constants";
 import { LogoMark } from "@/components/ui/logo";
 
 const TOOLS = [
-  { href: "/tiers", label: "덱 티어리스트" },
+  { href: "/", label: "덱 티어리스트" },
   { href: "/cards", label: "카드 정보" },
   { href: "/rules", label: "룰 & 용어" },
   { href: "/trading", label: "카드 시세" },

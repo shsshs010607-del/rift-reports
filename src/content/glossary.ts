@@ -362,101 +362,149 @@ export const GLOSSARY: GlossaryTerm[] = [
   },
 
   // ── 키워드 ────────────────────────────────────────────
+  // 한글명(term)은 한국어판 카드에 인쇄된 표기. 카드 효과 텍스트의 [대괄호] 용어와 일치한다.
   {
-    term: "Action",
+    term: "행동",
     en: "Action",
-    official: true,
+    symbol: "[행동]",
     category: "키워드",
     definition:
-      "개방 상태뿐 아니라 결투 중 개방 상태에서도 플레이할 수 있는 주문.",
-    related: ["Reaction", "Showdown"],
+      "내 턴 또는 결투(showdown) 중에 플레이할 수 있는 주문. 표기가 없는 주문은 내 주요 단계에만 낼 수 있다.",
+    related: ["반응", "Showdown"],
     cardSearchable: true,
   },
   {
-    term: "Reaction",
+    term: "반응",
     en: "Reaction",
-    official: true,
+    symbol: "[반응]",
     category: "키워드",
     definition:
-      "Action의 모든 조건에 더해, 폐쇄 상태(체인이 있을 때)에서도 플레이 가능. 체인 위 기존 항목보다 먼저 해결된다.",
-    related: ["Action", "Chain"],
+      "행동의 모든 조건에 더해, 체인이 있을 때(폐쇄 상태)에도 플레이 가능. 체인 위 기존 항목보다 먼저 해결된다.",
+    related: ["행동", "Chain"],
     cardSearchable: true,
   },
   {
-    term: "Hidden",
+    term: "숨겨짐",
     en: "Hidden",
-    official: true,
+    symbol: "[숨겨짐]",
     category: "키워드",
     definition:
-      "정상 비용 대신 [A]를 내고, 내가 조종 중인 전장에 카드를 뒷면으로 숨긴다. 숨긴 턴에는 플레이 불가. 이후 Reaction 시점에 플레이 가능. 유닛은 그 전장에 등장해야 한다.",
-    related: ["Facedown Zone", "Reaction"],
+      "정상 비용 대신 이 표기의 비용을 내고, 내가 통제하는 전장에 카드를 뒷면으로 숨긴다. 숨긴 턴에는 플레이 불가, 이후 반응 시점에 공개하며 플레이한다. 유닛은 그 전장에 등장한다.",
+    related: ["Facedown Zone", "반응"],
     cardSearchable: true,
   },
   {
-    term: "Ganking",
+    term: "개입",
     en: "Ganking",
-    official: true,
+    symbol: "[개입]",
     category: "키워드",
     definition:
-      "기본 이동의 추가 방식. 보통은 베이스↔전장만 되지만, Ganking이 있으면 전장↔전장 이동도 가능. 추가 이동 횟수를 주는 건 아니다.",
+      "이 유닛은 전장에서 전장으로도 이동할 수 있다(기본 이동은 베이스↔전장만 가능). 추가 이동 횟수를 주는 건 아니다.",
     related: ["Move"],
     cardSearchable: true,
   },
   {
-    term: "Deathknell",
+    term: "죽음의 종소리",
     en: "Deathknell",
-    official: true,
+    symbol: "[죽음의 종소리]",
     category: "키워드",
     definition:
-      "유닛이 처치될 때 스스로의 죽음을 '보고' 발동하는 능력. 정리 단계에서 데미지 회복 전에 트리거가 기록된다.",
+      "이 유닛이 처치될 때 발동하는 능력. 정리 단계에서 데미지 회복 전에 트리거가 기록된다.",
     related: ["Kill"],
     cardSearchable: true,
   },
   {
-    term: "Legion",
+    term: "군단",
     en: "Legion",
-    official: true,
+    symbol: "[군단]",
     category: "키워드",
     definition:
-      "이번 턴에 카드를 (다른) 1장 플레이했으면 추가 효과를 얻는다. 토큰 플레이·능력 사용은 카드 플레이가 아니라 켜지 않는다.",
+      "이번 턴에 (이 카드 외에) 카드를 1장 이상 플레이했으면 추가 효과를 얻는다. 토큰 플레이·능력 사용은 카드 플레이가 아니라 켜지 않는다.",
     related: ["Token"],
     cardSearchable: true,
   },
   {
-    term: "Mighty",
+    term: "위력적",
     en: "Mighty",
-    official: true,
+    symbol: "[위력적]",
     category: "키워드",
-    definition:
-      "Might가 5 이상인 유닛은 'Mighty'로 취급된다. 별도 키워드 표기 없이 조건만 충족하면 된다.",
+    definition: "위력이 5 이상인 유닛은 '위력적'으로 취급된다. 별도 표기 없이 조건만 충족하면 된다.",
     related: ["Might"],
     cardSearchable: true,
   },
   {
-    term: "Vision",
+    term: "통찰",
     en: "Vision",
-    official: true,
+    symbol: "[통찰]",
     category: "키워드",
-    definition: "메인 덱 맨 위 카드를 보고, 원한다면 재활용할 수 있는 능력.",
+    definition: "메인 덱 맨 위 카드를 보고, 원한다면 재활용할 수 있다.",
     related: ["Recycle"],
     cardSearchable: true,
   },
   {
-    term: "Deflect",
+    term: "굴절",
     en: "Deflect",
-    official: true,
+    symbol: "[굴절]",
     category: "키워드",
     definition:
-      "특정 트리거를 체인에 올릴 때 지불하는 추가 비용. 예: Falling Star, Icathian Rain 의 반사 트리거.",
+      "상대가 주문으로 이 유닛을 대상으로 지정하려면 룬 1개를 추가로 지불해야 한다. [굴절 N] 이면 N개.",
     cardSearchable: true,
   },
   {
-    term: "Bonus Damage",
-    en: "Bonus Damage",
-    official: true,
+    term: "보호막",
+    en: "Shield",
+    symbol: "[보호막 N]",
     category: "키워드",
     definition:
-      "스펠·능력이 주는 각 데미지 인스턴스를 지정된 값만큼 증가시킨다. 예: Void Gate, Ravenborn Tome.",
+      "이 카드가 방어자일 때 위력이 +N 된다. 예: [보호막 2] → 방어 시 위력 +2.",
+    related: ["위력적", "Combat"],
+    cardSearchable: true,
+  },
+  {
+    term: "맹공",
+    en: "Assault",
+    symbol: "[맹공 N]",
+    category: "키워드",
+    definition:
+      "이 카드가 공격자일 때 위력이 +N 된다. 예: [맹공 2] → 공격 시 위력 +2.",
+    related: ["보호막", "Combat"],
+    cardSearchable: true,
+  },
+  {
+    term: "탱커",
+    en: "Tank",
+    symbol: "[탱커]",
+    category: "키워드",
+    definition:
+      "이 유닛이 있는 전장에서 아군 유닛이 받을 전투 데미지를 이 유닛이 대신 받는다.",
+    related: ["Damage", "보호막"],
+    cardSearchable: true,
+  },
+  {
+    term: "추가",
+    en: "Add",
+    symbol: "[추가]",
+    category: "키워드",
+    definition:
+      "지정한 룬(자원)을 내 룬 풀에 넣는다. `[추가] :rb_rune_X:` 형태로 표기. 자원을 추가하는 능력에는 반응할 수 없다.",
+    related: ["Rune Pool", "Channel"],
+    cardSearchable: true,
+  },
+  {
+    term: "일시적",
+    en: "Temporary",
+    symbol: "[일시적]",
+    category: "키워드",
+    definition: "이 카드는 이번 라운드가 끝나면 처치된다(트래시로 간다).",
+    related: ["Token", "Trash"],
+    cardSearchable: true,
+  },
+  {
+    term: "보너스 데미지",
+    en: "Bonus Damage",
+    symbol: "[보너스 데미지]",
+    category: "키워드",
+    definition: "주문·능력이 주는 각 데미지 인스턴스를 지정된 값만큼 증가시킨다.",
     related: ["Damage"],
     cardSearchable: true,
   },
@@ -536,15 +584,24 @@ export const GLOSSARY_CATEGORIES: GlossaryCategory[] = [
 // ────────────────────────────────────────────────────────
 
 function norm(s: string) {
-  return s.toLowerCase().replace(/\s+/g, "");
+  return s.toLowerCase().replace(/[\s[\]]+/g, "").replace(/\d+$/, "");
 }
 
 /** 카드 검색어가 용어집에 해당하면 그 용어들을 반환 (카드 페이지에서 "용어: XXX" 힌트로 노출). */
 export function findGlossaryMatches(query: string): GlossaryTerm[] {
   const q = norm(query);
   if (q.length < 2) return [];
-  return GLOSSARY.filter(
-    (t) => norm(t.term) === q || norm(t.en) === q || norm(t.term).includes(q) || norm(t.en).includes(q),
+  return GLOSSARY.filter((t) => {
+    const keys = [t.term, t.en, t.symbol ?? ""].map(norm).filter(Boolean);
+    return keys.some((k) => k === q || k.includes(q) || q.includes(k));
+  });
+}
+
+/** 카드 효과 텍스트에서 쓰이는 `[대괄호]` 용어 → 용어집 항목. (텍스트 렌더 시 링크용) */
+export function glossaryByBracket(bracket: string): GlossaryTerm | undefined {
+  const key = norm(bracket);
+  return GLOSSARY.find((t) =>
+    [t.term, t.en, t.symbol ?? ""].some((s) => s && norm(s) === key),
   );
 }
 

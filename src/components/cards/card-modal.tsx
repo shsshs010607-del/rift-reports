@@ -8,6 +8,7 @@ import type { Card } from "@/lib/types/card";
 import { resolveCardText } from "@/lib/types/card";
 import { CARD_DOMAINS, CARD_RARITIES, CARD_SETS, CARD_TREATMENTS, CARD_TYPES } from "@/lib/constants";
 import { LocalizedCard } from "@/components/cards/localized-card";
+import { CardText } from "@/components/cards/card-text";
 import { cn } from "@/lib/utils";
 
 const DOMAIN_BY_SLUG = new Map(CARD_DOMAINS.map((d) => [d.slug, d]));
@@ -147,9 +148,10 @@ export function CardModal({ card, onClose }: { card: Card; onClose: () => void }
           </dl>
 
           {t.text && (
-            <p className="whitespace-pre-line rounded-xl bg-subcanvas/60 p-3 text-body-sm leading-relaxed text-ink">
-              {t.text}
-            </p>
+            <CardText
+              text={t.text}
+              className="whitespace-pre-line rounded-xl bg-subcanvas/60 p-3 text-body-sm leading-relaxed text-ink"
+            />
           )}
           {!hasKo && (
             <p className="text-label-sm text-ink-soft/70">한국어 번역 준비 중입니다.</p>

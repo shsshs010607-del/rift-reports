@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { Suspense } from "react";
 
 import { PatchBanner } from "@/components/home/patch-banner";
@@ -17,17 +16,9 @@ export default function HomePage() {
     <div className="flex flex-col gap-8">
       <PatchBanner />
 
-      <div className="flex items-baseline justify-between">
-        <div>
-          <h1 className="font-display text-headline-lg text-ink">덱 티어리스트</h1>
-          <p className="mt-1 text-body-lg text-ink-soft">현재 메타 기준 · 덱을 누르면 공략으로 이동</p>
-        </div>
-        <Link
-          href="/tiers"
-          className="hidden text-label-md font-semibold text-primary-strong hover:underline sm:inline"
-        >
-          티어 표 전체 보기
-        </Link>
+      <div>
+        <h1 className="font-display text-headline-lg text-ink">덱 티어리스트</h1>
+        <p className="mt-1 text-body-lg text-ink-soft">현재 메타 기준 · 덱을 누르면 공략으로 이동</p>
       </div>
 
       <div className="grid gap-8 xl:grid-cols-[minmax(0,1fr)_340px]">

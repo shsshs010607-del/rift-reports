@@ -6,8 +6,7 @@ export const SITE = {
 } as const;
 
 export const NAV_ITEMS = [
-  { href: "/", label: "홈" },
-  { href: "/tiers", label: "덱 티어리스트" },
+  { href: "/", label: "덱 티어리스트" },
   { href: "/cards", label: "카드 정보" },
   { href: "/deck-simulator", label: "덱 시뮬레이터" },
   { href: "/rules", label: "룰 & 용어" },
