@@ -60,11 +60,6 @@ export default async function CardDetailPage({ params }: { params: { id: string 
       <div className="grid gap-6 sm:grid-cols-[minmax(0,260px)_1fr]">
         <div>
           <LocalizedCard card={card} sizes="(max-width: 640px) 90vw, 260px" priority />
-          {hasKo && card.orientation === "portrait" && (
-            <p className="mt-1.5 text-label-sm text-ink-soft">
-              공식 영문 카드에 리프트나루 한글 번역을 얹은 이미지입니다.
-            </p>
-          )}
         </div>
 
         <dl className="flex flex-col gap-3 text-body-sm">

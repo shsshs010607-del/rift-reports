@@ -161,12 +161,25 @@ export const DECK_RULES = {
   mulliganMax: 2,
 } as const;
 
+/**
+ * 게임상 레어도 (필터용). 원형(기본) 인쇄판 기준.
+ * 오버넘버드 · 프로모 · 쇼케이스는 별도 필터가 아니라 "변형 인쇄판(printing)"으로 취급 —
+ * 기본 카드를 눌러 모달에서 비교한다. (CardPrinting.treatment)
+ */
 export const CARD_RARITIES = [
   { slug: "common", label: "커먼" },
   { slug: "uncommon", label: "언커먼" },
   { slug: "rare", label: "레어" },
   { slug: "epic", label: "에픽" },
-  { slug: "overnumbered", label: "오버넘버드" },
-  { slug: "promo", label: "프로모" },
-  { slug: "showcase", label: "쇼케이스" },
 ] as const;
+
+/** 변형 인쇄판 표기 (모달 비교용 라벨). */
+export const CARD_TREATMENTS = {
+  base: "기본",
+  alt_art: "얼터네이트 아트",
+  showcase: "쇼케이스",
+  signature: "시그니처",
+  overnumbered: "오버넘버드",
+  promo: "프로모",
+} as const;
+export type CardTreatment = keyof typeof CARD_TREATMENTS;

@@ -32,7 +32,7 @@ interface RiftcodexCard {
   media?: { image_url?: string; artist?: string };
   tags?: string[];
   orientation?: string;
-  metadata?: { overnumbered?: boolean; signature?: boolean };
+  metadata?: { overnumbered?: boolean; signature?: boolean; alternate_art?: boolean };
 }
 
 /** mapRiftcodexCard 가 읽는 필드만 남겨 용량을 줄인다. */
@@ -50,7 +50,11 @@ function slim(c: RiftcodexCard) {
     media: { image_url: c.media?.image_url, artist: c.media?.artist },
     tags: c.tags,
     orientation: c.orientation,
-    metadata: { overnumbered: c.metadata?.overnumbered, signature: c.metadata?.signature },
+    metadata: {
+      overnumbered: c.metadata?.overnumbered,
+      signature: c.metadata?.signature,
+      alternate_art: c.metadata?.alternate_art,
+    },
   };
 }
 

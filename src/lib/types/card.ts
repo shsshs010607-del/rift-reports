@@ -54,11 +54,30 @@ export interface CardLocalizedText {
 /**
  * 로케일별 원문 모음.
  * - `en` 은 항상 존재한다(공식 영문 canonical — 안정적). 카드 거래소 등 영문이 필요한 곳은 이걸 쓴다.
- * - `ko` 는 한글 번역이 있는 카드만 채워진다(리프트나루 데이터 기준). 없으면 en 으로 폴백.
+ * - `ko` 는 한글 번역이 있는 카드만 채워진다. 없으면 en 으로 폴백.
  */
 export interface CardLocalization {
   en: CardLocalizedText;
   ko?: CardLocalizedText;
+}
+
+// ── 인쇄판(변형) ────────────────────────────────────────────────
+
+/**
+ * 한 카드의 인쇄판(printing). 게임 효과는 같고 아트·레어도·트리트먼트만 다르다.
+ * 기본(원형) 1개 + 얼터아트/쇼케이스/시그니처/오버넘버드/프로모 등.
+ */
+export interface CardPrinting {
+  /** 이 인쇄판의 원본 id (Riftcodex). */
+  id: string;
+  /** 트리트먼트 슬러그 (constants.CARD_TREATMENTS 키). */
+  treatment: "base" | "alt_art" | "showcase" | "signature" | "overnumbered" | "promo";
+  /** 원본이 붙인 레어도 라벨 (Showcase/Promo 포함 가능). */
+  rarity: string;
+  collectorNumber: string | null;
+  /** 이 인쇄판의 영문 이미지. */
+  imageUrl: string | null;
+  isBase: boolean;
 }
 
 // ── 카드 본체 ────────────────────────────────────────────────────
@@ -96,10 +115,16 @@ export interface Card {
   domains: CardDomain[];
   rarity: CardRarity;
 
-  /** 카드 아트 URL. 소스가 이미지를 안 주면 null. */
+  /** 카드 아트 URL (기본 인쇄판·영문). 소스가 이미지를 안 주면 null. */
   imageUrl: string | null;
   /** 일러스트레이터. 모르면 null. */
   artist: string | null;
+
+  /**
+   * 이 카드의 모든 인쇄판 (기본 + 변형). 최소 1개(기본).
+   * 변형(얼터아트·쇼케이스·시그니처·오버넘버드·프로모)은 별도 카드가 아니라 여기 담긴다.
+   */
+  printings: CardPrinting[];
 
   /** 로케일별 원문(위 설명 참고). */
   localization: CardLocalization;

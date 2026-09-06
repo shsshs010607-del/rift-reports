@@ -28,10 +28,11 @@ interface RnItem {
 
 const hangul = /[가-힣]/;
 
-/** "카드명. 룰텍스트" 에서 앞의 카드명 부분을 떼고 룰텍스트만. */
+/** "카드명. 룰텍스트" 에서 앞의 카드명 부분을 떼고 룰텍스트만.
+ *  주의: `:` 는 심볼 코드(:rb_*:)의 시작이라 벗겨내지 않는다. */
 function stripLeadName(text: string, name: string): string {
   const t = (text ?? "").trim();
-  if (name && t.startsWith(name)) return t.slice(name.length).replace(/^[.·:\s]+/, "").trim();
+  if (name && t.startsWith(name)) return t.slice(name.length).replace(/^[.·\s]+/, "").trim();
   return t;
 }
 

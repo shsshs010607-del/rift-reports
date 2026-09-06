@@ -7,7 +7,7 @@ const DOMAIN_COLOR = new Map(CARD_DOMAINS.map((d) => [d.slug, d.color]));
 
 /**
  * 세로(portrait) 리프트바운드 카드 프레임 기준 영역 — 카드 높이/너비 대비 %.
- * 리프트나루 한글판 이미지의 텍스트 위치를 참고해 잡았다. 카드마다 미세하게 다를 수 있음.
+ * 한글판 인쇄 이미지의 텍스트 위치를 참고해 잡았다. 카드마다 미세하게 다를 수 있음.
  */
 const FRAME = {
   name: { top: "57.2%", height: "9.2%", insetL: "8.5%", insetR: "6%" },
@@ -16,23 +16,36 @@ const FRAME = {
 
 /**
  * 고화질 영문 공식 이미지 위에 한글 번역(이름·룰텍스트)을 얹어 "한글 번역 카드"를 렌더.
- * - 번역이 없거나 가로(landscape) 카드면 영문 이미지를 그대로 보여준다.
+ * - `locale="en"` 또는 번역 없음 또는 가로(landscape) 카드면 영문 이미지를 그대로.
+ * - `printingId` 로 특정 변형 인쇄판의 이미지를 지정 (모달 비교용). 변형이면 한글 오버레이 없이 원본 아트.
  * - 컨테이너 폭에 맞춰 폰트가 스케일된다(container query). 부모가 크기를 정한다.
  */
 export function LocalizedCard({
   card,
+  locale = "ko",
+  printingId,
   className,
   sizes = "320px",
   priority,
 }: {
   card: Card;
+  locale?: "ko" | "en";
+  printingId?: string;
   className?: string;
   sizes?: string;
   priority?: boolean;
 }) {
-  const img = card.localization.en.imageUrl ?? card.imageUrl;
+  const printing = printingId
+    ? card.printings.find((p) => p.id === printingId)
+    : card.printings.find((p) => p.isBase) ?? card.printings[0];
+  const isBasePrinting = printing?.isBase ?? true;
+
+  const img = printing?.imageUrl ?? card.localization.en.imageUrl ?? card.imageUrl;
   const ko = card.localization.ko;
-  const showOverlay = Boolean(ko && card.orientation === "portrait" && img);
+  // 한글 오버레이는 "기본 인쇄판 + 한글 로케일 + 번역 있음 + 세로" 일 때만
+  const showOverlay = Boolean(
+    isBasePrinting && locale === "ko" && ko && card.orientation === "portrait" && img,
+  );
 
   const banner =
     card.domains.length === 0
@@ -65,7 +78,6 @@ export function LocalizedCard({
 
       {showOverlay && ko && (
         <>
-          {/* 이름 배너 */}
           <div
             className="absolute flex items-center"
             style={{
@@ -85,7 +97,6 @@ export function LocalizedCard({
             </span>
           </div>
 
-          {/* 룰 텍스트 상자 */}
           <div
             className="absolute overflow-hidden"
             style={{

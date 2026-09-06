@@ -1,67 +1,61 @@
 import Link from "next/link";
-import { Sparkles, LayoutGrid, BookOpen } from "lucide-react";
-import {
-  getLatestReports,
-  getTierSummary,
-  getRecentTrades,
-  getUpcomingTournaments,
-} from "@/lib/queries";
-import { ReportHighlights } from "@/components/home/report-highlights";
-import { TierSummary } from "@/components/home/tier-summary";
-import { TradingPreview } from "@/components/home/trading-preview";
-import { TournamentPreview } from "@/components/home/tournament-preview";
-import { SITE } from "@/lib/constants";
+import { Suspense } from "react";
 
-export const revalidate = 60; // 홈은 60초 ISR
+import { PatchBanner } from "@/components/home/patch-banner";
+import { HomeSidebar } from "@/components/home/home-sidebar";
+import { SnsChannels } from "@/components/home/sns-channels";
+import { TierBoard } from "@/components/tiers/tier-board";
 
-export default async function HomePage() {
-  const [reports, decks, trades, tournaments] = await Promise.all([
-    getLatestReports(4),
-    getTierSummary(),
-    getRecentTrades(4),
-    getUpcomingTournaments(3),
-  ]);
+export const revalidate = 60;
 
+/**
+ * 홈 = 덱 티어리스트 대시보드.
+ * 좌: 티어 보드(임시 — 레전드 카드), 우: 리포트/인기글/시세/대회 사이드바.
+ */
+export default function HomePage() {
   return (
-    <div className="flex flex-col gap-12">
-      {/* ── Hero ─────────────────────────────────────────── */}
-      <section className="relative overflow-hidden rounded-2xl border border-line/80 bg-gradient-to-br from-primary-wash via-card to-card-alt p-8 shadow-e1 lg:p-12">
-        <div className="pointer-events-none absolute -right-16 -top-16 h-64 w-64 rounded-full bg-primary/10 blur-3xl" />
-        <div className="pointer-events-none absolute -bottom-20 left-1/3 h-56 w-56 rounded-full bg-amber/10 blur-3xl" />
-        <div className="relative max-w-2xl">
-          <span className="chip">
-            <Sparkles className="h-3.5 w-3.5" />
-            리프트바운드 메타 리포트
-          </span>
-          <h1 className="mt-4 font-display text-headline-lg text-ink lg:text-display-hero">
-            {SITE.name}에서 이번 주 메타를 읽다
-          </h1>
-          <p className="mt-3 text-body-lg text-ink-soft">
-            티어리스트, 카드 DB, 룰 가이드, 커뮤니티와 카드 거래까지 —{" "}
-            리프트바운드 플레이에 필요한 모든 정보를 한 곳에서.
-          </p>
-          <div className="mt-6 flex flex-wrap gap-3">
-            <Link href="/tiers" className="btn-primary">
-              <LayoutGrid className="h-4 w-4" />
-              덱 티어리스트 보기
-            </Link>
-            <Link href="/rules" className="btn-ghost">
-              <BookOpen className="h-4 w-4" />
-              초보자 가이드
-            </Link>
-          </div>
+    <div className="flex flex-col gap-8">
+      <PatchBanner />
+
+      <div className="flex items-baseline justify-between">
+        <div>
+          <h1 className="font-display text-headline-lg text-ink">덱 티어리스트</h1>
+          <p className="mt-1 text-body-lg text-ink-soft">현재 메타 기준 · 덱을 누르면 공략으로 이동</p>
         </div>
-      </section>
-
-      {/* ── 대시보드 그리드 ──────────────────────────────── */}
-      <ReportHighlights reports={reports} />
-
-      <TierSummary decks={decks} />
-
-      <div className="grid gap-12 xl:grid-cols-2">
-        <TradingPreview trades={trades} />
-        <TournamentPreview tournaments={tournaments} />
+        <Link
+          href="/tiers"
+          className="hidden text-label-md font-semibold text-primary-strong hover:underline sm:inline"
+        >
+          티어 표 전체 보기
+        </Link>
       </div>
+
+      <div className="grid gap-8 xl:grid-cols-[minmax(0,1fr)_340px]">
+        <Suspense fallback={<BoardSkeleton />}>
+          <TierBoard />
+        </Suspense>
+        <Suspense fallback={<div className="h-96 animate-pulse rounded-2xl bg-subcanvas/50" />}>
+          <HomeSidebar />
+        </Suspense>
+      </div>
+
+      <SnsChannels />
+
+      <p className="rounded-2xl border border-line bg-subcanvas/40 p-4 text-body-sm leading-relaxed text-ink-soft">
+        <strong className="text-ink">[비공식 팬 사이트]</strong> 리프트 리포트는 TCG
+        &lsquo;리프트바운드(Riftbound)&rsquo; 팬과 플레이어를 위한 비공식 커뮤니티입니다. Riftbound /
+        League of Legends 관련 자산의 저작권은 Riot Games 에 있습니다.
+      </p>
+    </div>
+  );
+}
+
+function BoardSkeleton() {
+  return (
+    <div className="flex flex-col gap-3">
+      {Array.from({ length: 4 }).map((_, i) => (
+        <div key={i} className="h-56 animate-pulse rounded-2xl bg-subcanvas/50" />
+      ))}
     </div>
   );
 }

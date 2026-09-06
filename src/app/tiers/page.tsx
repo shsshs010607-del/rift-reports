@@ -1,5 +1,8 @@
 import type { Metadata } from "next";
-import { PageHeading, ComingSoon } from "@/components/ui/page-heading";
+import { Suspense } from "react";
+
+import { PageHeading } from "@/components/ui/page-heading";
+import { TierBoard } from "@/components/tiers/tier-board";
 
 export const metadata: Metadata = { title: "덱 티어리스트" };
 
@@ -8,9 +11,19 @@ export default function TiersPage() {
     <div>
       <PageHeading
         title="덱 티어리스트"
-        description="티어별 덱 목록 · 대표 챔피언 아이콘 · 상세 덱리스트"
+        description="티어별 덱 · 대표 레전드 · 덱을 누르면 공략 게시판으로 이동"
       />
-      <ComingSoon note="티어 보드(S/A/B/C 행), 덱 카드, /tiers/[slug] 상세 덱리스트 페이지가 이 자리에 들어갑니다. 데이터: decks / deck_cards 테이블." />
+      <Suspense
+        fallback={
+          <div className="flex flex-col gap-3">
+            {Array.from({ length: 4 }).map((_, i) => (
+              <div key={i} className="h-56 animate-pulse rounded-2xl bg-subcanvas/50" />
+            ))}
+          </div>
+        }
+      >
+        <TierBoard />
+      </Suspense>
     </div>
   );
 }

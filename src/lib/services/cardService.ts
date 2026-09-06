@@ -7,6 +7,7 @@ import {
   type Card,
   type CardDataSource,
   type CardDomain,
+  type CardPrinting,
   type CardRarity,
   type CardSearchQuery,
   type CardType,
@@ -128,8 +129,7 @@ function normalizeType(type: string | undefined, supertype: string | undefined):
   return CARD_TYPE_SLUGS.find((slug) => s.includes(slug)) ?? "unit";
 }
 
-function normalizeRarity(rarity: string | undefined, overnumbered: boolean): CardRarity {
-  if (overnumbered) return "overnumbered";
+function normalizeRarity(rarity: string | undefined): CardRarity {
   const s = (rarity ?? "").toLowerCase().trim();
   return CARD_RARITY_SLUGS.find((slug) => s === slug) ?? (s || "common");
 }
@@ -210,7 +210,12 @@ interface RiftcodexCard {
   media?: { image_url?: string; artist?: string; accessibility_text?: string };
   tags?: string[];
   orientation?: string;
-  metadata?: { clean_name?: string | null; overnumbered?: boolean; signature?: boolean };
+  metadata?: {
+    clean_name?: string | null;
+    overnumbered?: boolean;
+    signature?: boolean;
+    alternate_art?: boolean;
+  };
 }
 
 interface RiftcodexPage {
@@ -285,20 +290,37 @@ function cleanText(plain: string | undefined | null, locale: "ko" | "en" = "en")
   return humanizeSymbols(t, locale);
 }
 
+/** 이 인쇄판이 어떤 트리트먼트인지. */
+function treatmentOf(raw: RiftcodexCard): CardPrinting["treatment"] {
+  const m = raw.metadata ?? {};
+  const rar = (raw.classification?.rarity ?? "").toLowerCase();
+  if (m.signature) return "signature";
+  if (m.overnumbered) return "overnumbered";
+  if (rar === "promo") return "promo";
+  if (m.alternate_art) return "alt_art";
+  if (rar === "showcase") return "showcase";
+  return "base";
+}
+
+function toPrinting(raw: RiftcodexCard): CardPrinting {
+  const t = treatmentOf(raw);
+  return {
+    id: raw.id,
+    treatment: t,
+    rarity: (raw.classification?.rarity ?? "").toLowerCase() || "common",
+    collectorNumber: raw.collector_number != null ? String(raw.collector_number) : null,
+    imageUrl: raw.media?.image_url ?? null,
+    isBase: t === "base",
+  };
+}
+
 /**
- * Riftcodex 카드 → 앱 도메인 모델.
- * ─ 매핑 규칙 ─
- *   cost      = attributes.energy
- *   power     = attributes.might (Riftbound 유닛의 전투 스탯. Riftbound 엔 별도 방어 스탯 없음 → toughness null)
- *   type      = supertype "Champion" 이면 "champion", 아니면 classification.type
- *   rarity    = metadata.overnumbered 면 "overnumbered", 아니면 classification.rarity(소문자)
- *   domains   = classification.domain (Colorless 는 무색 → 빈 배열)
- *   localization.ko = 리프트나루 번역 맵에서 영문명으로 조회 (없으면 en 만)
+ * Riftcodex 카드(인쇄판 1건) → 앱 도메인 모델.
+ * 이 단계에서는 인쇄판 하나만 담긴다. `groupCards()` 가 같은 카드의 인쇄판들을 묶는다.
  *
  * ─ 이미지 정책 ─
- *   imageUrl 은 **항상 Riftcodex 의 고화질 공식(rgpub) 이미지**. 리프트나루 한글판 이미지는
- *   저해상(320×448)이라 안 쓴다. 한글 카드는 `<LocalizedCard>` 가 이 영문 이미지 위에
- *   한글 이름·룰텍스트를 얹어 렌더한다.
+ *   imageUrl 은 **항상 Riftcodex 의 고화질 공식(rgpub) 이미지**. 한글 카드는 `<LocalizedCard>` 가
+ *   이 영문 이미지 위에 한글 이름·룰텍스트를 얹어 렌더한다.
  */
 function mapRiftcodexCard(raw: RiftcodexCard, ko?: Map<string, KoEntry>): Card {
   const nameEn = raw.name?.trim() || raw.id;
@@ -323,10 +345,9 @@ function mapRiftcodexCard(raw: RiftcodexCard, ko?: Map<string, KoEntry>): Card {
     : undefined;
 
   return {
-    id: raw.id, // Riftcodex 고유 id (riftbound_id/수집번호는 이형 카드끼리 중복됨)
+    id: raw.id,
     setCode: raw.set?.set_id?.toUpperCase() || "UNKNOWN",
     collectorNumber: raw.collector_number != null ? String(raw.collector_number) : null,
-    // 이름·텍스트는 한글 우선. 영문은 localization.en 에 항상 보존 → 카드 거래소 등에서 사용.
     name: koLoc?.name ?? en.name,
     text: koLoc?.text ?? en.text,
     cost: raw.attributes?.energy ?? null,
@@ -336,12 +357,55 @@ function mapRiftcodexCard(raw: RiftcodexCard, ko?: Map<string, KoEntry>): Card {
     orientation: raw.orientation === "landscape" ? "landscape" : "portrait",
     subtypes: raw.tags ?? [],
     domains: normalizeDomains(raw.classification?.domain),
-    rarity: normalizeRarity(raw.classification?.rarity, raw.metadata?.overnumbered ?? false),
-    imageUrl: imageEn, // 항상 고화질 공식 이미지
+    rarity: normalizeRarity(raw.classification?.rarity),
+    imageUrl: imageEn,
     artist: raw.media?.artist ?? null,
     localization: { en, ...(koLoc ? { ko: koLoc } : {}) },
     source: "opensource",
+    printings: [toPrinting(raw)],
   };
+}
+
+const TREATMENT_ORDER: Record<CardPrinting["treatment"], number> = {
+  base: 0,
+  alt_art: 1,
+  showcase: 2,
+  signature: 3,
+  overnumbered: 4,
+  promo: 5,
+};
+
+/**
+ * 같은 카드의 여러 인쇄판(기본 + 얼터아트/시그니처/오버넘버드/프로모)을 하나로 묶는다.
+ * 대표(기본) 카드를 반환하고, 모든 인쇄판을 `printings` 에 담는다.
+ */
+function groupCards(cards: Card[]): Card[] {
+  const groups = new Map<string, Card[]>();
+  for (const c of cards) {
+    const key = `${c.setCode}::${baseNameKey(c.localization.en.name)}`;
+    const arr = groups.get(key);
+    if (arr) arr.push(c);
+    else groups.set(key, [c]);
+  }
+
+  const out: Card[] = [];
+  for (const members of groups.values()) {
+    const printings = members
+      .flatMap((m) => m.printings)
+      .sort(
+        (a, b) =>
+          TREATMENT_ORDER[a.treatment] - TREATMENT_ORDER[b.treatment] ||
+          (Number(a.collectorNumber) || 0) - (Number(b.collectorNumber) || 0),
+      );
+
+    // 대표 = 기본 인쇄판을 가진 멤버, 없으면 첫 멤버
+    const base =
+      members.find((m) => m.printings.some((p) => p.isBase)) ??
+      members.sort((a, b) => (Number(a.collectorNumber) || 0) - (Number(b.collectorNumber) || 0))[0];
+
+    out.push({ ...base, printings });
+  }
+  return out;
 }
 
 function itemsOf(snapshot: LocalSnapshot): RiftcodexCard[] {
@@ -379,7 +443,12 @@ export class OpenSourceCardService implements ICardService {
 
   async getCardById(id: string): Promise<Card | null> {
     const all = await this.getAllCards();
-    return all.find((c) => c.id === id) ?? null;
+    // 대표 id 또는 변형 인쇄판 id 로도 찾을 수 있게
+    return (
+      all.find((c) => c.id === id) ??
+      all.find((c) => c.printings.some((p) => p.id === id)) ??
+      null
+    );
   }
 
   async searchCards(query: CardSearchQuery): Promise<Card[]> {
@@ -439,8 +508,8 @@ export class OpenSourceCardService implements ICardService {
       } while (page <= totalPages && page <= this.config.maxPages);
     }
 
-    // set_id 필터를 못 거는 소스 대비 안전망
-    return out.filter((c) => SUPPORTED_SETS.has(c.setCode));
+    // set_id 필터를 못 거는 소스 대비 안전망 + 인쇄판 그룹핑
+    return groupCards(out.filter((c) => SUPPORTED_SETS.has(c.setCode)));
   }
 
   private async fetchPage(url: URL): Promise<RiftcodexPage> {
@@ -484,9 +553,10 @@ export class OpenSourceCardService implements ICardService {
     try {
       const snapshot = JSON.parse(text) as LocalSnapshot;
       const ko = await loadKoTranslations();
-      return itemsOf(snapshot)
+      const mapped = itemsOf(snapshot)
         .map((c) => mapRiftcodexCard(c, ko))
         .filter((c) => SUPPORTED_SETS.has(c.setCode));
+      return groupCards(mapped);
     } catch (err) {
       throw new CardServiceError(`로컬 카드 스냅샷 파싱 실패: ${filePath}`, err);
     }
