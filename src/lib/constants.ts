@@ -60,14 +60,14 @@ export const TOURNAMENT_STATUS = [
   { slug: "finished", label: "종료" },
 ] as const;
 
-// 리프트바운드 카드 도메인 (공식 용어 기준으로 추후 조정)
+// 리프트바운드 6개 도메인 (Core Rules 133 기준)
 export const CARD_DOMAINS = [
-  { slug: "fury", label: "분노", color: "#e0533d" },
-  { slug: "calm", label: "평온", color: "#4aa3c7" },
-  { slug: "mind", label: "지혜", color: "#9b7bd6" },
-  { slug: "body", label: "육체", color: "#c99b52" },
-  { slug: "chaos", label: "혼돈", color: "#c74a86" },
-  { slug: "order", label: "질서", color: "#c9c34a" },
+  { slug: "fury", label: "분노", en: "Fury", short: "R", color: "#e4483d" },
+  { slug: "calm", label: "침착", en: "Calm", short: "G", color: "#3fa34d" },
+  { slug: "mind", label: "지혜", en: "Mind", short: "B", color: "#3b82f6" },
+  { slug: "body", label: "육체", en: "Body", short: "O", color: "#e8863d" },
+  { slug: "chaos", label: "혼돈", en: "Chaos", short: "P", color: "#a855f7" },
+  { slug: "order", label: "질서", en: "Order", short: "Y", color: "#eab308" },
 ] as const;
 
 export const CARD_TYPES = [
