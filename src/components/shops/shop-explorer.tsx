@@ -1,7 +1,17 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { Search, ShieldCheck, Phone, Clock, ExternalLink, MapPin, Map as MapIcon } from "lucide-react";
+import {
+  Search,
+  ShieldCheck,
+  Phone,
+  Clock,
+  ExternalLink,
+  MapPin,
+  Map as MapIcon,
+  Store,
+  ArrowRight,
+} from "lucide-react";
 import { KR_SIDO } from "@/lib/constants";
 import type { Shop } from "@/lib/types/database";
 import { cn } from "@/lib/utils";
@@ -168,17 +178,41 @@ export function ShopExplorer({ shops }: { shops: Shop[] }) {
           ))
         )}
 
-        {shops.length > 0 && (
-          <p className="rounded-xl bg-subcanvas/60 px-3.5 py-2.5 text-body-sm text-ink-soft">
-            매장 정보는 커뮤니티 제보 기반입니다. 방문 전 매장에 리프트바운드 취급 여부를 직접
-            확인하세요. 신규 매장·정정 제보는{" "}
-            <a href="/community/recruit" className="font-bold text-primary-strong">
-              커뮤니티
-            </a>{" "}
-            또는 디스코드로 알려주세요.
-          </p>
-        )}
+        {shops.length > 0 && <SubmitCallout />}
       </div>
+    </div>
+  );
+}
+
+/** 매장 정보 제보 유도 배너 — 눈에 띄게. */
+function SubmitCallout() {
+  return (
+    <div className="overflow-hidden rounded-2xl border-2 border-dashed border-primary/40 bg-primary/5">
+      <div className="flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:gap-4">
+        <div className="grid h-12 w-12 shrink-0 place-items-center rounded-xl bg-primary text-white">
+          <Store className="h-6 w-6" />
+        </div>
+        <div className="min-w-0 flex-1">
+          <p className="font-display text-title-md font-bold text-ink">
+            내 주변 카드샵을 제보해 주세요
+          </p>
+          <p className="mt-0.5 text-body-sm text-ink-soft">
+            리프트바운드를 취급하는 매장·대회 정보를 모으고 있어요. 매장명·주소만 알려주셔도
+            운영진이 확인 후 등록합니다. 정보 정정도 환영해요.
+          </p>
+        </div>
+        <a
+          href="/community/recruit"
+          className="inline-flex shrink-0 items-center justify-center gap-1.5 rounded-full bg-primary px-4 py-2 text-label-md font-bold text-white transition hover:brightness-105"
+        >
+          매장 제보하기
+          <ArrowRight className="h-4 w-4" />
+        </a>
+      </div>
+      <p className="border-t border-primary/15 bg-primary/[0.03] px-4 py-2 text-body-sm text-ink-soft">
+        ※ 매장 정보는 커뮤니티 제보 기반입니다. 방문 전 리프트바운드 취급 여부를 매장에 직접
+        확인하세요.
+      </p>
     </div>
   );
 }

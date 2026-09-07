@@ -5,6 +5,7 @@ import { BoardToolbar } from "@/components/community/board-toolbar";
 import { PostList } from "@/components/community/post-list";
 import { Pagination } from "@/components/community/pagination";
 import { RecentBoards } from "@/components/community/recent-boards";
+import { DiscordCta } from "@/components/community/discord-cta";
 import { metaFor } from "@/components/community/category-meta";
 import { getPosts, getPopularPosts, getRecentByCategory } from "@/lib/community";
 import { COMMUNITY_CATEGORIES, POSTS_PER_PAGE } from "@/lib/constants";
@@ -43,6 +44,8 @@ export default async function CommunityHubPage({
           리프트바운드 유저들의 이야기 · 공략 · 정보
         </p>
       </header>
+
+      <DiscordCta className="mb-6" />
 
       <div className="mb-8 grid grid-cols-2 gap-2.5 sm:grid-cols-3 lg:grid-cols-5">
         {COMMUNITY_CATEGORIES.map((c) => {

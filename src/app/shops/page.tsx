@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { CalendarDays } from "lucide-react";
 import { ShopExplorer } from "@/components/shops/shop-explorer";
+import { TournamentCalendar } from "@/components/shops/tournament-calendar";
 import { getShops } from "@/lib/shops";
 import { getUpcomingTournaments } from "@/lib/queries";
 
@@ -9,7 +9,7 @@ export const metadata: Metadata = { title: "주변 매장 및 대회" };
 export const revalidate = 300;
 
 export default async function ShopsPage() {
-  const [shops, tournaments] = await Promise.all([getShops(), getUpcomingTournaments(4)]);
+  const [shops, tournaments] = await Promise.all([getShops(), getUpcomingTournaments(60)]);
 
   return (
     <div>
@@ -29,28 +29,7 @@ export default async function ShopsPage() {
             전체 보기
           </Link>
         </div>
-        {tournaments.length === 0 ? (
-          <p className="rounded-2xl border border-line/70 bg-card p-6 text-center text-body-sm text-ink-soft">
-            예정된 대회가 없습니다.
-          </p>
-        ) : (
-          <ul className="divide-y divide-line/50 overflow-hidden rounded-2xl border border-line/70 bg-card">
-            {tournaments.map((t) => (
-              <li key={t.id}>
-                <Link
-                  href={`/tournaments/${t.slug}`}
-                  className="flex items-center gap-3 p-3.5 hover:bg-subcanvas/50"
-                >
-                  <CalendarDays className="h-4 w-4 shrink-0 text-ink-soft" />
-                  <span className="min-w-0 flex-1 truncate text-body-md text-ink">{t.name}</span>
-                  <span className="shrink-0 text-body-sm text-ink-soft">
-                    {t.is_online ? "온라인" : (t.location ?? "장소 미정")}
-                  </span>
-                </Link>
-              </li>
-            ))}
-          </ul>
-        )}
+        <TournamentCalendar tournaments={tournaments} />
       </section>
     </div>
   );

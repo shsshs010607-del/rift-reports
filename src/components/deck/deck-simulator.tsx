@@ -79,6 +79,7 @@ export function DeckSimulator({
   const [rightTab, setRightTab] = useState<"deck" | "hand">("deck");
   const [copied, setCopied] = useState(false);
   const [importOpen, setImportOpen] = useState(false);
+  const [restoredNote, setRestoredNote] = useState<number | null>(null);
   const [flash, setFlash] = useState<string | null>(null);
   const flashMsg = useCallback((m: string) => {
     setFlash(m);
@@ -131,8 +132,14 @@ export function DeckSimulator({
     try {
       const saved = localStorage.getItem(LS_KEY);
       const restored = saved && decodeDeck(saved);
-      if (restored && (restored.legendId || restored.championId || restored.entries.length > 0))
+      if (restored && (restored.legendId || restored.championId || restored.entries.length > 0)) {
         setDeck(restored);
+        const n =
+          restored.entries.reduce((s, e) => s + e.qty, 0) +
+          (restored.legendId ? 1 : 0) +
+          (restored.championId ? 1 : 0);
+        setRestoredNote(n);
+      }
     } catch {
       /* 무시 */
     }
@@ -254,6 +261,35 @@ export function DeckSimulator({
           ) : null}
         </span>
       </div>
+
+      {restoredNote !== null && (
+        <div className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-primary/30 bg-primary/5 px-3 py-2 text-body-sm text-ink">
+          <span>
+            이전에 편집하던 덱을 불러왔어요 (<b>{restoredNote}장</b>).
+          </span>
+          <div className="flex gap-1.5">
+            <button
+              type="button"
+              onClick={() => setRestoredNote(null)}
+              className="rounded-full border border-line px-2.5 py-1 text-label-sm font-bold text-ink-soft hover:text-ink"
+            >
+              계속 편집
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setDeck((d) => clearDeck(d));
+                autoFlow.current = true;
+                setPoolTab("legend");
+                setRestoredNote(null);
+              }}
+              className="rounded-full bg-primary px-2.5 py-1 text-label-sm font-bold text-white"
+            >
+              비우고 새로 시작
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* 덱 작성 가이드 */}
       <DeckSteps counts={counts} activeTab={poolTab} valid={isComplete} onGoto={handleTabChange} />

@@ -59,15 +59,37 @@ export function Footer() {
           <div>
             <h4 className="mb-space-sm font-display text-title-md font-bold text-on-surface">지원</h4>
             <div className="flex flex-col gap-space-xs text-body-sm text-on-surface-variant">
-              <span className="inline-flex items-center gap-space-xs">
-                <MessageSquare className="h-[18px] w-[18px]" /> 디스코드 커뮤니티
-              </span>
-              <span className="inline-flex items-center gap-space-xs">
-                <Youtube className="h-[18px] w-[18px]" /> 유튜브 채널
-              </span>
-              <span className="inline-flex items-center gap-space-xs">
+              {SITE.discord && SITE.discord !== "#" ? (
+                <a
+                  href={SITE.discord}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-space-xs transition-colors hover:text-primary"
+                >
+                  <MessageSquare className="h-[18px] w-[18px]" /> 디스코드 커뮤니티
+                </a>
+              ) : (
+                <span className="inline-flex items-center gap-space-xs">
+                  <MessageSquare className="h-[18px] w-[18px]" /> 디스코드 커뮤니티 (준비 중)
+                </span>
+              )}
+              {SITE.youtube && SITE.youtube !== "#" ? (
+                <a
+                  href={SITE.youtube}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-space-xs transition-colors hover:text-primary"
+                >
+                  <Youtube className="h-[18px] w-[18px]" /> 유튜브 채널
+                </a>
+              ) : (
+                <span className="inline-flex items-center gap-space-xs">
+                  <Youtube className="h-[18px] w-[18px]" /> 유튜브 채널 (준비 중)
+                </span>
+              )}
+              <Link href="/community/recruit" className="inline-flex items-center gap-space-xs transition-colors hover:text-primary">
                 <Mail className="h-[18px] w-[18px]" /> 문의 및 제보
-              </span>
+              </Link>
             </div>
           </div>
         </div>
