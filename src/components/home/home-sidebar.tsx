@@ -64,7 +64,7 @@ export async function HomeSidebar() {
                   : null;
               return (
                 <Row key={g.id} href={`/trading/cards/${g.print_id}`}>
-                  <span className="min-w-0 flex-1 truncate">{g.print?.name ?? "—"}</span>
+                  <span className="min-w-0 flex-1 truncate">{g.print?.ko_name || g.print?.name || "—"}</span>
                   <span className="shrink-0 font-bold text-ink">{fmtKrw(g.market_price, fx.usdKrw)}</span>
                   {d != null && (
                     <span
@@ -116,8 +116,8 @@ function Panel({
   children: React.ReactNode;
 }) {
   return (
-    <div className="rounded-2xl border border-line bg-card p-4">
-      <div className="mb-2 flex items-center justify-between">
+    <div className="note-card p-4">
+      <div className="mb-2 flex items-center justify-between pr-3">
         <h3 className="flex items-center gap-1.5 text-label-lg font-bold text-ink">
           {icon}
           {title}
