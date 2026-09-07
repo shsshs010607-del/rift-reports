@@ -21,7 +21,7 @@ export const NAV_ITEMS = [
   { href: "/deck-simulator", label: "덱 시뮬레이터" },
   { href: "/rules", label: "룰 & 용어" },
   { href: "/community", label: "커뮤니티" },
-  { href: "/trading", label: "카드 거래" },
+  { href: "/trading", label: "트레이딩" },
   { href: "/shops", label: "주변 매장 및 대회" },
 ] as const;
 

@@ -30,7 +30,7 @@ export default async function TradeDetailPage({ params }: { params: { id: string
         className="mb-4 inline-flex items-center gap-1 text-body-sm text-ink-soft hover:text-primary-strong"
       >
         <ChevronLeft className="h-4 w-4" />
-        카드 거래
+        트레이딩
       </Link>
 
       <div className="flex flex-wrap items-center gap-2">

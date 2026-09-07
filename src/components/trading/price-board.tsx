@@ -1,9 +1,9 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { Search, ArrowUpDown } from "lucide-react";
+import { Search, ArrowUpDown, ChevronDown } from "lucide-react";
 import type { PriceRow } from "@/lib/prices";
 import type { FxRate } from "@/lib/fx";
 import { PRINT_LANGUAGES } from "@/lib/constants";
@@ -24,15 +24,18 @@ const SORTS: { key: SortKey; label: string }[] = [
   { key: "name", label: "이름" },
 ];
 
+const PAGE = 12;
+
 /**
- * 카드 거래 페이지 시세표 — JustTCG 대표 시세를 검색·세트·정렬해서 보여준다.
- * 행을 누르면 /trading/cards/[printId] 상세(상태별 시세·추이·거래 링크)로 이동.
+ * 카드 시세표 — 검색·세트·정렬. 기본 12장만 보여주고 "더보기"로 늘린다.
+ * 행을 누르면 /trading/cards/[printId] 상세로 이동.
  */
 export function PriceBoard({ rows, fx }: { rows: PriceRow[]; fx: FxRate }) {
   const [q, setQ] = useState("");
   const [set, setSet] = useState("");
   const [sort, setSort] = useState<SortKey>("price");
   const [asc, setAsc] = useState(false);
+  const [visible, setVisible] = useState(PAGE);
 
   const sets = useMemo(() => {
     const s = new Set<string>();
@@ -61,13 +64,18 @@ export function PriceBoard({ rows, fx }: { rows: PriceRow[]; fx: FxRate }) {
     });
   }, [rows, q, set, sort, asc]);
 
+  // 조건이 바뀌면 다시 12장부터
+  useEffect(() => setVisible(PAGE), [q, set, sort, asc]);
+
   if (rows.length === 0) {
     return (
-      <p className="rounded-2xl border border-line bg-card p-8 text-center text-body-md text-ink-soft">
+      <p className="rounded-2xl border border-line/70 bg-card p-8 text-center text-body-md text-ink-soft">
         아직 시세 데이터가 없습니다. 잠시 후 다시 확인해 주세요.
       </p>
     );
   }
+
+  const shown = view.slice(0, visible);
 
   return (
     <div className="flex flex-col gap-3">
@@ -79,7 +87,7 @@ export function PriceBoard({ rows, fx }: { rows: PriceRow[]; fx: FxRate }) {
             value={q}
             onChange={(e) => setQ(e.target.value)}
             placeholder="카드명 · 수집번호 검색"
-            className="field pl-9"
+            className="w-full rounded-full border border-line bg-card py-2 pl-9 pr-4 text-body-md text-ink placeholder:text-ink-soft/70 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/15"
           />
         </div>
         <div className="flex flex-wrap gap-1">
@@ -117,60 +125,73 @@ export function PriceBoard({ rows, fx }: { rows: PriceRow[]; fx: FxRate }) {
       </div>
 
       {/* 표 */}
-      <ul className="divide-y divide-line/70 overflow-hidden rounded-2xl border border-line/80 bg-card">
-        {view.map((r) => {
-          const up = (r.change_7d ?? 0) >= 0;
-          return (
-            <li key={r.id}>
-              <Link
-                href={`/trading/cards/${r.print_id}`}
-                className="flex items-center gap-3 p-3 transition hover:bg-subcanvas/50"
-              >
-                <span className="relative h-12 w-9 shrink-0 overflow-hidden rounded bg-subcanvas">
-                  {r.print?.image_url && (
-                    <Image
-                      src={r.print.image_url}
-                      alt=""
-                      fill
-                      sizes="36px"
-                      className="object-cover"
-                    />
-                  )}
-                </span>
-                <span className="min-w-0 flex-1">
-                  <span className="block truncate text-body-md text-ink">{r.print?.name ?? "—"}</span>
-                  <span className="block truncate text-body-sm text-ink-soft">
-                    {[
-                      r.print && langLabel(r.print.language),
-                      r.print?.rarity,
-                      r.print?.set_code && `${r.print.set_code} ${r.print.number ?? ""}`.trim(),
-                    ]
-                      .filter(Boolean)
-                      .join(" · ")}
+      {shown.length === 0 ? (
+        <p className="rounded-2xl border border-line/70 bg-card p-8 text-center text-body-sm text-ink-soft">
+          조건에 맞는 카드가 없습니다.
+        </p>
+      ) : (
+        <ul className="divide-y divide-line/50 overflow-hidden rounded-2xl border border-line/70 bg-card">
+          {shown.map((r) => {
+            const up = (r.change_7d ?? 0) >= 0;
+            return (
+              <li key={r.id}>
+                <Link
+                  href={`/trading/cards/${r.print_id}`}
+                  className="flex items-center gap-3 p-3 transition-colors hover:bg-subcanvas/50"
+                >
+                  <span className="relative h-12 w-9 shrink-0 overflow-hidden rounded bg-subcanvas">
+                    {r.print?.image_url && (
+                      <Image src={r.print.image_url} alt="" fill sizes="36px" className="object-cover" />
+                    )}
                   </span>
-                </span>
-                <span className="shrink-0 text-right">
-                  <span className="block text-body-md font-bold text-ink">
-                    {fmtKrw(r.market_price, fx.usdKrw)}
-                  </span>
-                  <span className="block text-body-sm text-ink-soft">{fmtUsd(r.market_price)}</span>
-                  {r.market_price != null && r.change_7d != null && r.change_7d !== 0 && (
-                    <span
-                      className={cn(
-                        "block text-label-sm font-semibold",
-                        up ? "text-emerald" : "text-coral",
-                      )}
-                    >
-                      {fmtKrwSigned(deltaUsd(r.market_price, r.change_7d), fx.usdKrw)}
-                      <span className="text-ink-soft/80"> ({pct(r.change_7d)})</span>
+                  <span className="min-w-0 flex-1">
+                    <span className="block truncate text-body-md font-medium text-ink">
+                      {r.print?.name ?? "—"}
                     </span>
-                  )}
-                </span>
-              </Link>
-            </li>
-          );
-        })}
-      </ul>
+                    <span className="block truncate text-[13px] text-ink-soft">
+                      {[
+                        r.print && langLabel(r.print.language),
+                        r.print?.rarity,
+                        r.print?.set_code && `${r.print.set_code} ${r.print.number ?? ""}`.trim(),
+                      ]
+                        .filter(Boolean)
+                        .join(" · ")}
+                    </span>
+                  </span>
+                  <span className="shrink-0 text-right">
+                    <span className="block text-body-md font-bold text-ink">
+                      {fmtKrw(r.market_price, fx.usdKrw)}
+                    </span>
+                    <span className="block text-[12px] text-ink-soft">{fmtUsd(r.market_price)}</span>
+                    {r.market_price != null && r.change_7d != null && r.change_7d !== 0 && (
+                      <span
+                        className={cn(
+                          "block text-label-sm font-semibold",
+                          up ? "text-emerald" : "text-coral",
+                        )}
+                      >
+                        {fmtKrwSigned(deltaUsd(r.market_price, r.change_7d), fx.usdKrw)}
+                        <span className="text-ink-soft/80"> ({pct(r.change_7d)})</span>
+                      </span>
+                    )}
+                  </span>
+                </Link>
+              </li>
+            );
+          })}
+        </ul>
+      )}
+
+      {view.length > visible && (
+        <button
+          type="button"
+          onClick={() => setVisible((v) => v + PAGE * 2)}
+          className="mx-auto inline-flex items-center gap-1.5 rounded-full border border-line px-5 py-2 text-label-md font-bold text-ink-soft transition hover:border-primary/40 hover:text-ink"
+        >
+          더보기 ({(view.length - visible).toLocaleString("ko-KR")})
+          <ChevronDown className="h-4 w-4" />
+        </button>
+      )}
     </div>
   );
 }
