@@ -46,15 +46,15 @@ export const TIER_STYLES: Record<
   Tier,
   { label: string; badge: string; headerBg: string; dot: string }
 > = {
-  S: { label: "S", badge: "tier-badge tier-badge-s", headerBg: "bg-amber", dot: "bg-amber" },
-  A: { label: "A", badge: "tier-badge tier-badge-a", headerBg: "bg-tier-a", dot: "bg-tier-a" },
-  B: { label: "B", badge: "tier-badge tier-badge-b", headerBg: "bg-emerald", dot: "bg-emerald" },
-  C: { label: "C", badge: "tier-badge tier-badge-c", headerBg: "bg-tier-c", dot: "bg-tier-c" },
+  S: { label: "S", badge: "tier-badge tier-badge-s", headerBg: "bg-rose-500", dot: "bg-rose-500" },
+  A: { label: "A", badge: "tier-badge tier-badge-a", headerBg: "bg-orange-500", dot: "bg-orange-500" },
+  B: { label: "B", badge: "tier-badge tier-badge-b", headerBg: "bg-green-500", dot: "bg-green-500" },
+  C: { label: "C", badge: "tier-badge tier-badge-c", headerBg: "bg-sky-500", dot: "bg-sky-500" },
   Z: {
     label: "Z",
     badge: "tier-badge bg-surface-container text-on-surface-variant",
-    headerBg: "bg-outline",
-    dot: "bg-outline",
+    headerBg: "bg-slate-400",
+    dot: "bg-slate-400",
   },
 };
 

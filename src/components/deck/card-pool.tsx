@@ -18,7 +18,7 @@ export type PoolTab =
 const TABS: { key: PoolTab; label: string; apiType?: CardType }[] = [
   { key: "all", label: "전체" },
   { key: "legend", label: "레전드", apiType: "legend" },
-  { key: "champion", label: "챔피언", apiType: "champion" },
+  { key: "champion", label: "리더 챔피언", apiType: "champion" },
   { key: "main", label: "메인덱" },
   { key: "battlefield", label: "전장", apiType: "battlefield" },
   { key: "rune", label: "룬", apiType: "rune" },
@@ -240,7 +240,7 @@ export function CardPool({
                         {plan.kind === "legend"
                           ? "레전드"
                           : plan.kind === "champion"
-                            ? "챔피언"
+                            ? "리더 챔피언"
                             : "추가"}
                       </span>
                     )}

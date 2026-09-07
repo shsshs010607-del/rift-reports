@@ -187,7 +187,7 @@ export function DeckSimulator({
           break;
         case "champion":
           setDeck((d) => setChampion(d, plan.id));
-          flashMsg("지정 챔피언 완료 → 다음: 메인덱 39장");
+          flashMsg("리더 챔피언 완료 → 다음: 메인덱 39장");
           advance("main");
           break;
         case "entry":

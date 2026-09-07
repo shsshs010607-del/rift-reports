@@ -31,16 +31,16 @@ export const CATEGORY_META: Record<string, Meta> = {
   "deck-guide": {
     icon: Layers,
     short: "덱공략",
-    soft: "bg-emerald-100",
-    fg: "text-emerald-700",
-    ring: "hover:border-emerald-300",
+    soft: "bg-green-100",
+    fg: "text-green-700",
+    ring: "hover:border-green-300",
   },
   tournament: {
     icon: Trophy,
     short: "대회",
-    soft: "bg-amber-100",
-    fg: "text-amber-700",
-    ring: "hover:border-amber-300",
+    soft: "bg-yellow-100",
+    fg: "text-yellow-800",
+    ring: "hover:border-yellow-300",
   },
   recruit: {
     icon: Users,

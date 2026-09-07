@@ -25,10 +25,10 @@ const STEPS: Step[] = [
   },
   {
     tab: "champion",
-    label: "챔피언",
+    label: "리더 챔피언",
     done: (c) => c.champion === 1,
     progress: (c) => `${c.champion}/1`,
-    hint: "레전드와 같은 이름의 챔피언을 지정 챔피언으로 넣으세요.",
+    hint: "레전드와 같은 이름의 챔피언을 리더 챔피언으로 넣으세요.",
   },
   {
     tab: "main",

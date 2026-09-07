@@ -67,7 +67,7 @@ export function ShopExplorer({ shops }: { shops: Shop[] }) {
           className={cn(
             "inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-label-md font-bold transition",
             officialOnly
-              ? "border-amber-400 bg-amber-100 text-amber-700"
+              ? "border-yellow-400 bg-yellow-100 text-yellow-800"
               : "border-line text-ink-soft hover:border-primary/40",
           )}
         >
@@ -110,7 +110,7 @@ export function ShopExplorer({ shops }: { shops: Shop[] }) {
                   >
                     <div className="flex items-center gap-2">
                       {s.is_official && (
-                        <span className="inline-flex items-center gap-1 rounded-md bg-amber-100 px-1.5 py-0.5 text-[11px] font-bold text-amber-700">
+                        <span className="inline-flex items-center gap-1 rounded-md bg-yellow-100 px-1.5 py-0.5 text-[11px] font-bold text-yellow-800">
                           <ShieldCheck className="h-3 w-3" />
                           공인샵
                         </span>

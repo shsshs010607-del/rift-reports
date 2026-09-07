@@ -7,7 +7,11 @@ import type { Config } from "tailwindcss";
 const rgb = (v: string) => `rgb(var(${v}) / <alpha-value>)`;
 
 const config: Config = {
-  content: ["./src/app/**/*.{ts,tsx}", "./src/components/**/*.{ts,tsx}"],
+  content: [
+    "./src/app/**/*.{ts,tsx}",
+    "./src/components/**/*.{ts,tsx}",
+    "./src/lib/**/*.{ts,tsx}",
+  ],
   theme: {
     container: {
       center: true,

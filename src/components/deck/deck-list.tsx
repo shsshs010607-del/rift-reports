@@ -45,11 +45,11 @@ export function DeckList({
       </Section>
 
       {/* 챔피언 */}
-      <Section title="지정 챔피언" n={c.champion} target="1" ok={c.champion === 1}>
+      <Section title="리더 챔피언" n={c.champion} target="1" ok={c.champion === 1}>
         {rd.champion ? (
           <SlotRow card={rd.champion} onRemove={onClearChampion} />
         ) : (
-          <EmptySlot label="챔피언 선택" onClick={() => onFocusPool("champion")} />
+          <EmptySlot label="리더 챔피언 선택" onClick={() => onFocusPool("champion")} />
         )}
       </Section>
 
