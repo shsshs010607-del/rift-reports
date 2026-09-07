@@ -1,7 +1,11 @@
+import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { hasSupabaseEnv } from "@/lib/supabase/env";
-import { PageHeading, ComingSoon } from "@/components/ui/page-heading";
+import { PageHeading } from "@/components/ui/page-heading";
+import { ListingForm } from "@/components/trading/listing-form";
+
+export const metadata: Metadata = { title: "거래글 등록" };
 
 export default async function NewTradePage() {
   if (!hasSupabaseEnv) redirect("/login?next=/trading/new");
@@ -10,9 +14,11 @@ export default async function NewTradePage() {
   if (!data.user) redirect("/login?next=/trading/new");
 
   return (
-    <div>
-      <PageHeading title="거래글 등록" />
-      <ComingSoon note="카테고리, 카드 검색 연결(card_id), 상태(TRADE_CONDITIONS), 가격/협의 여부, 지역, 이미지 업로드(Storage: trade-images/{uid}/). 제출 → trade_listings insert." />
+    <div className="mx-auto max-w-2xl">
+      <PageHeading title="거래글 등록" description="카드 시세는 상단 '카드 시세'에서 확인하세요" />
+      <div className="surface p-5 sm:p-6">
+        <ListingForm />
+      </div>
     </div>
   );
 }

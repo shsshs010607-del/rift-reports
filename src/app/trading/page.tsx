@@ -1,39 +1,30 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { PageHeading, ComingSoon } from "@/components/ui/page-heading";
+import { PlusSquare } from "lucide-react";
+import { PageHeading } from "@/components/ui/page-heading";
 import { PriceMovers } from "@/components/trading/price-movers";
 import { PriceBoard } from "@/components/trading/price-board";
 import { FxNote } from "@/components/trading/fx-note";
+import { TradeBoard } from "@/components/trading/trade-board";
 import { getTopGainers, getTopLosers, getPriceBoard } from "@/lib/prices";
 import { getUsdKrw } from "@/lib/fx";
-import { TRADING_CATEGORIES } from "@/lib/constants";
+import { getListings } from "@/lib/trading";
 
 export const metadata: Metadata = { title: "카드 거래" };
 export const revalidate = 900; // 15분 (시세 6시간 갱신이라 충분)
 
 export default async function TradingPage() {
-  const [fx, gainers, losers, board] = await Promise.all([
+  const [fx, gainers, losers, board, listings] = await Promise.all([
     getUsdKrw(),
     getTopGainers(5),
     getTopLosers(5),
     getPriceBoard(),
+    getListings(),
   ]);
 
   return (
     <div className="flex flex-col gap-10">
-      <div>
-        <PageHeading title="카드 거래" description="시세 확인 후 거래 사이트 또는 커뮤니티 거래글로" />
-        <div className="flex flex-wrap gap-2">
-          {TRADING_CATEGORIES.map((c) => (
-            <span key={c.slug} className="btn-ghost">
-              {c.label}
-            </span>
-          ))}
-          <Link href="/trading/new" className="btn-primary">
-            거래글 등록
-          </Link>
-        </div>
-      </div>
+      <PageHeading title="카드 거래" description="시세 확인 후 이용자 간 직거래" />
 
       <PriceMovers gainers={gainers} losers={losers} fx={fx} />
 
@@ -46,8 +37,14 @@ export default async function TradingPage() {
       </section>
 
       <section>
-        <h2 className="section-title mb-3">거래글</h2>
-        <ComingSoon note="trade_listings 리스트/필터(카테고리·상태·지역), 상태 뱃지, 가격. 상세 /trading/[id]. 카드별 거래글은 /trading?print=<id>." />
+        <div className="mb-3 flex items-end justify-between">
+          <h2 className="section-title">거래글</h2>
+          <Link href="/trading/new" className="btn-primary !py-2 !text-label-md">
+            <PlusSquare className="h-4 w-4" />
+            거래글 등록
+          </Link>
+        </div>
+        <TradeBoard listings={listings} />
       </section>
     </div>
   );

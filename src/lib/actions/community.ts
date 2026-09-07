@@ -139,7 +139,7 @@ export async function toggleLike(postId: string): Promise<{ liked: boolean; erro
 }
 
 /** 조회수 증가 (원자적). 비로그인도 가능. */
-export async function incrementView(postId: string) {
+export async function incrementView(postId: string, table: "posts" | "reports" = "posts") {
   const supabase = createClient();
-  await supabase.rpc("increment_view_count", { table_name: "posts", row_id: postId });
+  await supabase.rpc("increment_view_count", { table_name: table, row_id: postId });
 }

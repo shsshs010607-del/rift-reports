@@ -1,8 +1,23 @@
+import type { Metadata } from "next";
 import { redirect } from "next/navigation";
+import Link from "next/link";
+import Image from "next/image";
+import { format } from "date-fns";
+import { ko } from "date-fns/locale";
 import { createClient } from "@/lib/supabase/server";
 import { hasSupabaseEnv } from "@/lib/supabase/env";
-import { PageHeading, ComingSoon } from "@/components/ui/page-heading";
+import { PageHeading } from "@/components/ui/page-heading";
 import { SignOutButton } from "@/components/auth/sign-out-button";
+import { ProfileEditor } from "@/components/me/profile-editor";
+import { getMyPosts, getMyListings } from "@/lib/me";
+import { COMMUNITY_CATEGORIES, TRADING_CATEGORIES, TRADE_STATUS } from "@/lib/constants";
+
+export const metadata: Metadata = { title: "내 프로필" };
+export const dynamic = "force-dynamic";
+
+const CAT = new Map(COMMUNITY_CATEGORIES.map((c) => [c.slug, c.label]));
+const TCAT = new Map(TRADING_CATEGORIES.map((c) => [c.slug, c.label]));
+const TSTATUS = new Map(TRADE_STATUS.map((s) => [s.slug, s.label]));
 
 export default async function MePage() {
   if (!hasSupabaseEnv) redirect("/login");
@@ -15,6 +30,11 @@ export default async function MePage() {
     .select("*")
     .eq("id", data.user.id)
     .single();
+
+  const [posts, listings] = await Promise.all([
+    getMyPosts(data.user.id),
+    getMyListings(data.user.id),
+  ]);
 
   return (
     <div className="mx-auto max-w-2xl">
@@ -29,13 +49,81 @@ export default async function MePage() {
         </a>
       )}
 
-      <div className="surface flex items-center justify-between p-4">
-        <span className="text-body-md text-ink-soft">역할: {profile?.role ?? "user"}</span>
-        <SignOutButton />
+      <div className="surface p-4">
+        <div className="flex items-center gap-3">
+          <span className="relative grid h-12 w-12 shrink-0 place-items-center overflow-hidden rounded-full bg-primary-fixed text-title-md font-bold text-on-primary-fixed-variant">
+            {profile?.avatar_url ? (
+              <Image src={profile.avatar_url} alt="" fill sizes="48px" className="object-cover" />
+            ) : (
+              (profile?.username ?? "U")[0].toUpperCase()
+            )}
+          </span>
+          <div className="min-w-0 flex-1">
+            <p className="font-display text-title-md font-bold text-ink">{profile?.username}</p>
+            <p className="text-body-sm text-ink-soft">
+              {profile?.bio || `역할: ${profile?.role ?? "user"}`}
+            </p>
+          </div>
+          <SignOutButton />
+        </div>
+        {profile && <ProfileEditor username={profile.username} bio={profile.bio} />}
       </div>
-      <div className="mt-6">
-        <ComingSoon note="내가 쓴 글/댓글/거래글, 북마크, 프로필 편집(username·avatar·bio)." />
-      </div>
+
+      <section className="mt-8">
+        <h2 className="section-title mb-3">
+          내가 쓴 글 <span className="text-body-sm font-normal text-ink-soft">{posts.length}</span>
+        </h2>
+        {posts.length === 0 ? (
+          <p className="rounded-2xl border border-line bg-card p-6 text-center text-body-sm text-ink-soft">
+            작성한 글이 없습니다.
+          </p>
+        ) : (
+          <ul className="divide-y divide-line/70 overflow-hidden rounded-2xl border border-line/80 bg-card">
+            {posts.map((p) => (
+              <li key={p.id}>
+                <Link
+                  href={`/community/post/${p.id}`}
+                  className="flex items-center gap-3 p-3 hover:bg-subcanvas/50"
+                >
+                  <span className="chip shrink-0">{CAT.get(p.category) ?? p.category}</span>
+                  <span className="min-w-0 flex-1 truncate text-body-md text-ink">{p.title}</span>
+                  <time className="shrink-0 text-label-sm text-ink-soft" dateTime={p.created_at}>
+                    {format(new Date(p.created_at), "MM.dd", { locale: ko })}
+                  </time>
+                </Link>
+              </li>
+            ))}
+          </ul>
+        )}
+      </section>
+
+      <section className="mt-8">
+        <h2 className="section-title mb-3">
+          내 거래글 <span className="text-body-sm font-normal text-ink-soft">{listings.length}</span>
+        </h2>
+        {listings.length === 0 ? (
+          <p className="rounded-2xl border border-line bg-card p-6 text-center text-body-sm text-ink-soft">
+            등록한 거래글이 없습니다.
+          </p>
+        ) : (
+          <ul className="divide-y divide-line/70 overflow-hidden rounded-2xl border border-line/80 bg-card">
+            {listings.map((l) => (
+              <li key={l.id}>
+                <Link
+                  href={`/trading/${l.id}`}
+                  className="flex items-center gap-3 p-3 hover:bg-subcanvas/50"
+                >
+                  <span className="chip shrink-0">{TCAT.get(l.category)}</span>
+                  <span className="min-w-0 flex-1 truncate text-body-md text-ink">{l.title}</span>
+                  <span className="shrink-0 text-label-sm text-ink-soft">
+                    {TSTATUS.get(l.status)}
+                  </span>
+                </Link>
+              </li>
+            ))}
+          </ul>
+        )}
+      </section>
     </div>
   );
 }

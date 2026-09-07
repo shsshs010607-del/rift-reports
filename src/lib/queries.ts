@@ -32,6 +32,62 @@ export function getLatestReports(limit = 4) {
   }, []);
 }
 
+export type ReportWithAuthor = Report & {
+  author: { username: string; avatar_url: string | null } | null;
+};
+
+export function getReports() {
+  return safe<ReportWithAuthor[]>(async () => {
+    const supabase = createClient();
+    const { data, error } = await supabase
+      .from("reports")
+      .select("*, author:profiles!reports_author_id_fkey(username, avatar_url)")
+      .eq("status", "published")
+      .order("published_at", { ascending: false });
+    if (error) throw error;
+    return (data as unknown as ReportWithAuthor[]) ?? [];
+  }, []);
+}
+
+export function getReport(slug: string) {
+  return safe<ReportWithAuthor | null>(async () => {
+    const supabase = createClient();
+    const { data, error } = await supabase
+      .from("reports")
+      .select("*, author:profiles!reports_author_id_fkey(username, avatar_url)")
+      .eq("slug", slug)
+      .eq("status", "published")
+      .maybeSingle();
+    if (error) throw error;
+    return (data as unknown as ReportWithAuthor) ?? null;
+  }, null);
+}
+
+export function getTournaments() {
+  return safe<Tournament[]>(async () => {
+    const supabase = createClient();
+    const { data, error } = await supabase
+      .from("tournaments")
+      .select("*")
+      .order("starts_at", { ascending: false });
+    if (error) throw error;
+    return data ?? [];
+  }, []);
+}
+
+export function getTournament(slug: string) {
+  return safe<Tournament | null>(async () => {
+    const supabase = createClient();
+    const { data, error } = await supabase
+      .from("tournaments")
+      .select("*")
+      .eq("slug", slug)
+      .maybeSingle();
+    if (error) throw error;
+    return data ?? null;
+  }, null);
+}
+
 export type DeckWithChampions = Deck & { champions: Pick<Card, "id" | "name" | "image_url">[] };
 
 export function getTierSummary() {
