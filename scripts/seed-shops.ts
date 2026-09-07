@@ -1,10 +1,10 @@
 /**
- * 카드샵 시드 — 나무위키 "트레이딩 카드 게임/매장/대한민국" 기반(2026-09-08).
+ * 카드샵 시드 (2026-09-08). 전국 종합 TCG 매장.
  *   npx tsx scripts/seed-shops.ts
  *
  * - 같은 이름의 매장이 있으면 갱신, 없으면 삽입 (idempotent).
  * - 상세 주소 대신 인근 역/랜드마크로 표기. is_official = false.
- * - 포켓몬 전용샵은 제외. 종합 TCG/보드게임 매장 위주.
+ * - 포켓몬 전용샵은 제외.
  * - 정확한 위치·영업 여부·리프트바운드 취급 여부는 방문 전 매장에 직접 확인 (UI 상시 안내).
  * env: NEXT_PUBLIC_SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY
  */
@@ -160,8 +160,6 @@ const SHOPS: Seed[] = [
   { name: "제주 TCG 아일랜드", sido: "제주", sigungu: "제주시", address: "중앙로 인근" },
 ];
 
-const NOTE = "종합 TCG 매장 (나무위키 등재 기준). 방문 전 리프트바운드 취급 여부·영업 여부를 매장에 직접 확인하세요.";
-
 async function main() {
   const db = supabaseAdmin();
   const { data: existing, error: exErr } = await db.from("shops").select("id, name");
@@ -180,7 +178,7 @@ async function main() {
           sigungu: s.sigungu,
           address: s.address,
           is_official: false,
-          note: NOTE,
+          note: null,
           updated_at: new Date().toISOString(),
         })
         .eq("id", id);
@@ -198,7 +196,7 @@ async function main() {
         hours: null,
         url: null,
         is_official: false,
-        note: NOTE,
+        note: null,
       });
       if (error) throw error;
       inserted++;
