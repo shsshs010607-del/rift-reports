@@ -37,12 +37,16 @@ const rows = GLOSSARY.map((t) => ({
   card_searchable: t.cardSearchable ?? false,
 }));
 
-const { error, count } = await supabase
-  .from("glossary_terms")
-  .upsert(rows, { onConflict: "name_en", count: "exact" });
+async function main() {
+  const { error, count } = await supabase
+    .from("glossary_terms")
+    .upsert(rows, { onConflict: "name_en", count: "exact" });
 
-if (error) {
-  console.error("upsert 실패:", error.message);
-  process.exit(1);
+  if (error) {
+    console.error("upsert 실패:", error.message);
+    process.exit(1);
+  }
+  console.log(`✓ glossary_terms ${count ?? rows.length}건 동기화 완료`);
 }
-console.log(`✓ glossary_terms ${count ?? rows.length}건 동기화 완료`);
+
+main();

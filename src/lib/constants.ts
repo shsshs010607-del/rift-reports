@@ -60,11 +60,9 @@ export const PRICE = {
    * 프로모/실드 제외. 신규 세트 나오면 여기 추가.
    */
   sets: [
+    // 카드 DB 스코프(OGN·OGS 스탠다드)와 동일하게 유지. 신규 세트 편입 시 여기 추가.
     "origins-riftbound-league-of-legends-trading-card-game",
     "origins-proving-grounds-riftbound-league-of-legends-trading-card-game",
-    "spiritforged-riftbound-league-of-legends-trading-card-game",
-    "unleashed-riftbound-league-of-legends-trading-card-game",
-    "vendetta-riftbound-league-of-legends-trading-card-game",
   ],
   /** 무료 플랜 페이지 크기 제한. */
   pageLimit: 20,

@@ -79,13 +79,23 @@ export const tcgplayerUrl = (id?: string | null) =>
 export const tcgplayerImage = (id?: string | null) =>
   id ? `https://tcgplayer-cdn.tcgplayer.com/product/${id}_in_1000x1000.jpg` : null;
 
-async function request(cfg: JustTcgConfig, path: string): Promise<ListResponse> {
-  const res = await fetch(`${BASE}${path}`, { headers: { "x-api-key": cfg.apiKey } });
-  if (!res.ok) throw new Error(`JustTCG ${res.status} ${path}: ${await res.text().catch(() => "")}`);
-  return res.json() as Promise<ListResponse>;
-}
-
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
+
+async function request(cfg: JustTcgConfig, path: string): Promise<ListResponse> {
+  // free tier 는 rate limit(분당 10) 이 빡빡해서 429 시 지수 백오프로 재시도한다.
+  for (let attempt = 0; ; attempt++) {
+    const res = await fetch(`${BASE}${path}`, { headers: { "x-api-key": cfg.apiKey } });
+    if (res.ok) return res.json() as Promise<ListResponse>;
+    const body = await res.text().catch(() => "");
+    if (res.status === 429 && attempt < 5) {
+      const wait = 5000 * 2 ** attempt; // 5s, 10s, 20s, 40s, 80s
+      console.warn(`  · 429 rate limit — ${wait / 1000}s 대기 후 재시도 (${attempt + 1}/5)`);
+      await sleep(wait);
+      continue;
+    }
+    throw new Error(`JustTCG ${res.status} ${path}: ${body}`);
+  }
+}
 
 async function fetchSet(cfg: JustTcgConfig, setId: string, onPage?: (remain: number) => void) {
   const out: RawCard[] = [];
@@ -104,7 +114,7 @@ async function fetchSet(cfg: JustTcgConfig, setId: string, onPage?: (remain: num
     if (remain >= 0 && remain < 5) throw new Error(`API 콜 한도 임박 (남은 ${remain}) — 중단`);
     if (!res.meta?.hasMore || res.data.length === 0) break;
     if (page > 200) break;
-    await sleep(150); // rate limit(10) 여유
+    await sleep(7000); // free tier: 분당 10 → 페이지 사이 7초
   }
   return out;
 }
