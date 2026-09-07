@@ -3,7 +3,12 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { hasSupabaseEnv } from "@/lib/supabase/env";
 import { PageHeading } from "@/components/ui/page-heading";
-import { ReportForm, TournamentForm, ShopForm } from "@/components/admin/admin-forms";
+import {
+  ReportForm,
+  TournamentForm,
+  ShopForm,
+  NotificationForm,
+} from "@/components/admin/admin-forms";
 
 export const metadata: Metadata = { title: "운영" };
 export const dynamic = "force-dynamic";
@@ -39,10 +44,17 @@ export default async function AdminPage() {
     <div className="mx-auto max-w-2xl">
       <PageHeading
         title="운영"
-        description={`${profile.username} · ${profile.role} — 리포트 · 대회 등록`}
+        description={`${profile.username} · ${profile.role} — 알림 · 리포트 · 대회 · 카드샵`}
       />
 
       <div className="flex flex-col gap-10">
+        <section>
+          <h2 className="section-title mb-3">알림 발송</h2>
+          <div className="surface p-5">
+            <NotificationForm />
+          </div>
+        </section>
+
         <section>
           <h2 className="section-title mb-3">리포트 작성</h2>
           <div className="surface p-5">

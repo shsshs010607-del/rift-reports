@@ -130,3 +130,40 @@ export async function createTournament(_prev: AdminState, formData: FormData): P
   revalidatePath("/tournaments");
   return { ok: `대회 "${d.name}" 저장됨` };
 }
+
+const notificationSchema = z.object({
+  title: z.string().trim().min(2).max(120),
+  body: z.string().trim().max(1000).optional(),
+  href: z.string().trim().max(300).optional(),
+  kind: z.enum(["notice", "update", "event"]),
+});
+
+export async function createNotification(
+  _prev: AdminState,
+  formData: FormData,
+): Promise<AdminState> {
+  const { supabase, userId } = await requireStaff();
+  const parsed = notificationSchema.safeParse({
+    title: formData.get("title"),
+    body: formData.get("body") || undefined,
+    href: formData.get("href") || undefined,
+    kind: formData.get("kind") || "notice",
+  });
+  if (!parsed.success) return { error: "입력을 확인하세요 (제목 2자 이상)" };
+  const d = parsed.data;
+
+  // href 는 사이트 내부 경로(/...)만 허용
+  const href = d.href && d.href.startsWith("/") ? d.href : null;
+
+  const { error } = await supabase.from("notifications").insert({
+    title: d.title,
+    body: d.body ?? null,
+    href,
+    kind: d.kind,
+    created_by: userId,
+  });
+  if (error) return { error: error.message };
+
+  revalidatePath("/", "layout");
+  return { ok: `알림 "${d.title}" 발송됨` };
+}

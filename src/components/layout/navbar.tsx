@@ -3,8 +3,9 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { Menu, X, Search, Bell, PenSquare } from "lucide-react";
+import { Menu, X, Search, PenSquare } from "lucide-react";
 import { NAV_ITEMS } from "@/lib/constants";
+import { NotificationBell } from "@/components/layout/notification-bell";
 import { LogoMark } from "@/components/ui/logo";
 import { cn } from "@/lib/utils";
 import { createClient } from "@/lib/supabase/client";
@@ -80,14 +81,7 @@ export function Navbar() {
             />
           </form>
 
-          <button
-            type="button"
-            aria-label="알림"
-            className="relative grid h-10 w-10 place-items-center rounded-full bg-surface-container-lowest text-on-surface-variant shadow-xs transition-colors hover:text-on-surface"
-          >
-            <Bell className="h-[18px] w-[18px]" />
-            <span className="absolute right-2 top-2 h-2 w-2 rounded-full bg-secondary-container ring-2 ring-surface-container-lowest" />
-          </button>
+          <NotificationBell />
 
           <Link href="/community/new" className="hidden sm:inline-flex btn-primary !py-2 !text-label-md">
             <PenSquare className="h-[18px] w-[18px]" />

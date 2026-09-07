@@ -24,6 +24,7 @@ export interface Database {
           bio: string | null;
           role: "user" | "editor" | "admin";
           onboarded: boolean;
+          notifications_seen_at: string;
           created_at: string;
         };
         Insert: {
@@ -33,6 +34,7 @@ export interface Database {
           bio?: string | null;
           role?: "user" | "editor" | "admin";
           onboarded?: boolean;
+          notifications_seen_at?: string;
           created_at?: string;
         };
         Update: Partial<Database["public"]["Tables"]["profiles"]["Insert"]>;
@@ -203,6 +205,28 @@ export interface Database {
           updated_at?: string;
         };
         Update: Partial<Database["public"]["Tables"]["saved_decks"]["Insert"]>;
+        Relationships: [];
+      };
+      notifications: {
+        Row: {
+          id: string;
+          title: string;
+          body: string | null;
+          href: string | null;
+          kind: "notice" | "update" | "event";
+          created_by: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          title: string;
+          body?: string | null;
+          href?: string | null;
+          kind?: "notice" | "update" | "event";
+          created_by?: string | null;
+          created_at?: string;
+        };
+        Update: Partial<Database["public"]["Tables"]["notifications"]["Insert"]>;
         Relationships: [];
       };
       shops: {
@@ -401,3 +425,4 @@ export type CardPrint = Database["public"]["Tables"]["card_prints"]["Row"];
 export type PriceSnapshot = Database["public"]["Tables"]["price_snapshots"]["Row"];
 export type SavedDeck = Database["public"]["Tables"]["saved_decks"]["Row"];
 export type Shop = Database["public"]["Tables"]["shops"]["Row"];
+export type Notification = Database["public"]["Tables"]["notifications"]["Row"];

@@ -1,7 +1,12 @@
 "use client";
 
 import { useFormState, useFormStatus } from "react-dom";
-import { createReport, createTournament, type AdminState } from "@/app/admin/actions";
+import {
+  createReport,
+  createTournament,
+  createNotification,
+  type AdminState,
+} from "@/app/admin/actions";
 import { createShop, type ShopState } from "@/lib/actions/shops";
 import { KR_SIDO } from "@/lib/constants";
 
@@ -121,6 +126,30 @@ export function TournamentForm() {
       </label>
       <Msg state={state} />
       <SubmitBtn label="대회 저장" />
+    </form>
+  );
+}
+
+export function NotificationForm() {
+  const [state, action] = useFormState<AdminState, FormData>(createNotification, {});
+  return (
+    <form action={action} className="flex flex-col gap-3" key={state.ok}>
+      <Text name="title" label="제목" required placeholder="OGN 밸런스 패치 요약 공개" />
+      <Area name="body" label="내용" rows={3} placeholder="여러 줄 입력 가능. 알림 패널에 그대로 표시됩니다." />
+      <Text name="href" label="연결 링크 (사이트 내부 경로)" placeholder="/community/post/…  ·  /trading" />
+      <label className="flex flex-col gap-1">
+        <span className="text-label-sm font-bold text-ink">종류</span>
+        <select name="kind" className="field" defaultValue="notice">
+          <option value="notice">공지</option>
+          <option value="update">업데이트</option>
+          <option value="event">이벤트</option>
+        </select>
+      </label>
+      <Msg state={state} />
+      <SubmitBtn label="전체 발송" />
+      <p className="text-body-sm text-ink-soft">
+        모든 방문자의 알림 벨에 표시됩니다. 로그인 사용자는 안 읽음 배지가 뜹니다.
+      </p>
     </form>
   );
 }
