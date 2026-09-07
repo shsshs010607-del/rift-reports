@@ -31,6 +31,8 @@ export const metadata: Metadata = {
     locale: "ko_KR",
     type: "website",
   },
+  // AdSense 사이트 확인용 <meta name="google-adsense-account"> (head 에 렌더됨)
+  ...(ADSENSE.client ? { other: { "google-adsense-account": ADSENSE.client } } : {}),
 };
 
 export const viewport: Viewport = {
