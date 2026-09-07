@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Check, Copy, Download, Eraser, Layers, Save, Sparkles, Upload } from "lucide-react";
+import { Check, Copy, Download, Eraser, Layers, Sparkles, Upload } from "lucide-react";
 
 import type { Card } from "@/lib/types/card";
 import type { Deck } from "@/lib/types/deck";
@@ -28,6 +28,7 @@ import {
 } from "@/lib/deck/deck-model";
 import { CardPool, type PoolTab } from "@/components/deck/card-pool";
 import { DeckList } from "@/components/deck/deck-list";
+import { DeckSteps } from "@/components/deck/deck-steps";
 import { SampleHand } from "@/components/deck/sample-hand";
 import { ImportDialog } from "@/components/deck/import-dialog";
 import { cn } from "@/lib/utils";
@@ -78,6 +79,11 @@ export function DeckSimulator({
   const [rightTab, setRightTab] = useState<"deck" | "hand">("deck");
   const [copied, setCopied] = useState(false);
   const [importOpen, setImportOpen] = useState(false);
+  const [flash, setFlash] = useState<string | null>(null);
+  const flashMsg = useCallback((m: string) => {
+    setFlash(m);
+    setTimeout(() => setFlash(null), 2200);
+  }, []);
 
   const cacheRef = useRef<Map<string, Card>>(new Map(initialCards.map((c) => [c.id, c])));
   const registerCards = useCallback((cards: Card[]) => {
@@ -159,6 +165,14 @@ export function DeckSimulator({
   const issues = useMemo(() => validateDeck(rd), [rd]);
   const errorCount = issues.filter((i) => i.level === "error").length;
   const total = totalCards(rd);
+  const isComplete =
+    errorCount === 0 &&
+    counts.legend === 1 &&
+    counts.champion === 1 &&
+    counts.battlefield === 3 &&
+    counts.rune === 12 &&
+    counts.main >= 39 &&
+    counts.main <= 59;
 
   // 풀에서 카드 클릭 — 슬롯/존 배치 + 가이드 흐름(레전드→챔피언→메인덱까지만 자동 이동)
   const handlePick = useCallback(
@@ -168,10 +182,12 @@ export function DeckSimulator({
       switch (plan.kind) {
         case "legend":
           setDeck((d) => fillRunes(setLegend(d, plan.id), card, runesByDomain.current));
+          flashMsg(`${card.name} 선택 · 룬 12장 자동 완성 → 다음: 챔피언`);
           advance("champion");
           break;
         case "champion":
           setDeck((d) => setChampion(d, plan.id));
+          flashMsg("지정 챔피언 완료 → 다음: 메인덱 39장");
           advance("main");
           break;
         case "entry":
@@ -216,7 +232,7 @@ export function DeckSimulator({
   }
 
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex flex-col gap-3">
       {/* 헤더 */}
       <div className="flex flex-wrap items-center gap-3 rounded-2xl border border-line bg-card p-3">
         <input
@@ -225,10 +241,22 @@ export function DeckSimulator({
           aria-label="덱 이름"
           className="min-w-40 flex-1 rounded-xl border border-line bg-subcanvas/50 px-3 py-2 text-title-md font-bold text-ink focus:border-primary focus:outline-none"
         />
-        <span className="text-body-sm text-ink-soft">
-          총 {total}장{errorCount > 0 && <span className="ml-1.5 rounded-full bg-error/10 px-2 py-0.5 text-label-sm font-bold text-error">규칙 위반 {errorCount}</span>}
+        <span className="flex items-center gap-1.5 text-body-sm text-ink-soft">
+          총 {total}장
+          {isComplete ? (
+            <span className="rounded-full bg-emerald/15 px-2 py-0.5 text-label-sm font-bold text-emerald">
+              완성
+            </span>
+          ) : errorCount > 0 ? (
+            <span className="rounded-full bg-error/10 px-2 py-0.5 text-label-sm font-bold text-error">
+              규칙 위반 {errorCount}
+            </span>
+          ) : null}
         </span>
       </div>
+
+      {/* 덱 작성 가이드 */}
+      <DeckSteps counts={counts} activeTab={poolTab} valid={isComplete} onGoto={handleTabChange} />
 
       <div className="grid gap-4 lg:grid-cols-[1fr_minmax(340px,420px)]">
         {/* 좌: 카드 풀 */}
@@ -254,7 +282,6 @@ export function DeckSimulator({
 
           {rightTab === "deck" ? (
             <div className="flex flex-col gap-3 p-3">
-              <ZoneSummary counts={counts} />
               <DeckList
                 rd={rd}
                 issues={issues}
@@ -299,6 +326,14 @@ export function DeckSimulator({
         </div>
       </div>
 
+      {flash && (
+        <div className="pointer-events-none fixed inset-x-0 bottom-6 z-50 flex justify-center px-4">
+          <p className="rounded-full bg-ink/90 px-4 py-2 text-label-md font-bold text-white shadow-lg">
+            {flash}
+          </p>
+        </div>
+      )}
+
       {importOpen && (
         <ImportDialog
           current={deck}
@@ -333,31 +368,6 @@ function TabButton({
     >
       {children}
     </button>
-  );
-}
-
-function ZoneSummary({ counts }: { counts: ReturnType<typeof zoneCounts> }) {
-  const items: { key: string; label: string; n: number; target: string; ok: boolean }[] = [
-    { key: "legend", label: "레전드", n: counts.legend, target: "1", ok: counts.legend === 1 },
-    { key: "champion", label: "챔피언", n: counts.champion, target: "1", ok: counts.champion === 1 },
-    { key: "battlefield", label: "전장", n: counts.battlefield, target: "3", ok: counts.battlefield === 3 },
-    { key: "rune", label: "룬", n: counts.rune, target: "12", ok: counts.rune === 12 },
-    { key: "main", label: "메인덱", n: counts.main, target: "39~59", ok: counts.main >= 39 && counts.main <= 59 },
-  ];
-  return (
-    <div className="flex flex-wrap gap-1.5">
-      {items.map((it) => (
-        <span
-          key={it.key}
-          className={cn(
-            "inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-label-sm",
-            it.ok ? "border-emerald/40 bg-emerald/10 text-emerald" : "border-line text-ink-soft",
-          )}
-        >
-          {it.label} <span className="font-bold">{it.n}/{it.target}</span>
-        </span>
-      ))}
-    </div>
   );
 }
 
