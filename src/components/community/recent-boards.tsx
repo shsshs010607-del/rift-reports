@@ -26,7 +26,7 @@ export function RecentBoards({
           const m = metaFor(c.slug);
           const Icon = m.icon;
           return (
-            <div key={c.slug} className="flex flex-col rounded-2xl border border-line/70 bg-card p-4">
+            <div key={c.slug} className="note-card flex flex-col p-4 pr-5">
               <Link
                 href={`/community/${c.slug}`}
                 className="group mb-2.5 flex items-center gap-2"

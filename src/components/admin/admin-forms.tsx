@@ -1,14 +1,70 @@
 "use client";
 
+import { useState, useTransition } from "react";
 import { useFormState, useFormStatus } from "react-dom";
+import { Trash2 } from "lucide-react";
 import {
   createReport,
   createTournament,
   createNotification,
+  deleteNotification,
   type AdminState,
 } from "@/app/admin/actions";
 import { createShop, type ShopState } from "@/lib/actions/shops";
 import { KR_SIDO } from "@/lib/constants";
+
+const KIND_KO: Record<string, string> = { notice: "공지", update: "업데이트", event: "이벤트" };
+
+export function NotificationList({
+  items,
+}: {
+  items: { id: string; title: string; kind: string; created_at: string }[];
+}) {
+  const [rows, setRows] = useState(items);
+  const [pending, start] = useTransition();
+  const [msg, setMsg] = useState<string | null>(null);
+
+  if (rows.length === 0) {
+    return <p className="text-body-sm text-ink-soft">발송한 알림이 없습니다.</p>;
+  }
+
+  const remove = (id: string) => {
+    if (!confirm("이 알림을 삭제할까요? 모든 사용자에게서 사라집니다.")) return;
+    start(async () => {
+      const res = await deleteNotification(id);
+      if (res.error) setMsg(res.error);
+      else setRows((r) => r.filter((x) => x.id !== id));
+    });
+  };
+
+  return (
+    <div className="flex flex-col gap-2">
+      {msg && <p className="text-body-sm text-coral">{msg}</p>}
+      <ul className="divide-y divide-line/50 overflow-hidden rounded-xl border border-line/70">
+        {rows.map((n) => (
+          <li key={n.id} className="flex items-center gap-3 px-3 py-2.5">
+            <span className="shrink-0 rounded bg-subcanvas px-1.5 py-0.5 text-[11px] font-bold text-ink-soft">
+              {KIND_KO[n.kind] ?? n.kind}
+            </span>
+            <span className="min-w-0 flex-1 truncate text-body-md text-ink">{n.title}</span>
+            <span className="shrink-0 text-label-sm text-ink-soft">
+              {new Date(n.created_at).toLocaleDateString("ko-KR", { month: "short", day: "numeric" })}
+            </span>
+            <button
+              type="button"
+              onClick={() => remove(n.id)}
+              disabled={pending}
+              className="shrink-0 rounded-lg p-1.5 text-ink-soft transition hover:bg-error/10 hover:text-error disabled:opacity-40"
+              aria-label="삭제"
+            >
+              <Trash2 className="h-4 w-4" />
+            </button>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
 
 function Text({
   name,

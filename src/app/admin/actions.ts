@@ -165,5 +165,15 @@ export async function createNotification(
   if (error) return { error: error.message };
 
   revalidatePath("/", "layout");
+  revalidatePath("/admin");
   return { ok: `알림 "${d.title}" 발송됨` };
+}
+
+export async function deleteNotification(id: string): Promise<AdminState> {
+  const { supabase } = await requireStaff();
+  const { error } = await supabase.from("notifications").delete().eq("id", id);
+  if (error) return { error: error.message };
+  revalidatePath("/", "layout");
+  revalidatePath("/admin");
+  return { ok: "알림을 삭제했습니다" };
 }

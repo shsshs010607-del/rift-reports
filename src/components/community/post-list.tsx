@@ -20,7 +20,7 @@ export function PostList({
 }) {
   if (posts.length === 0) {
     return (
-      <div className="grid place-items-center rounded-2xl border border-line/70 bg-card px-6 py-14 text-center">
+      <div className="note-card grid place-items-center px-6 py-14 text-center">
         <p className="text-body-md text-ink-soft">{emptyText}</p>
       </div>
     );

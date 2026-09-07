@@ -8,6 +8,7 @@ import {
   TournamentForm,
   ShopForm,
   NotificationForm,
+  NotificationList,
 } from "@/components/admin/admin-forms";
 
 export const metadata: Metadata = { title: "운영" };
@@ -26,6 +27,15 @@ export default async function AdminPage() {
     .select("role, username")
     .eq("id", user.id)
     .maybeSingle();
+
+  const isStaff = profile?.role === "editor" || profile?.role === "admin";
+  const { data: notifications } = isStaff
+    ? await supabase
+        .from("notifications")
+        .select("id, title, kind, created_at")
+        .order("created_at", { ascending: false })
+        .limit(20)
+    : { data: [] };
 
   if (profile?.role !== "editor" && profile?.role !== "admin") {
     return (
@@ -52,6 +62,10 @@ export default async function AdminPage() {
           <h2 className="section-title mb-3">알림 발송</h2>
           <div className="surface note-card p-5">
             <NotificationForm />
+          </div>
+          <div className="mt-3">
+            <h3 className="mb-2 text-label-lg font-bold text-ink-soft">발송한 알림</h3>
+            <NotificationList items={notifications ?? []} />
           </div>
         </section>
 

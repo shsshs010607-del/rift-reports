@@ -55,7 +55,7 @@ export default async function CommunityHubPage({
             <Link
               key={c.slug}
               href={`/community/${c.slug}`}
-              className={`group flex flex-col gap-2 rounded-2xl border border-line/70 bg-card p-3.5 transition ${m.ring}`}
+              className={`note-card group flex flex-col gap-2 p-3.5 pr-5 transition ${m.ring}`}
             >
               <span className={`grid h-9 w-9 place-items-center rounded-xl ${m.soft} ${m.fg}`}>
                 <Icon className="h-[18px] w-[18px]" />
