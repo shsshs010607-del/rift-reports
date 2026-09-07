@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { Menu, X, Search, Bell, PenSquare } from "lucide-react";
 import { NAV_ITEMS } from "@/lib/constants";
@@ -13,7 +13,9 @@ import type { User } from "@supabase/supabase-js";
 
 export function Navbar() {
   const pathname = usePathname();
+  const router = useRouter();
   const [open, setOpen] = useState(false);
+  const [q, setQ] = useState("");
   const [user, setUser] = useState<User | null>(null);
 
   useEffect(() => {
@@ -60,17 +62,23 @@ export function Navbar() {
         </div>
 
         <div className="flex items-center gap-space-sm">
-          <div className="relative hidden items-center lg:flex">
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              const term = q.trim();
+              if (term) router.push(`/community?q=${encodeURIComponent(term)}`);
+            }}
+            className="relative hidden items-center lg:flex"
+          >
             <Search className="pointer-events-none absolute left-space-sm h-4 w-4 text-outline" />
             <input
-              type="text"
-              placeholder="검색..."
-              className="w-36 rounded-full bg-surface-container-lowest py-space-xs pl-10 pr-14 text-body-sm text-on-surface shadow-xs placeholder:text-outline-variant focus:outline-none focus:ring-2 focus:ring-primary-container xl:w-44 2xl:w-56"
+              type="search"
+              value={q}
+              onChange={(e) => setQ(e.target.value)}
+              placeholder="커뮤니티 검색…"
+              className="w-36 rounded-full bg-surface-container-lowest py-space-xs pl-10 pr-4 text-body-sm text-on-surface shadow-xs placeholder:text-outline-variant focus:outline-none focus:ring-2 focus:ring-primary-container xl:w-44 2xl:w-56"
             />
-            <kbd className="absolute right-space-xs hidden rounded-md bg-surface-container px-space-xs py-0.5 text-label-sm font-semibold text-outline xl:block">
-              Ctrl+K
-            </kbd>
-          </div>
+          </form>
 
           <button
             type="button"
