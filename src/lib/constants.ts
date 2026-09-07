@@ -3,6 +3,9 @@ export const SITE = {
   nameEn: "Rift Report",
   description: "리프트바운드(Riftbound) TCG 공략 · 티어리스트 · 카드 DB · 커뮤니티",
   url: process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000",
+  /** 커뮤니티 채널 — 실제 URL 확정 전 "#" */
+  discord: "#",
+  youtube: "#",
 } as const;
 
 /**
@@ -22,7 +25,7 @@ export const NAV_ITEMS = [
   { href: "/", label: "덱 티어리스트" },
   { href: "/cards", label: "카드 정보" },
   { href: "/deck-simulator", label: "덱 시뮬레이터" },
-  { href: "/rules", label: "룰" },
+  { href: "/rules", label: "초보자 가이드" },
   { href: "/glossary", label: "용어" },
   { href: "/community", label: "커뮤니티" },
   { href: "/trading", label: "트레이딩" },

@@ -8,6 +8,7 @@ const nextConfig = {
       "/cards/[id]": ["./data/cards.json", "./data/cards-ko.json"],
       "/api/cards": ["./data/cards.json", "./data/cards-ko.json"],
       "/deck-simulator": ["./data/cards.json", "./data/cards-ko.json"],
+      "/rules": ["./data/cards.json", "./data/cards-ko.json"],
     },
   },
   images: {

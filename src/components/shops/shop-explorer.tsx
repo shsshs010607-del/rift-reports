@@ -31,6 +31,19 @@ export function ShopExplorer({ shops }: { shops: Shop[] }) {
     return KR_SIDO.filter((s) => set.has(s));
   }, [shops]);
 
+  const grouped = useMemo(() => {
+    const map = new Map<string, Shop[]>();
+    for (const s of view) {
+      const arr = map.get(s.sido) ?? [];
+      arr.push(s);
+      map.set(s.sido, arr);
+    }
+    return KR_SIDO.filter((r) => map.has(r)).map((region) => ({
+      region,
+      items: map.get(region)!,
+    }));
+  }, [view]);
+
   return (
     <div className="flex flex-col gap-4">
       <div className="flex flex-wrap items-center gap-2 rounded-2xl border border-line/70 bg-card p-3">
@@ -75,71 +88,92 @@ export function ShopExplorer({ shops }: { shops: Shop[] }) {
       </div>
 
       <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(300px,440px)]">
-        {shops.length === 0 ? (
-          <EmptyState />
-        ) : view.length === 0 ? (
-          <p className="grid place-items-center rounded-2xl border border-line/70 bg-card p-12 text-center text-body-sm text-ink-soft">
-            조건에 맞는 매장이 없습니다.
-          </p>
-        ) : (
-          <ul className="flex flex-col gap-2">
-            {view.map((s) => (
-              <li key={s.id}>
-                <button
-                  type="button"
-                  onClick={() => setSelectedId(s.id)}
-                  className={cn(
-                    "w-full rounded-2xl border p-3.5 text-left transition",
-                    selectedId === s.id
-                      ? "border-primary bg-primary/[0.04]"
-                      : "border-line/70 bg-card hover:border-primary/40",
-                  )}
-                >
-                  <div className="flex items-center gap-2">
-                    {s.is_official && (
-                      <span className="inline-flex items-center gap-1 rounded-md bg-amber-100 px-1.5 py-0.5 text-[11px] font-bold text-amber-700">
-                        <ShieldCheck className="h-3 w-3" />
-                        공인샵
-                      </span>
-                    )}
-                    <span className="font-display text-title-md font-bold text-ink">{s.name}</span>
-                  </div>
-                  <p className="mt-1 flex items-start gap-1.5 text-body-sm text-ink-soft">
-                    <MapPin className="mt-0.5 h-3.5 w-3.5 shrink-0" />
-                    {s.sido} {s.sigungu ?? ""} · {s.address}
-                  </p>
-                  <div className="mt-1 flex flex-wrap gap-x-3 gap-y-0.5 text-body-sm text-ink-soft">
-                    {s.phone && (
-                      <span className="inline-flex items-center gap-1">
-                        <Phone className="h-3.5 w-3.5" />
-                        {s.phone}
-                      </span>
-                    )}
-                    {s.hours && (
-                      <span className="inline-flex items-center gap-1">
-                        <Clock className="h-3.5 w-3.5" />
-                        {s.hours}
-                      </span>
-                    )}
-                    {s.url && (
-                      <a
-                        href={s.url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        onClick={(e) => e.stopPropagation()}
-                        className="inline-flex items-center gap-1 text-primary-strong hover:underline"
+        <div className="flex flex-col gap-4">
+          {shops.length === 0 ? (
+            <EmptyState />
+          ) : view.length === 0 ? (
+            <p className="grid place-items-center rounded-2xl border border-line/70 bg-card p-12 text-center text-body-sm text-ink-soft">
+              조건에 맞는 매장이 없습니다.
+            </p>
+          ) : (
+            grouped.map(({ region, items }) => (
+              <section key={region}>
+                <h3 className="mb-1.5 flex items-baseline gap-1.5 px-1 text-body-md font-bold text-ink">
+                  {region}
+                  <span className="text-label-sm font-normal text-ink-soft">{items.length}</span>
+                </h3>
+                <ul className="flex flex-col gap-2">
+                  {items.map((s) => (
+                    <li key={s.id}>
+                      <button
+                        type="button"
+                        onClick={() => setSelectedId(s.id)}
+                        className={cn(
+                          "w-full rounded-2xl border p-3.5 text-left transition",
+                          selectedId === s.id
+                            ? "border-primary bg-primary/[0.04]"
+                            : "border-line/70 bg-card hover:border-primary/40",
+                        )}
                       >
-                        <ExternalLink className="h-3.5 w-3.5" />
-                        링크
-                      </a>
-                    )}
-                  </div>
-                  {s.note && <p className="mt-1 text-body-sm text-ink-soft">{s.note}</p>}
-                </button>
-              </li>
-            ))}
-          </ul>
-        )}
+                        <div className="flex items-center gap-2">
+                          {s.is_official && (
+                            <span className="inline-flex items-center gap-1 rounded-md bg-amber-100 px-1.5 py-0.5 text-[11px] font-bold text-amber-700">
+                              <ShieldCheck className="h-3 w-3" />
+                              공인샵
+                            </span>
+                          )}
+                          <span className="font-display text-title-md font-bold text-ink">{s.name}</span>
+                        </div>
+                        <p className="mt-1 flex items-start gap-1.5 text-body-sm text-ink-soft">
+                          <MapPin className="mt-0.5 h-3.5 w-3.5 shrink-0" />
+                          {s.sido} {s.sigungu ?? ""} · {s.address}
+                        </p>
+                        <div className="mt-1 flex flex-wrap gap-x-3 gap-y-0.5 text-body-sm text-ink-soft">
+                          {s.phone && (
+                            <span className="inline-flex items-center gap-1">
+                              <Phone className="h-3.5 w-3.5" />
+                              {s.phone}
+                            </span>
+                          )}
+                          {s.hours && (
+                            <span className="inline-flex items-center gap-1">
+                              <Clock className="h-3.5 w-3.5" />
+                              {s.hours}
+                            </span>
+                          )}
+                          {s.url && (
+                            <a
+                              href={s.url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              onClick={(e) => e.stopPropagation()}
+                              className="inline-flex items-center gap-1 text-primary-strong hover:underline"
+                            >
+                              <ExternalLink className="h-3.5 w-3.5" />
+                              링크
+                            </a>
+                          )}
+                        </div>
+                        {s.note && <p className="mt-1 text-body-sm text-ink-soft">{s.note}</p>}
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              </section>
+            ))
+          )}
+
+          {shops.length > 0 && (
+            <p className="rounded-xl bg-subcanvas/60 px-3.5 py-2.5 text-body-sm text-ink-soft">
+              매장 정보는 커뮤니티 제보 기반입니다. 방문 전 매장에 리프트바운드 취급 여부를 직접
+              확인하세요. 신규 매장·정정 제보는{" "}
+              <a href="/community/recruit" className="font-bold text-primary-strong">
+                커뮤니티
+              </a>{" "}
+              또는 디스코드로 알려주세요.
+            </p>
+          )}
+        </div>
 
         <div className="lg:sticky lg:top-24 lg:self-start">
           <ShopMap

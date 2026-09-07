@@ -82,11 +82,6 @@ export function GlossaryBrowser() {
                 <h3 className="min-w-0 font-display text-title-md text-ink">
                   {t.term}
                   <span className="ml-1.5 text-body-sm font-normal text-ink-soft">· {t.en}</span>
-                  {t.symbol && (
-                    <span className="ml-1.5 rounded bg-primary/10 px-1.5 py-0.5 font-mono text-[12px] text-primary-strong">
-                      {t.symbol}
-                    </span>
-                  )}
                 </h3>
                 <span className="shrink-0 rounded-md bg-subcanvas px-1.5 py-0.5 text-[11px] font-bold text-ink-soft">
                   {t.category}

@@ -1,4 +1,5 @@
-import { Trophy, Package, Lightbulb, LayoutGrid } from "lucide-react";
+import Link from "next/link";
+import { Trophy, Package, Lightbulb, ShoppingCart } from "lucide-react";
 import {
   GAME_GOAL,
   COMPONENTS,
@@ -10,7 +11,31 @@ import {
   type GuideSection,
 } from "@/content/beginner-guide";
 import { CARD_DOMAINS } from "@/lib/constants";
+import type { Card } from "@/lib/types/card";
+import { LocalizedCard } from "@/components/cards/localized-card";
 import { TurnPhases } from "./turn-phases";
+
+/** 6개 도메인의 플레이 성향 (색 파이 기준 요약) */
+const DOMAIN_TRAITS: Record<string, string> = {
+  fury: "공격적·즉발. 빠른 유닛, 직접 피해, 위력 폭발. 짧게 끝내는 어그로.",
+  calm: "성장·자원. 에너지 가속, 큰 유닛, 회복. 판을 키우는 장기전.",
+  mind: "정보·카드 이득. 드로우, 통찰/예측, 반응. 상대를 읽는 컨트롤.",
+  body: "전투·거점. 이동, 점령, 방패. 전장을 몸으로 밀어붙이는 압박.",
+  chaos: "변칙·확률. 무작위 효과, 자기 희생, 판을 흔드는 고위험 고수익.",
+  order: "규율·군단. 토큰 소환, 광역 버프, 진형. 수로 밀어붙이는 물량.",
+};
+
+const ZONES: { name: string; desc: string }[] = [
+  { name: "레전드 존", desc: "챔피언 레전드를 놓는 자리. 게임 내내 고정, 이동하지 않는다." },
+  { name: "챔피언 존", desc: "지정 챔피언이 시작하는 자리. 여기서 일반 카드처럼 플레이한다." },
+  { name: "본대 (Base)", desc: "내 유닛이 소환되어 대기하는 안전 구역. 전투가 없다." },
+  { name: "전장 (Battlefield) ×3", desc: "점령·전투가 벌어지는 곳. 유닛을 이동시켜 점수를 얻는다." },
+  { name: "메인 덱 / 룬 덱", desc: "따로 셔플해서 놓는다. 카드는 메인 덱, 자원(룬)은 룬 덱에서." },
+  { name: "룬 풀 (Rune Pool)", desc: "룬으로 만든 에너지·파워가 모이는 곳. 매 라운드 끝에 비워진다." },
+  { name: "페이스다운 존", desc: "각 전장 옆의 숨김 칸. 그 전장 지배자가 카드 1장을 뒷면으로 숨긴다." },
+  { name: "체인 (Chain)", desc: "플레이한 카드·능력이 해결을 기다리며 쌓이는 곳. 나중 것부터 해결." },
+  { name: "트래시 / 추방", desc: "처치·사용된 카드는 트래시로, 게임에서 완전히 빠지면 추방으로." },
+];
 
 function StepList({ section }: { section: GuideSection }) {
   return (
@@ -34,54 +59,6 @@ function StepList({ section }: { section: GuideSection }) {
   );
 }
 
-const ZONES: { name: string; en: string; desc: string }[] = [
-  {
-    name: "레전드 존",
-    en: "Legend Zone",
-    desc: "챔피언 레전드를 놓는 자리. 게임 내내 여기 고정되며 이동하지 않는다.",
-  },
-  {
-    name: "챔피언 존",
-    en: "Champion Zone",
-    desc: "지정 챔피언이 게임 시작 시 놓이는 자리. 여기서 일반 카드처럼 플레이한다.",
-  },
-  {
-    name: "본대",
-    en: "Base",
-    desc: "내 유닛이 소환되어 대기하는 안전 구역. 전투가 벌어지지 않는다.",
-  },
-  {
-    name: "전장 (3곳)",
-    en: "Battlefield",
-    desc: "거점 점령과 전투가 벌어지는 곳. 유닛을 이동시켜 점령·유지로 점수를 얻는다.",
-  },
-  {
-    name: "메인 덱 / 룬 덱",
-    en: "Main Deck / Rune Deck",
-    desc: "각각 따로 셔플해서 놓는다. 메인 덱에서 카드를, 룬 덱에서 자원(룬)을 뽑는다.",
-  },
-  {
-    name: "룬 풀",
-    en: "Rune Pool",
-    desc: "룬을 재활용해 만든 파워가 모이는 곳. 매 라운드가 끝나면 비워진다.",
-  },
-  {
-    name: "페이스다운 존",
-    en: "Facedown Zone",
-    desc: "각 전장에 딸린 공간. 그 전장을 지배하는 플레이어가 카드 1장을 뒷면으로 숨긴다(숨겨짐).",
-  },
-  {
-    name: "체인",
-    en: "Chain",
-    desc: "플레이한 카드·활성화한 능력이 해결을 기다리며 잠시 쌓이는 곳. 나중에 올린 것부터 해결된다.",
-  },
-  {
-    name: "트래시 / 추방",
-    en: "Trash / Banishment",
-    desc: "처치·사용된 카드는 트래시(묘지)로, 게임에서 완전히 빠지는 카드는 추방으로 간다.",
-  },
-];
-
 function Block({ id, title, children }: { id: string; title: string; children: React.ReactNode }) {
   return (
     <section id={id} className="scroll-mt-24">
@@ -91,7 +68,102 @@ function Block({ id, title, children }: { id: string; title: string; children: R
   );
 }
 
-export function BeginnerGuide() {
+/** 게임판 배치 도해 */
+function BoardDiagram() {
+  const cell =
+    "rounded-lg border border-line/70 bg-card px-2 py-2 text-center text-label-sm font-bold text-ink";
+  const sub = "mt-0.5 block text-[10px] font-normal text-ink-soft";
+  return (
+    <div className="surface p-5">
+      <div className="mx-auto max-w-md space-y-2">
+        <div className="rounded-lg border border-dashed border-line/70 bg-subcanvas/40 px-2 py-1.5 text-center text-label-sm text-ink-soft">
+          상대 본대 · 상대 레전드/챔피언 존
+        </div>
+
+        <div className="grid grid-cols-3 gap-2">
+          {["전장 1", "전장 2", "전장 3"].map((b) => (
+            <div key={b} className="rounded-lg border-2 border-primary/40 bg-primary/[0.06] px-2 py-3 text-center">
+              <span className="text-label-sm font-bold text-primary-strong">{b}</span>
+              <span className={sub}>점령·전투 / 페이스다운 1장</span>
+            </div>
+          ))}
+        </div>
+
+        <div className="rounded-lg border-2 border-emerald/40 bg-emerald/[0.06] px-2 py-2.5 text-center">
+          <span className="text-label-sm font-bold text-emerald">내 본대 (Base)</span>
+          <span className={sub}>유닛 소환·대기 (안전, 전투 없음)</span>
+        </div>
+
+        <div className="grid grid-cols-2 gap-2 pt-1 sm:grid-cols-4">
+          <div className={cell}>
+            레전드 존<span className={sub}>챔피언 레전드 고정</span>
+          </div>
+          <div className={cell}>
+            챔피언 존<span className={sub}>지정 챔피언 시작</span>
+          </div>
+          <div className={cell}>
+            메인 덱 · 룬 덱<span className={sub}>따로 셔플</span>
+          </div>
+          <div className={cell}>
+            룬 풀<span className={sub}>에너지·파워, 라운드마다 소멸</span>
+          </div>
+        </div>
+      </div>
+
+      <ul className="mt-5 grid gap-2 border-t border-line/60 pt-4 sm:grid-cols-2">
+        {ZONES.map((z) => (
+          <li key={z.name} className="text-body-sm">
+            <span className="font-bold text-ink">{z.name}</span>
+            <span className="text-ink-soft"> — {z.desc}</span>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
+/** 자원 설명 — 실제 카드 한 장을 보며 부위별로 */
+function ResourceGuide({ card }: { card: Card | null }) {
+  return (
+    <div className="surface p-5">
+      <p className="mb-4 text-body-md text-ink-soft">{RESOURCES_SECTION.intro}</p>
+
+      <div className="grid gap-5 sm:grid-cols-[180px_1fr]">
+        {card && (
+          <div className="mx-auto w-full max-w-[180px]">
+            <LocalizedCard card={card} sizes="180px" />
+            <p className="mt-1.5 text-center text-label-sm text-ink-soft">
+              예시: {card.name}
+              {typeof card.cost === "number" && ` · 비용 ${card.cost}`}
+            </p>
+          </div>
+        )}
+
+        <div className="flex flex-col gap-4">
+          {RESOURCES_SECTION.steps.map((s) => (
+            <div key={s.title} className="border-l-2 border-primary/30 pl-4">
+              <h4 className="font-display text-title-md text-ink">{s.title}</h4>
+              <p className="mt-0.5 text-body-md text-ink-soft">{s.body}</p>
+              {s.tip && (
+                <p className="mt-1.5 flex gap-1.5 text-body-sm text-primary-strong">
+                  <Lightbulb className="mt-0.5 h-3.5 w-3.5 shrink-0" />
+                  {s.tip}
+                </p>
+              )}
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <p className="mt-4 rounded-xl bg-subcanvas/60 px-3.5 py-2.5 text-body-sm text-ink-soft">
+        카드 <b className="text-ink">왼쪽 위 숫자</b> = 에너지 비용, 그 <b className="text-ink">아래 색 기호</b> = 파워
+        비용, <b className="text-ink">오른쪽 아래</b> = 도메인.
+      </p>
+    </div>
+  );
+}
+
+export function BeginnerGuide({ exampleCard = null }: { exampleCard?: Card | null }) {
   return (
     <div className="flex flex-col gap-10">
       <Block id="goal" title="게임 목표">
@@ -117,22 +189,40 @@ export function BeginnerGuide() {
               </div>
             </li>
           ))}
+          <li className="flex items-center justify-between gap-3 rounded-xl border-2 border-dashed border-primary/30 bg-primary/[0.04] p-4">
+            <div>
+              <p className="text-title-md font-bold text-primary-strong">카드 사러 가기</p>
+              <p className="text-body-sm text-ink-soft">리프트바운드 취급 카드샵 찾기</p>
+            </div>
+            <Link
+              href="/shops"
+              className="shrink-0 rounded-full bg-primary px-4 py-2 text-label-md font-bold text-white transition hover:bg-primary-container"
+            >
+              <ShoppingCart className="mr-1 inline h-4 w-4" />
+              매장
+            </Link>
+          </li>
         </ul>
       </Block>
 
       <Block id="domains" title="6개 도메인">
-        <div className="surface grid grid-cols-2 gap-3 p-5 sm:grid-cols-3">
+        <div className="grid gap-3 sm:grid-cols-2">
           {CARD_DOMAINS.map((d) => (
-            <div key={d.slug} className="flex items-center gap-2.5">
-              <span
-                className="grid h-8 w-8 shrink-0 place-items-center rounded-full text-label-sm font-extrabold text-white"
-                style={{ backgroundColor: d.color }}
-              >
-                {d.short}
-              </span>
-              <div className="leading-tight">
-                <p className="text-title-md text-ink">{d.label}</p>
-                <p className="text-body-sm text-ink-soft">{d.en}</p>
+            <div key={d.slug} className="surface flex gap-3 overflow-hidden p-0">
+              <span className="w-1.5 shrink-0" style={{ backgroundColor: d.color }} />
+              <div className="flex gap-3 py-3.5 pr-4">
+                <span
+                  className="grid h-9 w-9 shrink-0 place-items-center rounded-full text-label-md font-extrabold text-white"
+                  style={{ backgroundColor: d.color }}
+                >
+                  {d.short}
+                </span>
+                <div>
+                  <p className="text-title-md text-ink">
+                    {d.label} <span className="text-body-sm text-ink-soft">· {d.en}</span>
+                  </p>
+                  <p className="mt-0.5 text-body-sm text-ink-soft">{DOMAIN_TRAITS[d.slug]}</p>
+                </div>
               </div>
             </div>
           ))}
@@ -140,23 +230,29 @@ export function BeginnerGuide() {
       </Block>
 
       <Block id="zones" title="게임판 구역 — 카드를 어디에 놓나">
-        <div className="surface grid gap-3 p-5 sm:grid-cols-2">
-          {ZONES.map((z) => (
-            <div key={z.en} className="flex gap-3">
-              <LayoutGrid className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
-              <div>
-                <p className="text-title-md text-ink">
-                  {z.name} <span className="text-body-sm text-ink-soft">· {z.en}</span>
-                </p>
-                <p className="text-body-sm text-ink-soft">{z.desc}</p>
-              </div>
-            </div>
-          ))}
-        </div>
+        <BoardDiagram />
       </Block>
 
-      <Block id="setup" title={SETUP_SECTION.title}>
-        <StepList section={SETUP_SECTION} />
+      <Block id="setup" title="게임 준비 — 한눈에">
+        <ol className="surface flex flex-col gap-0 divide-y divide-line/50 p-0">
+          {SETUP_SECTION.steps.map((s, i) => (
+            <li key={s.title} className="flex gap-3 p-3.5">
+              <span className="grid h-6 w-6 shrink-0 place-items-center rounded-full bg-primary text-label-sm font-bold text-white">
+                {i + 1}
+              </span>
+              <div>
+                <p className="text-body-md font-bold text-ink">{s.title.replace(/^\d+\.\s*/, "")}</p>
+                <p className="text-body-sm text-ink-soft">{s.body}</p>
+                {s.tip && (
+                  <p className="mt-0.5 flex gap-1 text-body-sm text-primary-strong">
+                    <Lightbulb className="mt-0.5 h-3.5 w-3.5 shrink-0" />
+                    {s.tip}
+                  </p>
+                )}
+              </div>
+            </li>
+          ))}
+        </ol>
       </Block>
 
       <Block id="turn" title="턴 순서">
@@ -164,7 +260,7 @@ export function BeginnerGuide() {
       </Block>
 
       <Block id="resources" title={RESOURCES_SECTION.title}>
-        <StepList section={RESOURCES_SECTION} />
+        <ResourceGuide card={exampleCard} />
       </Block>
 
       <Block id="combat" title={COMBAT_SECTION.title}>

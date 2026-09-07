@@ -123,7 +123,7 @@ export const GLOSSARY: GlossaryTerm[] = [
     en: "Main Deck",
     category: "덱빌딩",
     definition:
-      "40장 이상. 유닛·도구·주문으로 구성. 같은 이름 카드는 최대 3장. 게임 중 비밀 정보. 카드 효과에서 '카드'는 메인 덱 카드만 가리킨다.",
+      "39~59장. 유닛·도구·주문으로 구성. 같은 이름 카드는 최대 3장. 게임 중 비밀 정보. 카드 효과에서 '카드'는 메인 덱 카드만 가리킨다.",
     related: ["Rune Deck", "Signature"],
   },
   {
