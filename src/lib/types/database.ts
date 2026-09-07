@@ -23,6 +23,7 @@ export interface Database {
           avatar_url: string | null;
           bio: string | null;
           role: "user" | "editor" | "admin";
+          onboarded: boolean;
           created_at: string;
         };
         Insert: {
@@ -31,6 +32,7 @@ export interface Database {
           avatar_url?: string | null;
           bio?: string | null;
           role?: "user" | "editor" | "admin";
+          onboarded?: boolean;
           created_at?: string;
         };
         Update: Partial<Database["public"]["Tables"]["profiles"]["Insert"]>;
@@ -319,6 +321,10 @@ export interface Database {
       increment_view_count: {
         Args: { table_name: string; row_id: string };
         Returns: undefined;
+      };
+      username_available: {
+        Args: { name: string };
+        Returns: boolean;
       };
     };
     Enums: {

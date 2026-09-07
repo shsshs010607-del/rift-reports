@@ -3,7 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 
 /**
  * OAuth / 매직 링크 콜백.
- * code 를 세션으로 교환하고 next(내부 경로)로 리다이렉트한다.
+ * code 를 세션으로 교환하고, 닉네임 미설정이면 /onboarding 으로 보낸다.
  */
 export async function GET(request: Request) {
   const { searchParams, origin } = new URL(request.url);
@@ -14,8 +14,22 @@ export async function GET(request: Request) {
 
   if (code) {
     const supabase = createClient();
-    const { error } = await supabase.auth.exchangeCodeForSession(code);
-    if (!error) return NextResponse.redirect(`${origin}${next}`);
+    const { data, error } = await supabase.auth.exchangeCodeForSession(code);
+    if (!error) {
+      const userId = data.user?.id;
+      if (userId) {
+        const { data: profile } = await supabase
+          .from("profiles")
+          .select("onboarded")
+          .eq("id", userId)
+          .maybeSingle();
+        if (profile && !profile.onboarded) {
+          const to = `/onboarding${next !== "/" ? `?next=${encodeURIComponent(next)}` : ""}`;
+          return NextResponse.redirect(`${origin}${to}`);
+        }
+      }
+      return NextResponse.redirect(`${origin}${next}`);
+    }
   }
 
   return NextResponse.redirect(`${origin}/login?error=auth`);

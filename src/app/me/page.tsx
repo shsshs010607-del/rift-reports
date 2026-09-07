@@ -19,6 +19,16 @@ export default async function MePage() {
   return (
     <div className="mx-auto max-w-2xl">
       <PageHeading title={profile?.username ?? "내 프로필"} description={data.user.email ?? undefined} />
+
+      {profile && !profile.onboarded && (
+        <a
+          href="/onboarding?next=/me"
+          className="mb-4 block rounded-xl border border-primary/30 bg-primary-wash/60 p-3 text-body-sm font-semibold text-primary-strong"
+        >
+          아직 닉네임을 설정하지 않았어요. 지금 설정하기 →
+        </a>
+      )}
+
       <div className="surface flex items-center justify-between p-4">
         <span className="text-body-md text-ink-soft">역할: {profile?.role ?? "user"}</span>
         <SignOutButton />

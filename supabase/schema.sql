@@ -34,27 +34,45 @@ create table profiles (
   avatar_url  text,
   bio         text check (char_length(bio) <= 300),
   role        user_role not null default 'user',
+  onboarded   boolean not null default false,   -- 닉네임을 직접 정했는지
   created_at  timestamptz not null default now()
 );
 
--- 회원가입 시 자동으로 프로필 생성
+-- 닉네임 대소문자 무시 중복 방지
+create unique index profiles_username_lower_idx on profiles (lower(username));
+
+-- 회원가입 시 자동으로 프로필 생성 (임시 username, 진짜 닉네임은 /onboarding)
 create or replace function handle_new_user()
 returns trigger language plpgsql security definer set search_path = public as $$
 begin
-  insert into public.profiles (id, username)
+  insert into public.profiles (id, username, avatar_url, onboarded)
   values (
     new.id,
+    'user_' || substr(replace(new.id::text, '-', ''), 1, 12),
     coalesce(
-      new.raw_user_meta_data ->> 'user_name',
-      split_part(new.email, '@', 1) || '_' || substr(new.id::text, 1, 4)
-    )
-  );
+      new.raw_user_meta_data ->> 'avatar_url',
+      new.raw_user_meta_data ->> 'picture'
+    ),
+    false
+  )
+  on conflict (id) do nothing;
   return new;
 end $$;
 
 create trigger on_auth_user_created
   after insert on auth.users
   for each row execute function handle_new_user();
+
+-- 닉네임 사용 가능 여부 (RLS 우회, 2~20자·대소문자·공백 무시)
+create or replace function username_available(name text)
+returns boolean language sql security definer set search_path = public stable as $$
+  select
+    char_length(trim(name)) between 2 and 20
+    and not exists (
+      select 1 from profiles where lower(username) = lower(trim(name))
+    );
+$$;
+grant execute on function username_available(text) to anon, authenticated;
 
 -- ============================================================================
 --  2. reports  — 뉴스 / 분석 글 (에디터 작성)
