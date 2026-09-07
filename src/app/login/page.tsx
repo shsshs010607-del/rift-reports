@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { LoginForm } from "@/components/auth/login-form";
 
 export const metadata: Metadata = { title: "로그인" };
@@ -14,7 +15,15 @@ export default function LoginPage({ searchParams }: { searchParams: { next?: str
         <LoginForm next={searchParams.next} />
       </div>
       <p className="mt-4 text-center text-body-sm text-ink-soft">
-        로그인 시 커뮤니티 이용약관과 개인정보 처리방침에 동의하는 것으로 간주됩니다.
+        로그인 시{" "}
+        <Link href="/terms" className="underline hover:text-ink">
+          이용약관
+        </Link>
+        과{" "}
+        <Link href="/privacy" className="underline hover:text-ink">
+          개인정보처리방침
+        </Link>
+        에 동의하는 것으로 간주됩니다.
       </p>
     </div>
   );

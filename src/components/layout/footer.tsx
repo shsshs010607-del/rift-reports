@@ -81,8 +81,12 @@ export function Footer() {
                 {i.label}
               </Link>
             ))}
-            <span>개인정보처리방침</span>
-            <span>이용약관</span>
+            <Link href="/privacy" className="transition-colors hover:text-on-surface">
+              개인정보처리방침
+            </Link>
+            <Link href="/terms" className="transition-colors hover:text-on-surface">
+              이용약관
+            </Link>
           </div>
         </div>
       </div>
