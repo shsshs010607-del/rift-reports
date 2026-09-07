@@ -91,9 +91,9 @@ export function NotificationBell() {
       </button>
 
       {open && (
-        <div className="absolute right-0 top-12 z-50 w-[min(92vw,360px)] overflow-hidden rounded-2xl border border-outline-variant bg-surface shadow-e3">
-          <div className="flex items-center justify-between border-b border-outline-variant/60 px-4 py-2.5">
-            <span className="font-display text-title-md font-bold text-on-surface">알림</span>
+        <div className="absolute right-0 top-[calc(100%+10px)] z-50 w-[min(94vw,400px)] overflow-hidden rounded-2xl border border-outline-variant bg-surface shadow-e3">
+          <div className="flex items-center justify-between border-b border-outline-variant/60 px-4 py-3">
+            <span className="font-display text-headline-sm font-bold text-on-surface">알림</span>
             {feed.signedIn && feed.items.length > 0 && (
               <button
                 type="button"
@@ -117,17 +117,19 @@ export function NotificationBell() {
                   const Icon = KIND_ICON[n.kind] ?? Megaphone;
                   const inner = (
                     <>
-                      <span className="mt-0.5 grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-primary/10 text-primary">
-                        <Icon className="h-4 w-4" />
+                      <span className="mt-0.5 grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-primary/10 text-primary">
+                        <Icon className="h-[18px] w-[18px]" />
                       </span>
                       <span className="min-w-0 flex-1">
-                        <span className="block text-body-md font-bold text-on-surface">{n.title}</span>
+                        <span className="block text-body-lg font-bold leading-snug text-on-surface">
+                          {n.title}
+                        </span>
                         {n.body && (
-                          <span className="mt-0.5 block whitespace-pre-wrap text-body-sm text-on-surface-variant">
+                          <span className="mt-1 block whitespace-pre-wrap text-body-md leading-snug text-on-surface-variant">
                             {n.body}
                           </span>
                         )}
-                        <span className="mt-1 block text-label-sm text-on-surface-variant">
+                        <span className="mt-1.5 block text-body-sm text-on-surface-variant">
                           {formatDistanceToNow(new Date(n.created_at), { addSuffix: true, locale: ko })}
                         </span>
                       </span>
@@ -139,12 +141,12 @@ export function NotificationBell() {
                         <Link
                           href={n.href}
                           onClick={() => setOpen(false)}
-                          className="flex gap-3 px-4 py-3 transition-colors hover:bg-surface-container-low"
+                          className="flex gap-3 px-4 py-3.5 transition-colors hover:bg-surface-container-low"
                         >
                           {inner}
                         </Link>
                       ) : (
-                        <div className="flex gap-3 px-4 py-3">{inner}</div>
+                        <div className="flex gap-3 px-4 py-3.5">{inner}</div>
                       )}
                     </li>
                   );
