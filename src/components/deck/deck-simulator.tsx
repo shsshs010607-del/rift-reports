@@ -105,8 +105,14 @@ export function DeckSimulator({
             cacheRef.current.set(c.id, c);
           }
         }
-        // 이미 레전드가 있는데 룬이 비었으면 지금 채운다
-        setDeck((d) => (d.legendId ? fillRunes(d, cacheRef.current.get(d.legendId), runesByDomain.current) : d));
+        // 이미 레전드가 있고 그 카드가 캐시에 있으면 룬을 (재)정렬한다.
+        // 레전드 카드를 아직 모르면 기존 룬을 건드리지 않는다 (복원된 덱 훼손 방지).
+        setDeck((d) => {
+          if (!d.legendId) return d;
+          const legendCard = cacheRef.current.get(d.legendId);
+          if (!legendCard || runesByDomain.current.size === 0) return d;
+          return fillRunes(d, legendCard, runesByDomain.current);
+        });
       } catch {
         /* 무시 */
       }
@@ -133,12 +139,27 @@ export function DeckSimulator({
       const saved = localStorage.getItem(LS_KEY);
       const restored = saved && decodeDeck(saved);
       if (restored && (restored.legendId || restored.championId || restored.entries.length > 0)) {
-        setDeck(restored);
         const n =
           restored.entries.reduce((s, e) => s + e.qty, 0) +
           (restored.legendId ? 1 : 0) +
           (restored.championId ? 1 : 0);
-        setRestoredNote(n);
+        const ids = [
+          restored.legendId,
+          restored.championId,
+          ...restored.entries.map((e) => e.id),
+        ].filter((x): x is string => Boolean(x));
+        // 복원 덱의 카드를 먼저 캐시에 채운 뒤 적용해야 즉시 제대로 보인다.
+        fetch("/api/cards?limit=500")
+          .then((r) => (r.ok ? r.json() : { cards: [] }))
+          .then((d: { cards: Card[] }) => {
+            const wanted = new Set(ids);
+            for (const c of d.cards ?? []) if (wanted.has(c.id)) cacheRef.current.set(c.id, c);
+          })
+          .catch(() => {})
+          .finally(() => {
+            setDeck(restored);
+            setRestoredNote(n);
+          });
       }
     } catch {
       /* 무시 */

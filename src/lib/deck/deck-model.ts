@@ -148,11 +148,16 @@ export function validateDeck(rd: ResolvedDeck): DeckIssue[] {
       message: `전장은 ${DECK_RULES.battlefieldCount}장이어야 합니다 (현재 ${c.battlefield}장).`,
     });
 
-  for (const e of rd.sections.main) {
-    if (e.qty > DECK_RULES.maxCopies)
+  // 이름당 최대 3장 — 부제가 다르면 다른 카드. 리더 챔피언 슬롯도 카운트.
+  const mainByName = new Map<string, number>();
+  for (const e of rd.sections.main)
+    mainByName.set(e.card.name, (mainByName.get(e.card.name) ?? 0) + e.qty);
+  if (rd.champion) mainByName.set(rd.champion.name, (mainByName.get(rd.champion.name) ?? 0) + 1);
+  for (const [name, total] of mainByName) {
+    if (total > DECK_RULES.maxCopies)
       issues.push({
         level: "error",
-        message: `"${e.card.name}" ${e.qty}장 — 이름당 최대 ${DECK_RULES.maxCopies}장.`,
+        message: `"${name}" ${total}장 (리더 포함) — 이름당 최대 ${DECK_RULES.maxCopies}장.`,
       });
   }
 
@@ -208,15 +213,26 @@ export function planAdd(deck: Deck, rd: ResolvedDeck, card: Card): AddAction {
   }
 
   const zone = entryZoneOf(card.type);
-  const current = deck.entries.find((e) => e.id === card.id)?.qty ?? 0;
-  // 모든 카드 이름당 최대 3장 (룬 제외 — 룬은 6+6 자동)
-  if (zone !== "rune" && current >= DECK_RULES.maxCopies)
-    return { kind: "blocked", reason: `이름당 최대 ${DECK_RULES.maxCopies}장` };
+  // 이름당 최대 3장 (룬 제외). "이름" = 전체 이름(부제 포함) → 부제가 다르면 다른 카드.
+  // 리더 챔피언 슬롯의 카드도 같은 이름이면 1장으로 카운트한다.
+  const sameNameInZone = rd.sections[zone]
+    .filter((e) => e.card.name === card.name)
+    .reduce((s, e) => s + e.qty, 0);
+  const leaderSameName = rd.champion && rd.champion.name === card.name ? 1 : 0;
+  if (zone !== "rune" && sameNameInZone + leaderSameName >= DECK_RULES.maxCopies)
+    return {
+      kind: "blocked",
+      reason: `이름당 최대 ${DECK_RULES.maxCopies}장${leaderSameName ? " (리더 포함)" : ""}`,
+    };
   if (zone === "main" && zoneCounts(rd).main >= DECK_RULES.mainMax)
     return { kind: "blocked", reason: `메인덱은 ${DECK_RULES.mainMax}장까지` };
   if (zone === "rune" && zoneCounts(rd).rune >= DECK_RULES.runeCount)
     return { kind: "blocked", reason: `룬은 ${DECK_RULES.runeCount}장 (레전드 색 자동)` };
-  if (zone === "battlefield" && zoneCounts(rd).battlefield >= DECK_RULES.battlefieldCount && current === 0)
+  if (
+    zone === "battlefield" &&
+    zoneCounts(rd).battlefield >= DECK_RULES.battlefieldCount &&
+    !rd.sections.battlefield.some((e) => e.card.id === card.id)
+  )
     return { kind: "blocked", reason: `전장은 ${DECK_RULES.battlefieldCount}장까지` };
 
   return { kind: "entry", id: card.id };
