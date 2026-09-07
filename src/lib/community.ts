@@ -32,7 +32,7 @@ export function getPosts(opts: {
       const supabase = createClient();
       let filter = supabase
         .from("posts")
-        .select("*, author:profiles(username, avatar_url)", { count: "exact" });
+        .select("*, author:profiles!posts_author_id_fkey(username, avatar_url)", { count: "exact" });
 
       if (opts.category) filter = filter.eq("category", opts.category);
 
@@ -69,7 +69,7 @@ export function getPopularPosts(opts: { category?: CommunityCategory; page?: num
       const supabase = createClient();
       let filter = supabase
         .from("posts")
-        .select("*, author:profiles(username, avatar_url)", { count: "exact" })
+        .select("*, author:profiles!posts_author_id_fkey(username, avatar_url)", { count: "exact" })
         .gte("like_count", POPULAR_POST.minLikes)
         .gte("created_at", since);
 
@@ -91,7 +91,7 @@ export function getPost(id: string) {
     const supabase = createClient();
     const { data, error } = await supabase
       .from("posts")
-      .select("*, author:profiles(username, avatar_url)")
+      .select("*, author:profiles!posts_author_id_fkey(username, avatar_url)")
       .eq("id", id)
       .maybeSingle();
     if (error) throw error;
@@ -104,7 +104,7 @@ export function getComments(postId: string) {
     const supabase = createClient();
     const { data, error } = await supabase
       .from("comments")
-      .select("*, author:profiles(username, avatar_url)")
+      .select("*, author:profiles!comments_author_id_fkey(username, avatar_url)")
       .eq("post_id", postId)
       .order("created_at", { ascending: true });
     if (error) throw error;
@@ -122,7 +122,7 @@ export function getRecentByCategory(perCategory = 4) {
       cats.map(async (c) => {
         const { data } = await supabase
           .from("posts")
-          .select("*, author:profiles(username, avatar_url)")
+          .select("*, author:profiles!posts_author_id_fkey(username, avatar_url)")
           .eq("category", c)
           .order("created_at", { ascending: false })
           .limit(perCategory);
