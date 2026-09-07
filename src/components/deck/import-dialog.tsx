@@ -5,7 +5,8 @@ import { Loader2, X } from "lucide-react";
 
 import type { Card } from "@/lib/types/card";
 import { type Deck, EMPTY_DECK, entryZoneOf } from "@/lib/types/deck";
-import { decodeDeck } from "@/lib/deck/deck-code";
+import { decodeDeck, decodeDeckCode, buildDeckRefMaps } from "@/lib/deck/deck-code";
+import { deckCardIds } from "@/lib/deck/deck-code";
 import { parseDecklist, type TextSection } from "@/lib/deck/deck-text";
 
 /**
@@ -50,7 +51,27 @@ export function ImportDialog({
     setBusy(true);
     setReport(null);
 
-    // 1) URL / 덱 코드
+    // 1) 짧은 덱 코드 (rr1.…) — URL 안에 있어도 인식
+    const shortMatch =
+      text.match(/[?&]d=(rr1\.[^&\s]+)/)?.[1] ?? text.trim().match(/(rr1\.\S+)/)?.[1];
+    if (shortMatch) {
+      try {
+        const res = await fetch("/api/cards?limit=999");
+        const data = (await res.json()) as { cards: Card[] };
+        const { idByRef } = buildDeckRefMaps(data.cards);
+        const decoded = decodeDeckCode(shortMatch, idByRef);
+        if (decoded && (decoded.legendId || decoded.championId || decoded.entries.length > 0)) {
+          const wanted = new Set(deckCardIds(decoded));
+          onCache(data.cards.filter((c) => wanted.has(c.id)));
+          onApply({ ...decoded, name: current.name });
+          return;
+        }
+      } catch {
+        /* 폴백 계속 */
+      }
+    }
+
+    // 2) 구버전 URL / base64 덱 코드
     const codeMatch = text.match(/[?&]deck=([^&\s]+)/) ?? text.trim().match(/^([A-Za-z0-9_-]{16,})$/);
     if (codeMatch) {
       const decoded = decodeDeck(codeMatch[1]);

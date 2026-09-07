@@ -37,6 +37,16 @@ export function openingDraw(mainEntries: ResolvedEntry[], rng: () => number = Ma
   return { hand: shuffled.slice(0, size), library: shuffled.slice(size), mulliganed: false };
 }
 
+/** 덱 맨 위에서 한 장 드로우 (턴 진행 시뮬레이션 — 횟수 제한 없음). */
+export function drawOne(state: DrawState): DrawState {
+  if (state.library.length === 0) return state;
+  return {
+    hand: [...state.hand, state.library[0]],
+    library: state.library.slice(1),
+    mulliganed: state.mulliganed,
+  };
+}
+
 /**
  * 멀리건: bottomIndices 로 지정한 손패 카드(최대 2장)를 덱 맨 아래로 내리고
  * 같은 수만큼 덱 위에서 다시 뽑는다. 1회만.

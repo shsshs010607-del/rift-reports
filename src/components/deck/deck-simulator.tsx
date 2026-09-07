@@ -2,11 +2,18 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Check, Copy, Download, Eraser, Layers, Sparkles, Upload } from "lucide-react";
+import { Check, Copy, Download, Eraser, Layers, Save, Sparkles, Upload } from "lucide-react";
 
 import type { Card } from "@/lib/types/card";
 import type { Deck } from "@/lib/types/deck";
-import { encodeDeck, decodeDeck } from "@/lib/deck/deck-code";
+import {
+  encodeDeck,
+  decodeDeck,
+  buildDeckRefMaps,
+  encodeDeckCode,
+  isDeckCode,
+} from "@/lib/deck/deck-code";
+import { SaveDeckControls } from "@/components/deck/save-deck-controls";
 import {
   addEntry,
   clearDeck,
@@ -19,7 +26,6 @@ import {
   zoneCounts,
   totalCards,
 } from "@/lib/deck/deck-model";
-import { formatDecklist } from "@/lib/deck/deck-text";
 import { CardPool, type PoolTab } from "@/components/deck/card-pool";
 import { DeckList } from "@/components/deck/deck-list";
 import { SampleHand } from "@/components/deck/sample-hand";
@@ -126,20 +132,27 @@ export function DeckSimulator({
     }
   }, [initialDeck]);
 
-  // 덱 변경 → URL + localStorage (디바운스)
-  const code = useMemo(() => encodeDeck(deck), [deck]);
+  // 덱 변경 → URL(짧은 코드) + localStorage(base64, 자체완결)
+  const lsCode = useMemo(() => encodeDeck(deck), [deck]);
+  const shareCode = useMemo(() => {
+    const { refById } = buildDeckRefMaps([...cacheRef.current.values()]);
+    return encodeDeckCode(deck, refById) ?? lsCode;
+  }, [deck, lsCode]);
   useEffect(() => {
     const t = setTimeout(() => {
-      router.replace(code ? `/deck-simulator?deck=${code}` : "/deck-simulator", { scroll: false });
+      const url = shareCode
+        ? `/deck-simulator?${isDeckCode(shareCode) ? "d" : "deck"}=${shareCode}`
+        : "/deck-simulator";
+      router.replace(url, { scroll: false });
       try {
-        if (code) localStorage.setItem(LS_KEY, code);
+        if (lsCode) localStorage.setItem(LS_KEY, lsCode);
         else localStorage.removeItem(LS_KEY);
       } catch {
         /* 무시 */
       }
     }, 400);
     return () => clearTimeout(t);
-  }, [code, router]);
+  }, [shareCode, lsCode, router]);
 
   const rd = useMemo(() => resolveDeck(deck, cacheRef.current), [deck]);
   const counts = useMemo(() => zoneCounts(rd), [rd]);
@@ -185,9 +198,10 @@ export function DeckSimulator({
     }
   }
 
-  async function exportText() {
+  async function exportCode() {
+    if (!shareCode) return;
     try {
-      await navigator.clipboard.writeText(formatDecklist(rd));
+      await navigator.clipboard.writeText(shareCode);
       setCopied(true);
       setTimeout(() => setCopied(false), 1500);
     } catch {
@@ -249,12 +263,21 @@ export function DeckSimulator({
                 onClearChampion={() => setDeck((d) => setChampion(d, null))}
                 onFocusPool={handleTabChange}
               />
+
+              <SaveDeckControls
+                deckName={deck.name}
+                code={isDeckCode(shareCode) ? shareCode : null}
+                legendName={rd.legend?.name ?? null}
+                empty={total === 0}
+                onLoad={(loadCode) => router.push(`/deck-simulator?d=${loadCode}`)}
+              />
+
               <div className="mt-1 grid grid-cols-2 gap-1.5 border-t border-line pt-3 sm:grid-cols-4">
                 <ActionButton onClick={() => setImportOpen(true)} icon={<Upload className="h-4 w-4" />}>
                   가져오기
                 </ActionButton>
-                <ActionButton onClick={exportText} icon={<Download className="h-4 w-4" />}>
-                  내보내기
+                <ActionButton onClick={exportCode} icon={<Download className="h-4 w-4" />}>
+                  덱 코드
                 </ActionButton>
                 <ActionButton onClick={copyShareLink} icon={copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}>
                   {copied ? "복사됨" : "공유"}

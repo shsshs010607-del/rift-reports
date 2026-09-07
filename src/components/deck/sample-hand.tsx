@@ -1,10 +1,10 @@
 "use client";
 
 import { useCallback, useState } from "react";
-import { RotateCcw, Shuffle } from "lucide-react";
+import { RotateCcw, Shuffle, Plus } from "lucide-react";
 
 import type { ResolvedEntry } from "@/lib/types/deck";
-import { type DrawState, openingDraw, mulligan, buildLibrary } from "@/lib/deck/draw";
+import { type DrawState, openingDraw, mulligan, drawOne, buildLibrary } from "@/lib/deck/draw";
 import { DECK_RULES, CARD_DOMAINS, CARD_TYPES } from "@/lib/constants";
 import { LocalizedCard } from "@/components/cards/localized-card";
 import { cn } from "@/lib/utils";
@@ -32,7 +32,7 @@ export function SampleHand({
   }, [mainEntries]);
 
   const toggle = (i: number) => {
-    if (!state || state.mulliganed) return;
+    if (!state || state.mulliganed || state.hand.length > DECK_RULES.openingHand) return;
     setSelected((prev) => {
       const next = new Set(prev);
       if (next.has(i)) next.delete(i);
@@ -43,6 +43,13 @@ export function SampleHand({
 
   const applyMulligan = () => {
     setState((s) => (s ? mulligan(s, [...selected]) : s));
+    setSelected(new Set());
+  };
+
+  const drewExtra = Boolean(state && state.hand.length > DECK_RULES.openingHand);
+  const mulliganLocked = Boolean(state?.mulliganed || drewExtra);
+  const drawMore = () => {
+    setState((s) => (s ? drawOne(s) : s));
     setSelected(new Set());
   };
 
@@ -81,16 +88,21 @@ export function SampleHand({
           <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
             {state.hand.map((card, i) => {
               const picked = selected.has(i);
+              const isExtra = i >= DECK_RULES.openingHand;
               return (
                 <button
                   type="button"
                   key={`${card.id}-${i}`}
                   onClick={() => toggle(i)}
-                  disabled={state.mulliganed}
+                  disabled={mulliganLocked}
                   className={cn(
                     "flex flex-col overflow-hidden rounded-xl border-2 bg-subcanvas text-left transition",
-                    picked ? "border-primary ring-2 ring-primary/30" : "border-line",
-                    !state.mulliganed && "hover:border-primary/50",
+                    picked
+                      ? "border-primary ring-2 ring-primary/30"
+                      : isExtra
+                        ? "border-emerald/50"
+                        : "border-line",
+                    !mulliganLocked && "hover:border-primary/50",
                   )}
                 >
                   <div className="relative">
@@ -126,21 +138,37 @@ export function SampleHand({
 
           <div className="flex flex-wrap items-center justify-between gap-2">
             <p className="text-label-sm text-ink-soft">
-              {state.mulliganed
-                ? "멀리건을 사용했습니다."
-                : selected.size > 0
-                  ? `${selected.size}장 교체 예정`
-                  : "교체할 카드 선택 (안 하고 확정하면 킵)"}
+              {drewExtra
+                ? `손패 ${state.hand.length}장 · 남은 덱 ${state.library.length}장`
+                : state.mulliganed
+                  ? `멀리건 완료 · 남은 덱 ${state.library.length}장`
+                  : selected.size > 0
+                    ? `${selected.size}장 교체 예정`
+                    : "교체할 카드 선택 (안 하고 확정하면 킵)"}
             </p>
-            <button
-              type="button"
-              onClick={applyMulligan}
-              disabled={state.mulliganed}
-              className="btn-primary !py-1.5 !text-label-md disabled:opacity-40"
-            >
-              <Shuffle className="h-4 w-4" />
-              멀리건 확정
-            </button>
+            <div className="flex gap-1.5">
+              {!mulliganLocked && (
+                <button
+                  type="button"
+                  onClick={applyMulligan}
+                  className="btn-ghost !py-1.5 !text-label-md"
+                >
+                  <Shuffle className="h-4 w-4" />
+                  멀리건 확정
+                </button>
+              )}
+              <button
+                type="button"
+                onClick={drawMore}
+                disabled={state.library.length === 0}
+                className="btn-primary !py-1.5 !text-label-md disabled:opacity-40"
+              >
+                <Plus className="h-4 w-4" />한 장 더
+                {state.library.length > 0 && (
+                  <span className="opacity-80">({state.library.length})</span>
+                )}
+              </button>
+            </div>
           </div>
         </>
       )}

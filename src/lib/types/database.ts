@@ -183,6 +183,28 @@ export interface Database {
         Update: Partial<Database["public"]["Tables"]["post_likes"]["Row"]>;
         Relationships: [];
       };
+      saved_decks: {
+        Row: {
+          id: string;
+          user_id: string;
+          name: string;
+          code: string;
+          legend_name: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id: string;
+          name: string;
+          code: string;
+          legend_name?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: Partial<Database["public"]["Tables"]["saved_decks"]["Insert"]>;
+        Relationships: [];
+      };
       comments: {
         Row: {
           id: string;
@@ -353,3 +375,4 @@ export type Tournament = Database["public"]["Tables"]["tournaments"]["Row"];
 export type Profile = Database["public"]["Tables"]["profiles"]["Row"];
 export type CardPrint = Database["public"]["Tables"]["card_prints"]["Row"];
 export type PriceSnapshot = Database["public"]["Tables"]["price_snapshots"]["Row"];
+export type SavedDeck = Database["public"]["Tables"]["saved_decks"]["Row"];

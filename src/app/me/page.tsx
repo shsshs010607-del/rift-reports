@@ -10,6 +10,7 @@ import { PageHeading } from "@/components/ui/page-heading";
 import { SignOutButton } from "@/components/auth/sign-out-button";
 import { ProfileEditor } from "@/components/me/profile-editor";
 import { getMyPosts, getMyListings } from "@/lib/me";
+import { listMyDecks } from "@/lib/actions/decks";
 import { COMMUNITY_CATEGORIES, TRADING_CATEGORIES, TRADE_STATUS } from "@/lib/constants";
 
 export const metadata: Metadata = { title: "내 프로필" };
@@ -31,9 +32,10 @@ export default async function MePage() {
     .eq("id", data.user.id)
     .single();
 
-  const [posts, listings] = await Promise.all([
+  const [posts, listings, decks] = await Promise.all([
     getMyPosts(data.user.id),
     getMyListings(data.user.id),
+    listMyDecks(),
   ]);
 
   return (
@@ -118,6 +120,43 @@ export default async function MePage() {
                   <span className="shrink-0 text-label-sm text-ink-soft">
                     {TSTATUS.get(l.status)}
                   </span>
+                </Link>
+              </li>
+            ))}
+          </ul>
+        )}
+      </section>
+
+      <section className="mt-8">
+        <h2 className="section-title mb-3">
+          저장한 덱 <span className="text-body-sm font-normal text-ink-soft">{decks.length}</span>
+        </h2>
+        {decks.length === 0 ? (
+          <p className="rounded-2xl border border-line bg-card p-6 text-center text-body-sm text-ink-soft">
+            <Link href="/deck-simulator" className="font-bold text-primary-strong">
+              덱 시뮬레이터
+            </Link>
+            에서 덱을 만들고 저장해 보세요.
+          </p>
+        ) : (
+          <ul className="divide-y divide-line/70 overflow-hidden rounded-2xl border border-line/80 bg-card">
+            {decks.map((d) => (
+              <li key={d.id}>
+                <Link
+                  href={`/deck-simulator?d=${encodeURIComponent(d.code)}`}
+                  className="flex items-center gap-3 p-3 hover:bg-subcanvas/50"
+                >
+                  <span className="min-w-0 flex-1">
+                    <span className="block truncate text-body-md text-ink">{d.name}</span>
+                    {d.legend_name && (
+                      <span className="block truncate text-label-sm text-ink-soft">
+                        {d.legend_name}
+                      </span>
+                    )}
+                  </span>
+                  <time className="shrink-0 text-label-sm text-ink-soft" dateTime={d.updated_at}>
+                    {format(new Date(d.updated_at), "MM.dd", { locale: ko })}
+                  </time>
                 </Link>
               </li>
             ))}
