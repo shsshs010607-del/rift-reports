@@ -4,18 +4,20 @@ import { FileText, Flame, MapPin, TrendingUp } from "lucide-react";
 import { getLatestReports, getUpcomingTournaments } from "@/lib/queries";
 import { getPopularPosts } from "@/lib/community";
 import { getTopGainers } from "@/lib/prices";
-import { formatKRW } from "@/lib/utils";
+import { getUsdKrw } from "@/lib/fx";
+import { deltaUsd, fmtKrw, fmtKrwSigned } from "@/lib/money";
 
 /**
  * 홈 우측 사이드바 — 리포트 / 인기글 / 시세 / 대회.
  * Supabase 미연결이면 각 쿼리가 빈 배열을 반환 → "준비 중" 표시.
  */
 export async function HomeSidebar() {
-  const [reports, popular, gainers, tournaments] = await Promise.all([
+  const [reports, popular, gainers, tournaments, fx] = await Promise.all([
     getLatestReports(3),
     getPopularPosts({}),
     getTopGainers(3),
     getUpcomingTournaments(1),
+    getUsdKrw(),
   ]);
   const tournament = tournaments[0];
 
@@ -50,28 +52,35 @@ export async function HomeSidebar() {
         )}
       </Panel>
 
-      <Panel title="실시간 카드 거래 시세" icon={<TrendingUp className="h-4 w-4" />} href="/trading">
+      <Panel title="카드 시세 급등 (7일)" icon={<TrendingUp className="h-4 w-4" />} href="/trading">
         {gainers.length === 0 ? (
           <Empty>시세 데이터 준비 중입니다.</Empty>
         ) : (
           <ol className="flex flex-col">
-            {gainers.map((g) => (
-              <Row key={g.id} href={`/trading/cards/${g.print_id}`}>
-                <span className="truncate">{g.print?.name ?? "—"}</span>
-                <span className="shrink-0 font-bold text-ink">
-                  {g.market_price != null ? formatKRW(g.market_price) : "—"}
-                </span>
-                {g.change_7d != null && (
-                  <span
-                    className={`shrink-0 text-label-sm font-bold ${g.change_7d >= 0 ? "text-emerald" : "text-coral"}`}
-                  >
-                    {g.change_7d >= 0 ? "▲" : "▼"} {Math.abs(g.change_7d).toFixed(1)}%
-                  </span>
-                )}
-              </Row>
-            ))}
+            {gainers.map((g) => {
+              const d =
+                g.market_price != null && g.change_7d != null
+                  ? deltaUsd(g.market_price, g.change_7d)
+                  : null;
+              return (
+                <Row key={g.id} href={`/trading/cards/${g.print_id}`}>
+                  <span className="min-w-0 flex-1 truncate">{g.print?.name ?? "—"}</span>
+                  <span className="shrink-0 font-bold text-ink">{fmtKrw(g.market_price, fx.usdKrw)}</span>
+                  {d != null && (
+                    <span
+                      className={`shrink-0 text-label-sm font-bold ${d >= 0 ? "text-emerald" : "text-coral"}`}
+                    >
+                      {fmtKrwSigned(d, fx.usdKrw)}
+                    </span>
+                  )}
+                </Row>
+              );
+            })}
           </ol>
         )}
+        <p className="mt-1.5 px-1 text-label-sm text-ink-soft">
+          1 USD ≈ ₩{fx.usdKrw.toLocaleString("ko-KR")} · {fx.asOf} 기준
+        </p>
       </Panel>
 
       <div className="rounded-2xl border border-primary/25 bg-gradient-to-br from-primary-wash to-card p-4">

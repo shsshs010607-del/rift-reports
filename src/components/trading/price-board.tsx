@@ -5,14 +5,13 @@ import Link from "next/link";
 import Image from "next/image";
 import { Search, ArrowUpDown } from "lucide-react";
 import type { PriceRow } from "@/lib/prices";
+import type { FxRate } from "@/lib/fx";
 import { PRINT_LANGUAGES } from "@/lib/constants";
+import { deltaUsd, fmtKrw, fmtKrwSigned, fmtUsd } from "@/lib/money";
 import { cn } from "@/lib/utils";
 
 const langLabel = (s: string) =>
   PRINT_LANGUAGES.find((l) => l.slug === s)?.label ?? s.toUpperCase();
-
-const money = (n: number | null | undefined) =>
-  n == null ? "—" : `$${n.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 
 const pct = (n: number | null | undefined) =>
   n == null ? "" : `${n > 0 ? "+" : ""}${n.toFixed(1)}%`;
@@ -21,7 +20,7 @@ type SortKey = "price" | "change" | "name";
 
 const SORTS: { key: SortKey; label: string }[] = [
   { key: "price", label: "시세" },
-  { key: "change", label: "7일 변동" },
+  { key: "change", label: "7일 변동액" },
   { key: "name", label: "이름" },
 ];
 
@@ -29,7 +28,7 @@ const SORTS: { key: SortKey; label: string }[] = [
  * 카드 거래 페이지 시세표 — JustTCG 대표 시세를 검색·세트·정렬해서 보여준다.
  * 행을 누르면 /trading/cards/[printId] 상세(상태별 시세·추이·거래 링크)로 이동.
  */
-export function PriceBoard({ rows }: { rows: PriceRow[] }) {
+export function PriceBoard({ rows, fx }: { rows: PriceRow[]; fx: FxRate }) {
   const [q, setQ] = useState("");
   const [set, setSet] = useState("");
   const [sort, setSort] = useState<SortKey>("price");
@@ -53,9 +52,11 @@ export function PriceBoard({ rows }: { rows: PriceRow[] }) {
       );
     });
     const dir = asc ? 1 : -1;
+    const delta = (r: PriceRow) =>
+      r.market_price != null && r.change_7d != null ? deltaUsd(r.market_price, r.change_7d) : 0;
     return [...filtered].sort((a, b) => {
       if (sort === "name") return dir * (a.print?.name ?? "").localeCompare(b.print?.name ?? "", "ko");
-      if (sort === "change") return dir * ((a.change_7d ?? 0) - (b.change_7d ?? 0));
+      if (sort === "change") return dir * (delta(a) - delta(b));
       return dir * ((a.market_price ?? 0) - (b.market_price ?? 0));
     });
   }, [rows, q, set, sort, asc]);
@@ -149,17 +150,19 @@ export function PriceBoard({ rows }: { rows: PriceRow[] }) {
                   </span>
                 </span>
                 <span className="shrink-0 text-right">
-                  <span className="block text-body-md font-semibold text-ink">
-                    {money(r.market_price)}
+                  <span className="block text-body-md font-bold text-ink">
+                    {fmtKrw(r.market_price, fx.usdKrw)}
                   </span>
-                  {r.change_7d != null && (
+                  <span className="block text-body-sm text-ink-soft">{fmtUsd(r.market_price)}</span>
+                  {r.market_price != null && r.change_7d != null && r.change_7d !== 0 && (
                     <span
                       className={cn(
-                        "block text-body-sm font-semibold",
+                        "block text-label-sm font-semibold",
                         up ? "text-emerald" : "text-coral",
                       )}
                     >
-                      {pct(r.change_7d)}
+                      {fmtKrwSigned(deltaUsd(r.market_price, r.change_7d), fx.usdKrw)}
+                      <span className="text-ink-soft/80"> ({pct(r.change_7d)})</span>
                     </span>
                   )}
                 </span>

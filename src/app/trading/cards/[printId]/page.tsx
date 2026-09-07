@@ -5,16 +5,17 @@ import { formatDistanceToNow } from "date-fns";
 import { ko } from "date-fns/locale";
 import { ExternalLink, MessagesSquare, AlertTriangle } from "lucide-react";
 import { getPrintWithPrice, getPrintVariants, getPrintGroup, isStale } from "@/lib/prices";
+import { getUsdKrw } from "@/lib/fx";
+import { fmtKrw, fmtUsd } from "@/lib/money";
 import { PRINT_LANGUAGES, CARD_CONDITIONS } from "@/lib/constants";
 import { cn } from "@/lib/utils";
 import { PriceSparkline } from "@/components/trading/price-sparkline";
+import { FxNote } from "@/components/trading/fx-note";
 
 export const revalidate = 900;
 
 const langLabel = (s: string) => PRINT_LANGUAGES.find((l) => l.slug === s)?.label ?? s.toUpperCase();
 const condLabel = (s: string) => CARD_CONDITIONS.find((c) => c.slug === s)?.label ?? s;
-const money = (n: number | null | undefined, cur = "USD") =>
-  n == null ? "—" : new Intl.NumberFormat("en-US", { style: "currency", currency: cur }).format(n);
 const pct = (n: number | null | undefined) => (n == null ? "" : `${n > 0 ? "+" : ""}${n}%`);
 
 export default async function PrintPricePage({ params }: { params: { printId: string } }) {
@@ -22,10 +23,12 @@ export default async function PrintPricePage({ params }: { params: { printId: st
   if (!res) notFound();
   const { print, price } = res;
 
-  const [variants, group] = await Promise.all([
+  const [fx, variants, group] = await Promise.all([
+    getUsdKrw(),
     getPrintVariants(print.id),
     getPrintGroup(print.group_id),
   ]);
+  const money = (n: number | null | undefined) => fmtKrw(n, fx.usdKrw);
   const stale = price && isStale(price.captured_at);
   const history = (price?.history ?? []).map((h) => ({ t: new Date(h.t * 1000).toISOString(), v: h.p }));
 
@@ -51,16 +54,26 @@ export default async function PrintPricePage({ params }: { params: { printId: st
 
           {price ? (
             <dl className="mt-4 grid grid-cols-2 gap-x-6 gap-y-2">
-              <Stat label="최근 시세" value={money(price.market_price, price.currency)} big />
+              <Stat
+                label="최근 시세"
+                value={money(price.market_price)}
+                sub={fmtUsd(price.market_price)}
+                big
+              />
               <Stat
                 label="7일 변동"
                 value={pct(price.change_7d) || "—"}
                 tone={(price.change_7d ?? 0) >= 0 ? "up" : "down"}
               />
-              <Stat label="30일 평균" value={money(price.avg_price_30d, price.currency)} />
+              <Stat
+                label="30일 평균"
+                value={money(price.avg_price_30d)}
+                sub={fmtUsd(price.avg_price_30d)}
+              />
               <Stat
                 label="90일 최저 / 최고"
-                value={`${money(price.min_price_90d, price.currency)} / ${money(price.max_price_90d, price.currency)}`}
+                value={`${money(price.min_price_90d)} / ${money(price.max_price_90d)}`}
+                sub={`${fmtUsd(price.min_price_90d)} / ${fmtUsd(price.max_price_90d)}`}
               />
             </dl>
           ) : (
@@ -74,7 +87,10 @@ export default async function PrintPricePage({ params }: { params: { printId: st
             </p>
           )}
           <p className="mt-1 text-body-sm text-ink-soft">
-            JustTCG 블렌디드 시세 · 매수/매도 호가는 제공되지 않음
+            블렌디드 시세 · 매수/매도 호가는 제공되지 않음
+          </p>
+          <p className="mt-0.5">
+            <FxNote fx={fx} />
           </p>
         </div>
       </div>
@@ -110,7 +126,10 @@ export default async function PrintPricePage({ params }: { params: { printId: st
                   {v.printing === "foil" && " · 포일"}
                 </span>
                 <span className="flex items-center gap-3">
-                  <span className="text-body-md text-ink-soft">{money(v.market_price, v.currency)}</span>
+                  <span className="text-right">
+                    <span className="block text-body-md text-ink">{money(v.market_price)}</span>
+                    <span className="block text-label-sm text-ink-soft">{fmtUsd(v.market_price)}</span>
+                  </span>
                   {v.change_7d != null && (
                     <span
                       className={cn(
@@ -147,8 +166,9 @@ export default async function PrintPricePage({ params }: { params: { printId: st
                   <span className="min-w-0 flex-1 truncate text-body-md text-ink">
                     {g.name} <span className="text-ink-soft">· {langLabel(g.language)}</span>
                   </span>
-                  <span className="shrink-0 text-body-md text-ink-soft">
-                    {money(gp?.market_price, gp?.currency)}
+                  <span className="shrink-0 text-right">
+                    <span className="block text-body-md text-ink">{money(gp?.market_price)}</span>
+                    <span className="block text-label-sm text-ink-soft">{fmtUsd(gp?.market_price)}</span>
                   </span>
                 </Link>
               </li>
@@ -163,11 +183,13 @@ export default async function PrintPricePage({ params }: { params: { printId: st
 function Stat({
   label,
   value,
+  sub,
   big,
   tone,
 }: {
   label: string;
   value: string;
+  sub?: string;
   big?: boolean;
   tone?: "up" | "down";
 }) {
@@ -184,6 +206,7 @@ function Stat({
       >
         {value}
       </dd>
+      {sub && <dd className="text-label-sm text-ink-soft">{sub}</dd>}
     </div>
   );
 }

@@ -2,6 +2,7 @@ import "server-only";
 import { createClient } from "@/lib/supabase/server";
 import { hasSupabaseEnv } from "@/lib/supabase/env";
 import { PRICE } from "@/lib/constants";
+import { deltaUsd } from "@/lib/money";
 import type { CardPrint, PriceSnapshot } from "@/lib/types/database";
 
 export type PriceRow = PriceSnapshot & { print: CardPrint | null };
@@ -26,16 +27,24 @@ function moverQuery(dir: "asc" | "desc", limit: number) {
       .eq("is_headline", true)
       .not("change_7d", "is", null)
       .not("market_price", "is", null)
-      .order("change_7d", { ascending: dir === "asc" })
-      .limit(limit);
+      .limit(600);
     if (error) throw error;
-    return (data as unknown as PriceRow[]) ?? [];
+    // 퍼센트가 아니라 "절대 변동액(USD)" 기준으로 정렬한다.
+    const rows = ((data as unknown as PriceRow[]) ?? []).filter(
+      (r) => r.market_price != null && r.change_7d != null && r.change_7d !== 0,
+    );
+    rows.sort((a, b) => {
+      const da = deltaUsd(a.market_price!, a.change_7d!);
+      const db = deltaUsd(b.market_price!, b.change_7d!);
+      return dir === "asc" ? da - db : db - da;
+    });
+    return rows.slice(0, limit);
   }, []);
 }
 
-/** 급등 Top N (7일 변동률 내림차순) */
+/** 급등 Top N (7일 변동액 큰 순) */
 export const getTopGainers = (limit = 5) => moverQuery("desc", limit);
-/** 급락 Top N */
+/** 급락 Top N (7일 변동액 작은 순) */
 export const getTopLosers = (limit = 5) => moverQuery("asc", limit);
 
 /**

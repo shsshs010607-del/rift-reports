@@ -3,14 +3,17 @@ import Link from "next/link";
 import { PageHeading, ComingSoon } from "@/components/ui/page-heading";
 import { PriceMovers } from "@/components/trading/price-movers";
 import { PriceBoard } from "@/components/trading/price-board";
+import { FxNote } from "@/components/trading/fx-note";
 import { getTopGainers, getTopLosers, getPriceBoard } from "@/lib/prices";
+import { getUsdKrw } from "@/lib/fx";
 import { TRADING_CATEGORIES } from "@/lib/constants";
 
 export const metadata: Metadata = { title: "카드 거래" };
 export const revalidate = 900; // 15분 (시세 6시간 갱신이라 충분)
 
 export default async function TradingPage() {
-  const [gainers, losers, board] = await Promise.all([
+  const [fx, gainers, losers, board] = await Promise.all([
+    getUsdKrw(),
     getTopGainers(5),
     getTopLosers(5),
     getPriceBoard(),
@@ -32,14 +35,14 @@ export default async function TradingPage() {
         </div>
       </div>
 
-      <PriceMovers gainers={gainers} losers={losers} />
+      <PriceMovers gainers={gainers} losers={losers} fx={fx} />
 
       <section>
-        <div className="mb-3 flex items-end justify-between">
+        <div className="mb-3 flex flex-wrap items-end justify-between gap-x-4 gap-y-1">
           <h2 className="section-title">카드 시세</h2>
-          <span className="text-body-sm text-ink-soft">JustTCG · USD · 8시간마다 갱신</span>
+          <FxNote fx={fx} />
         </div>
-        <PriceBoard rows={board} />
+        <PriceBoard rows={board} fx={fx} />
       </section>
 
       <section>
