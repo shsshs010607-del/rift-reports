@@ -210,8 +210,7 @@ function SubmitCallout() {
         </a>
       </div>
       <p className="border-t border-primary/15 bg-primary/[0.03] px-4 py-2 text-body-sm text-ink-soft">
-        ※ 매장 정보는 커뮤니티 제보 기반입니다. 방문 전 리프트바운드 취급 여부를 매장에 직접
-        확인하세요.
+        ※ 매장 정보는 커뮤니티 제보 기반이라 실제와 다를 수 있습니다. 정정 제보를 받고 있어요.
       </p>
     </div>
   );
