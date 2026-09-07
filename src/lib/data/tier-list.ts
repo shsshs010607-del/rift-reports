@@ -1,78 +1,149 @@
 import type { Tier } from "@/lib/types/database";
 
 /**
- * 임시 덱 티어리스트 데이터.
- * 아직 완성 덱(decks 테이블)이 없어서, 카드 정보에 있는 레전드로 채워둔 플레이스홀더다.
- * - `legendEn`: 카드 서비스에서 레전드 카드를 찾는 키 (영문명)
- * - 카드를 누르면 덱 공략 게시판으로 이동 (나중에 개별 덱 상세로 교체)
+ * 덱 티어리스트 데이터 (레전드 기준).
+ * 완성 덱(decks 테이블) 연동 전까지, 카드 정보의 레전드로 구성한다.
+ * - `legendEn`: 카드 서비스에서 레전드를 찾는 키 (localization.en.name, "(Starter)" 포함 정확 일치)
+ * - 카드를 누르면 덱 공략 게시판으로 이동
  */
 export interface TierDeck {
   id: string;
   tier: Tier;
   name: string;
   subtitle: string;
-  /** 레전드 영문명 (카드 조회 키). */
   legendEn: string;
-  /** 핵심 카드/챔피언 표기. */
   keyCard: string;
 }
 
 export const TIER_DECKS: TierDeck[] = [
+  // ── S ──────────────────────────────────────────────
   {
-    id: "jinx-chaos-burst",
+    id: "yi",
     tier: "S",
-    name: "징크스 혼돈 폭딜",
-    subtitle: "주문 연계로 폭발적인 피니시",
-    legendEn: "Jinx - Loose Cannon",
-    keyCard: "징크스",
+    name: "마스터 이",
+    subtitle: "우주 검사 연계 폭딜",
+    legendEn: "Master Yi - Wuju Bladesman (Starter)",
+    keyCard: "마스터 이",
   },
   {
-    id: "darius-noxus-aggro",
+    id: "kaisa",
     tier: "S",
-    name: "다리우스 녹서스 어그로",
-    subtitle: "초반 압박 & 질서 자원 운영",
+    name: "카이사",
+    subtitle: "공허 성장·후반 캐리",
+    legendEn: "Kai'Sa - Daughter of the Void",
+    keyCard: "카이사",
+  },
+  {
+    id: "viktor",
+    tier: "S",
+    name: "빅토르",
+    subtitle: "아케인 자원 램프",
+    legendEn: "Viktor - Herald of the Arcane",
+    keyCard: "빅토르",
+  },
+
+  // ── A ──────────────────────────────────────────────
+  {
+    id: "annie",
+    tier: "A",
+    name: "애니",
+    subtitle: "분노 화력·직접 피해",
+    legendEn: "Annie - Dark Child (Starter)",
+    keyCard: "애니",
+  },
+  {
+    id: "sett",
+    tier: "A",
+    name: "세트",
+    subtitle: "육체 미드레인지",
+    legendEn: "Sett - The Boss",
+    keyCard: "세트",
+  },
+  {
+    id: "mf",
+    tier: "A",
+    name: "미스 포츈",
+    subtitle: "광역 사격 압박",
+    legendEn: "Miss Fortune - Bounty Hunter",
+    keyCard: "미스 포츈",
+  },
+
+  // ── B ──────────────────────────────────────────────
+  {
+    id: "yasuo",
+    tier: "B",
+    name: "야스오",
+    subtitle: "기절·반격 콤보",
+    legendEn: "Yasuo - Unforgiven",
+    keyCard: "야스오",
+  },
+  {
+    id: "darius",
+    tier: "B",
+    name: "다리우스",
+    subtitle: "녹서스 어그로",
     legendEn: "Darius - Hand of Noxus",
     keyCard: "다리우스",
   },
   {
-    id: "leesin-calm-combo",
-    tier: "A",
-    name: "리 신 침착 콤보",
-    subtitle: "정확한 킥 연계로 승부",
+    id: "volibear",
+    tier: "B",
+    name: "볼리베어",
+    subtitle: "폭풍 지속 전개",
+    legendEn: "Volibear - Relentless Storm",
+    keyCard: "볼리베어",
+  },
+
+  // ── C ──────────────────────────────────────────────
+  {
+    id: "ahri",
+    tier: "C",
+    name: "아리",
+    subtitle: "혼돈 주문 연계",
+    legendEn: "Ahri - Nine-Tailed Fox",
+    keyCard: "아리",
+  },
+  {
+    id: "leesin",
+    tier: "C",
+    name: "리 신",
+    subtitle: "침착 킥 콤보",
     legendEn: "Lee Sin - Blind Monk",
     keyCard: "리 신",
   },
   {
-    id: "leona-order-control",
-    tier: "A",
-    name: "레오나 질서 컨트롤",
-    subtitle: "방어 전개 후 후반 굳히기",
+    id: "leona",
+    tier: "C",
+    name: "레오나",
+    subtitle: "질서 방어 컨트롤",
     legendEn: "Leona - Radiant Dawn",
     keyCard: "레오나",
   },
   {
-    id: "viktor-arcane-ramp",
-    tier: "B",
-    name: "빅토르 아케인 램프",
-    subtitle: "자원 가속 후 대형 주문",
-    legendEn: "Viktor - Herald of the Arcane",
-    keyCard: "빅토르",
+    id: "jinx",
+    tier: "C",
+    name: "징크스",
+    subtitle: "혼돈 폭딜 피니시",
+    legendEn: "Jinx - Loose Cannon",
+    keyCard: "징크스",
   },
+
+  // ── Z ──────────────────────────────────────────────
   {
-    id: "teemo-chaos-trap",
-    tier: "B",
-    name: "티모 혼돈 함정",
-    subtitle: "지속 피해 & 필드 견제",
+    id: "teemo",
+    tier: "Z",
+    name: "티모",
+    subtitle: "함정 견제 (표본 부족)",
     legendEn: "Teemo - Swift Scout",
     keyCard: "티모",
   },
   {
-    id: "sett-body-midrange",
-    tier: "C",
-    name: "세트 육체 미드레인지",
-    subtitle: "단단한 전개, 표본 부족",
-    legendEn: "Sett - The Boss",
-    keyCard: "세트",
+    id: "garen",
+    tier: "Z",
+    name: "가렌",
+    subtitle: "입문자 덱 (표본 부족)",
+    legendEn: "Garen - Might of Demacia (Starter)",
+    keyCard: "가렌",
   },
 ];
 
@@ -81,4 +152,5 @@ export const TIER_META: Record<Tier, { label: string; note: string }> = {
   A: { label: "A", note: "우수" },
   B: { label: "B", note: "안정" },
   C: { label: "C", note: "유동" },
+  Z: { label: "Z", note: "비주류" },
 };

@@ -39,7 +39,7 @@ export const KR_SIDO = [
 ] as const;
 export type KrSido = (typeof KR_SIDO)[number];
 
-export const TIERS = ["S", "A", "B", "C"] as const;
+export const TIERS = ["S", "A", "B", "C", "Z"] as const;
 export type Tier = (typeof TIERS)[number];
 
 export const TIER_STYLES: Record<
@@ -50,6 +50,12 @@ export const TIER_STYLES: Record<
   A: { label: "A", badge: "tier-badge tier-badge-a", headerBg: "bg-tier-a", dot: "bg-tier-a" },
   B: { label: "B", badge: "tier-badge tier-badge-b", headerBg: "bg-emerald", dot: "bg-emerald" },
   C: { label: "C", badge: "tier-badge tier-badge-c", headerBg: "bg-tier-c", dot: "bg-tier-c" },
+  Z: {
+    label: "Z",
+    badge: "tier-badge bg-surface-container text-on-surface-variant",
+    headerBg: "bg-outline",
+    dot: "bg-outline",
+  },
 };
 
 export const COMMUNITY_CATEGORIES = [

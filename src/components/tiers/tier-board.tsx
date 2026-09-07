@@ -3,18 +3,16 @@ import { ArrowRight } from "lucide-react";
 
 import { getCardService } from "@/lib/services/cardService";
 import type { Card } from "@/lib/types/card";
-import { TIERS } from "@/lib/constants";
+import { TIERS, TIER_STYLES } from "@/lib/constants";
 import type { Tier } from "@/lib/types/database";
 import { TIER_DECKS, TIER_META } from "@/lib/data/tier-list";
 import { LocalizedCard } from "@/components/cards/localized-card";
-import { TierHeader } from "@/components/ui/tier-badge";
+import { cn } from "@/lib/utils";
 
-/** 덱 공략 게시판 (완성 덱 상세로 나중에 교체) */
 const DECK_HREF = "/community/deck-guide";
 
 /**
- * 덱 티어리스트 보드. 완성 덱이 없어서 카드 정보의 레전드로 채운 임시 데이터를 쓴다.
- * 덱을 누르면 덱 공략 게시판으로 이동한다.
+ * 덱 티어리스트 보드 (S·A·B·C·Z). 완성 덱 연동 전까지 레전드 기준 임시 데이터.
  */
 export async function TierBoard() {
   let legendByName = new Map<string, Card>();
@@ -22,7 +20,7 @@ export async function TierBoard() {
     const legends = await getCardService().searchCards({ type: "legend" });
     legendByName = new Map(legends.map((c) => [c.localization.en.name, c]));
   } catch {
-    /* 카드 못 불러와도 텍스트만 보여준다 */
+    /* 카드 못 불러와도 텍스트만 */
   }
 
   return (
@@ -30,20 +28,33 @@ export async function TierBoard() {
       {(TIERS as readonly Tier[]).map((tier) => {
         const decks = TIER_DECKS.filter((d) => d.tier === tier);
         if (decks.length === 0) return null;
+        const s = TIER_STYLES[tier];
         return (
-          <section key={tier} className="flex items-stretch gap-3 rounded-2xl border border-line bg-card p-3">
-            <div className="flex flex-col items-center">
-              <TierHeader tier={tier} />
-              <span className="mt-1.5 text-label-sm font-bold text-ink-soft">{TIER_META[tier].note}</span>
+          <section
+            key={tier}
+            className="flex items-stretch overflow-hidden rounded-2xl border border-line bg-card"
+          >
+            {/* 티어 레터 — 색 바 */}
+            <div
+              className={cn(
+                "flex w-16 shrink-0 flex-col items-center justify-center gap-0.5 py-3 text-white sm:w-20",
+                s.headerBg,
+              )}
+            >
+              <span className="font-display text-[32px] font-black leading-none sm:text-[40px]">
+                {s.label}
+              </span>
+              <span className="text-[11px] font-bold opacity-90">{TIER_META[tier].note}</span>
             </div>
-            <ul className="grid flex-1 grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+
+            <ul className="grid flex-1 grid-cols-2 gap-2.5 p-3 sm:grid-cols-3 lg:grid-cols-4">
               {decks.map((deck) => {
                 const legend = legendByName.get(deck.legendEn);
                 return (
                   <li key={deck.id}>
                     <Link
                       href={DECK_HREF}
-                      className="flex h-full flex-col overflow-hidden rounded-xl border border-line bg-subcanvas/40 transition hover:-translate-y-0.5 hover:border-primary/40"
+                      className="flex h-full flex-col overflow-hidden rounded-xl border border-line/70 bg-subcanvas/40 transition hover:-translate-y-0.5 hover:border-primary/40"
                     >
                       <div className="relative aspect-[744/1039] bg-subcanvas">
                         {legend ? (
@@ -61,8 +72,7 @@ export async function TierBoard() {
                       <div className="flex flex-1 flex-col gap-0.5 p-2.5">
                         <p className="text-label-lg font-bold leading-tight text-ink">{deck.name}</p>
                         <p className="text-label-sm text-ink-soft">{deck.subtitle}</p>
-                        <p className="mt-auto flex items-center justify-between pt-1.5 text-label-sm text-ink-soft">
-                          <span>핵심: {deck.keyCard}</span>
+                        <p className="mt-auto flex items-center justify-end pt-1.5 text-label-sm">
                           <span className="inline-flex items-center gap-0.5 font-semibold text-primary-strong">
                             공략 <ArrowRight className="h-3 w-3" />
                           </span>

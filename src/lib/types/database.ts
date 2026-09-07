@@ -6,7 +6,7 @@
 
 export type Json = string | number | boolean | null | { [key: string]: Json | undefined } | Json[];
 
-export type Tier = "S" | "A" | "B" | "C";
+export type Tier = "S" | "A" | "B" | "C" | "Z";
 export type CommunityCategory = "riftbound" | "report" | "deck-guide" | "tournament" | "recruit";
 export type TradingCategory = "sell" | "buy" | "trade";
 export type TradeStatus = "open" | "reserved" | "closed";
