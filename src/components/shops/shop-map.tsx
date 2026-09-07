@@ -55,8 +55,9 @@ export function ShopMap({
     if (!ready || !kakao?.maps || !mapRef.current) return;
     const map = mapRef.current;
     const geocoder = new kakao.maps.services.Geocoder();
+    const places = new kakao.maps.services.Places();
+    const OK = kakao.maps.services.Status.OK;
     const bounds = new kakao.maps.LatLngBounds();
-    let placed = 0;
 
     for (const [, m] of markersRef.current) m.setMap(null);
     markersRef.current.clear();
@@ -67,21 +68,30 @@ export function ShopMap({
       kakao.maps.event.addListener(marker, "click", () => onSelect?.(shop.id));
       markersRef.current.set(shop.id, marker);
       bounds.extend(pos);
-      placed += 1;
-      if (placed > 0) map.setBounds(bounds);
+      map.setBounds(bounds);
     };
 
-    for (const shop of shops) {
+    const resolve = (shop: MapShop) => {
       if (shop.lat != null && shop.lng != null) {
         place(shop, shop.lat, shop.lng);
-      } else if (shop.address) {
-        geocoder.addressSearch(shop.address, (res: any[], status: string) => {
-          if (status === kakao.maps.services.Status.OK && res[0]) {
-            place(shop, Number(res[0].y), Number(res[0].x));
-          }
-        });
+        return;
       }
-    }
+      // 1) 정확 주소 → 2) 매장명 키워드 → 3) 주소 키워드
+      geocoder.addressSearch(shop.address, (r: any[], s: string) => {
+        if (s === OK && r[0]) return place(shop, Number(r[0].y), Number(r[0].x));
+        places.keywordSearch(
+          `${shop.name}`,
+          (r2: any[], s2: string) => {
+            if (s2 === OK && r2[0]) return place(shop, Number(r2[0].y), Number(r2[0].x));
+            places.keywordSearch(shop.address, (r3: any[], s3: string) => {
+              if (s3 === OK && r3[0]) place(shop, Number(r3[0].y), Number(r3[0].x));
+            });
+          },
+        );
+      });
+    };
+
+    for (const shop of shops) resolve(shop);
   }, [ready, shops, onSelect]);
 
   // 선택 매장으로 이동
