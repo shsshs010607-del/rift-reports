@@ -53,7 +53,7 @@ export async function TierBoard() {
                 return (
                   <li key={deck.id}>
                     <Link
-                      href={DECK_HREF}
+                      href={deck.guidePostId ? `/community/post/${deck.guidePostId}` : DECK_HREF}
                       className="flex h-full flex-col overflow-hidden rounded-xl border border-line/70 bg-subcanvas/40 transition hover:-translate-y-0.5 hover:border-primary/40"
                     >
                       <div className="relative aspect-[744/1039] bg-subcanvas">

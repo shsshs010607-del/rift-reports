@@ -13,9 +13,30 @@ export interface TierDeck {
   subtitle: string;
   legendEn: string;
   keyCard: string;
+  /** 덱 공략 글 (커뮤니티 post id). 없으면 덱 공략 게시판으로. */
+  guidePostId?: string;
 }
 
-export const TIER_DECKS: TierDeck[] = [
+/** scripts/seed-deck-guides.ts 가 생성한 공략 글 매핑 */
+const GUIDE: Record<string, string> = {
+  yi: "ade266c2-84a2-4bbc-9415-d92911845cf7",
+  kaisa: "52158414-b0e5-4cba-a4d0-e0230232f3f3",
+  viktor: "d508cd97-d1ad-4538-a6ee-8bf990e21a5c",
+  annie: "a90034cf-a3db-476e-ac5d-ebd6b3fd8d55",
+  sett: "432cb664-e1ff-4a25-935e-ac03d0053ff1",
+  mf: "ca59e638-ecb0-475e-b3ea-0d191c83002a",
+  yasuo: "452b18d2-b898-4c64-8665-6ce1d009f5cc",
+  darius: "a710f367-f320-4dc3-a249-6d090c681a84",
+  volibear: "d93749a7-a54e-43a6-a8a6-591b291b88e9",
+  ahri: "2c810fc8-a235-42a2-b73b-e3141b1b75ce",
+  leesin: "e2e6461e-1acd-4ab3-8544-a32c3aa8e236",
+  leona: "7d1fddc2-00c6-4b34-b3ed-24f484758e2a",
+  jinx: "5accf479-7521-430f-a502-03e9487afe63",
+  teemo: "d7a7a401-fe28-40bc-9cf9-a0dadddcfa44",
+  garen: "ef16bffc-fa3f-4447-8907-e150a76179ef",
+};
+
+const RAW_DECKS: Omit<TierDeck, "guidePostId">[] = [
   // ── S ──────────────────────────────────────────────
   {
     id: "yi",
@@ -146,6 +167,11 @@ export const TIER_DECKS: TierDeck[] = [
     keyCard: "가렌",
   },
 ];
+
+export const TIER_DECKS: TierDeck[] = RAW_DECKS.map((d) => ({
+  ...d,
+  guidePostId: GUIDE[d.id],
+}));
 
 export const TIER_META: Record<Tier, { label: string; note: string }> = {
   S: { label: "S", note: "최상위" },
