@@ -2,7 +2,7 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import { format } from "date-fns";
 import { ko } from "date-fns/locale";
-import { Megaphone, ChevronLeft } from "lucide-react";
+import { ChevronLeft } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { getPost, getComments, getLikedPostIds } from "@/lib/community";
 import { COMMUNITY_CATEGORIES } from "@/lib/constants";
@@ -11,6 +11,8 @@ import { LikeButton } from "@/components/community/like-button";
 import { ViewCounter } from "@/components/community/view-counter";
 import { CommentSection } from "@/components/community/comment-section";
 import { PostActions } from "@/components/community/post-actions";
+import { Avatar } from "@/components/community/avatar";
+import { CategoryBadge } from "@/components/community/category-meta";
 
 export const dynamic = "force-dynamic";
 
@@ -44,32 +46,35 @@ export default async function PostDetailPage({ params }: { params: { id: string 
         {cat?.label ?? "커뮤니티"}
       </Link>
 
-      <header
-        className={cn(
-          "rounded-2xl border p-5",
-          post.is_notice ? "border-amber/30 bg-amber/[0.06]" : "border-line/80 bg-card",
-        )}
-      >
-        <div className="flex items-center gap-2">
+      <header className="border-b border-line/60 pb-5">
+        <div className="flex items-center gap-1.5">
           {post.is_notice && (
-            <span className="inline-flex items-center gap-1 rounded-full bg-amber/15 px-2 py-0.5 text-label-sm font-bold uppercase text-[#B45309]">
-              <Megaphone className="h-3 w-3" />
+            <span className="rounded-md bg-primary px-1.5 py-0.5 text-[11px] font-bold text-white">
               공지
             </span>
           )}
-          <span className="chip">{cat?.label ?? post.category}</span>
+          <CategoryBadge slug={post.category} />
         </div>
-        <h1 className={cn("mt-2 font-display text-headline-md", post.is_notice ? "text-[#B45309]" : "text-ink")}>
+        <h1
+          className={cn(
+            "mt-2.5 font-display text-headline-md leading-tight",
+            post.is_notice ? "text-primary-strong" : "text-ink",
+          )}
+        >
           {post.title}
         </h1>
-        <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-body-sm text-ink-soft">
-          <span className="font-semibold text-ink">{post.author?.username ?? "알 수 없음"}</span>
-          <time dateTime={post.created_at}>
-            {format(new Date(post.created_at), "yyyy.MM.dd HH:mm", { locale: ko })}
-          </time>
-          <span>조회 {post.view_count}</span>
-          <span>추천 {post.like_count}</span>
-          <span>댓글 {post.comment_count}</span>
+        <div className="mt-3 flex items-center gap-2.5 text-body-sm text-ink-soft">
+          <Avatar name={post.author?.username} src={post.author?.avatar_url} size="md" />
+          <div className="flex flex-col leading-tight">
+            <span className="font-bold text-ink">{post.author?.username ?? "알 수 없음"}</span>
+            <span className="text-[13px]">
+              <time dateTime={post.created_at}>
+                {format(new Date(post.created_at), "yyyy.MM.dd HH:mm", { locale: ko })}
+              </time>
+              {" · 조회 "}
+              {post.view_count}
+            </span>
+          </div>
           {(isOwner || canModerate) && (
             <span className="ml-auto">
               <PostActions postId={post.id} />
@@ -80,7 +85,7 @@ export default async function PostDetailPage({ params }: { params: { id: string 
 
       <div className="mt-6 whitespace-pre-wrap text-body-lg leading-relaxed text-ink">{post.body}</div>
 
-      <div className="mt-8 flex justify-center">
+      <div className="mt-10 flex justify-center">
         <LikeButton
           postId={post.id}
           initialCount={post.like_count}

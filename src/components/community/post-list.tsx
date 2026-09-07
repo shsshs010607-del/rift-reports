@@ -1,16 +1,16 @@
 import Link from "next/link";
-import { Megaphone, Pin } from "lucide-react";
+import { Pin, MessageSquare, Heart } from "lucide-react";
+import { formatDistanceToNow } from "date-fns";
+import { ko } from "date-fns/locale";
 import { cn } from "@/lib/utils";
-import { COMMUNITY_CATEGORIES } from "@/lib/constants";
 import type { PostListItem } from "@/lib/community";
-import { AuthorTag, PostStats } from "./post-meta";
-
-const catLabel = (slug: string) => COMMUNITY_CATEGORIES.find((c) => c.slug === slug)?.label ?? slug;
+import { Avatar } from "./avatar";
+import { CategoryBadge } from "./category-meta";
 
 export function PostList({
   posts,
   showCategory = false,
-  emptyText = "아직 글이 없습니다. 첫 글을 남겨보세요!",
+  emptyText = "아직 글이 없습니다. 첫 글을 남겨보세요.",
 }: {
   posts: PostListItem[];
   showCategory?: boolean;
@@ -18,58 +18,66 @@ export function PostList({
 }) {
   if (posts.length === 0) {
     return (
-      <div className="grid place-items-center rounded-2xl border-2 border-dashed border-line bg-subcanvas/40 px-6 py-14 text-center">
+      <div className="grid place-items-center rounded-2xl border border-line/70 bg-card px-6 py-16 text-center">
         <p className="text-body-md text-ink-soft">{emptyText}</p>
       </div>
     );
   }
 
   return (
-    <ul className="divide-y divide-line/70 overflow-hidden rounded-2xl border border-line/80 bg-card shadow-e1">
+    <ul className="overflow-hidden rounded-2xl border border-line/70 bg-card">
       {posts.map((p) => (
-        <li key={p.id}>
+        <li key={p.id} className="border-b border-line/50 last:border-0">
           <Link
             href={`/community/post/${p.id}`}
             className={cn(
-              "flex flex-col gap-1.5 p-4 transition hover:bg-subcanvas/50",
-              p.is_notice && "bg-amber/[0.06] hover:bg-amber/10",
+              "flex flex-col gap-1.5 px-4 py-3.5 transition-colors hover:bg-subcanvas/50",
+              p.is_notice && "bg-primary/[0.04]",
             )}
           >
-            <div className="flex items-start gap-2">
-              {p.is_notice && (
-                <span className="mt-0.5 inline-flex shrink-0 items-center gap-1 rounded-full bg-amber/15 px-2 py-0.5 text-label-sm font-bold uppercase text-[#B45309]">
-                  <Megaphone className="h-3 w-3" />
+            <div className="flex items-center gap-1.5">
+              {p.is_notice ? (
+                <span className="shrink-0 rounded-md bg-primary px-1.5 py-0.5 text-[11px] font-bold text-white">
                   공지
                 </span>
+              ) : (
+                <>
+                  {p.is_pinned && <Pin className="h-3.5 w-3.5 shrink-0 text-primary" />}
+                  {showCategory && <CategoryBadge slug={p.category} className="shrink-0" />}
+                </>
               )}
-              {!p.is_notice && p.is_pinned && (
-                <Pin className="mt-1 h-3.5 w-3.5 shrink-0 text-primary" />
-              )}
-              {showCategory && (
-                <span className="mt-0.5 shrink-0 rounded-full bg-primary-wash px-2 py-0.5 text-label-sm text-primary-strong">
-                  {catLabel(p.category)}
-                </span>
-              )}
-              <p
+              <span
                 className={cn(
-                  "font-display text-title-md text-ink",
-                  p.is_notice && "text-[#B45309]",
+                  "line-clamp-1 text-body-lg font-semibold text-ink",
+                  p.is_notice && "text-primary-strong",
                 )}
               >
                 {p.title}
-                {p.comment_count > 0 && (
-                  <span className="ml-1.5 text-primary-strong">[{p.comment_count}]</span>
-                )}
-              </p>
+              </span>
+              {p.comment_count > 0 && (
+                <span className="shrink-0 text-body-sm font-bold text-primary-strong">
+                  {p.comment_count}
+                </span>
+              )}
             </div>
-            <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
-              <AuthorTag author={p.author} />
-              <PostStats
-                views={p.view_count}
-                comments={p.comment_count}
-                likes={p.like_count}
-                createdAt={p.created_at}
-              />
+
+            <div className="flex items-center gap-2 text-[13px] text-ink-soft">
+              <Avatar name={p.author?.username} src={p.author?.avatar_url} size="sm" />
+              <span className="font-medium text-ink/80">{p.author?.username ?? "알 수 없음"}</span>
+              <span aria-hidden>·</span>
+              <time dateTime={p.created_at}>
+                {formatDistanceToNow(new Date(p.created_at), { addSuffix: true, locale: ko })}
+              </time>
+              <span className="ml-auto flex items-center gap-2.5">
+                <span className="inline-flex items-center gap-1">
+                  <Heart className="h-3.5 w-3.5" />
+                  {p.like_count}
+                </span>
+                <span className="inline-flex items-center gap-1">
+                  <MessageSquare className="h-3.5 w-3.5" />
+                  {p.comment_count}
+                </span>
+              </span>
             </div>
           </Link>
         </li>

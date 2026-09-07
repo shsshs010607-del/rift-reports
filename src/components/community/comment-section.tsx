@@ -4,17 +4,25 @@ import { useState } from "react";
 import { useFormState, useFormStatus } from "react-dom";
 import { formatDistanceToNow } from "date-fns";
 import { ko } from "date-fns/locale";
-import { CornerDownRight, Trash2 } from "lucide-react";
+import { CornerDownRight } from "lucide-react";
 import { createComment, deleteComment, type ActionState } from "@/lib/actions/community";
 import type { CommentItem } from "@/lib/community";
 import { cn } from "@/lib/utils";
+import { Avatar } from "./avatar";
 
 const initial: ActionState = {};
+
+const INPUT =
+  "w-full resize-y rounded-xl border border-line bg-card px-3.5 py-2.5 text-body-md text-ink placeholder:text-ink-soft/70 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/15";
 
 function SubmitBtn({ label }: { label: string }) {
   const { pending } = useFormStatus();
   return (
-    <button type="submit" disabled={pending} className="btn-primary shrink-0">
+    <button
+      type="submit"
+      disabled={pending}
+      className="shrink-0 self-end rounded-full bg-primary px-4 py-2 text-label-md font-bold text-white transition hover:bg-primary-container disabled:opacity-50"
+    >
       {pending ? "등록 중…" : label}
     </button>
   );
@@ -47,9 +55,9 @@ function CommentForm({
           required
           rows={compact ? 2 : 3}
           placeholder={parentId ? "답글 입력…" : "댓글을 입력하세요"}
-          className="field resize-y"
+          className={INPUT}
         />
-        <SubmitBtn label={parentId ? "답글" : "댓글 등록"} />
+        <SubmitBtn label={parentId ? "답글" : "등록"} />
       </div>
       {state.error && <p className="text-body-sm text-coral">{state.error}</p>}
     </form>
@@ -68,9 +76,8 @@ function DeleteBtn({ commentId, postId }: { commentId: string; postId: string })
         await deleteComment(commentId, postId);
         setBusy(false);
       }}
-      className="inline-flex items-center gap-1 text-body-sm text-ink-soft hover:text-coral"
+      className="text-body-sm text-ink-soft hover:text-coral"
     >
-      <Trash2 className="h-3.5 w-3.5" />
       삭제
     </button>
   );
@@ -93,32 +100,31 @@ function CommentNode({
   const mine = currentUserId === c.author_id;
 
   return (
-    <div className={cn(isReply && "ml-6 border-l-2 border-line pl-4")}>
-      <div className="py-3">
-        <div className="flex items-center gap-2 text-body-sm">
-          <span className="font-semibold text-ink">{c.author?.username ?? "알 수 없음"}</span>
-          <time className="text-ink-soft">
-            {formatDistanceToNow(new Date(c.created_at), { addSuffix: true, locale: ko })}
-          </time>
-        </div>
-        <p className="mt-1 whitespace-pre-wrap text-body-md text-ink">{c.body}</p>
-        <div className="mt-1.5 flex items-center gap-3">
-          {!isReply && currentUserId && (
-            <button
-              type="button"
-              onClick={() => setReplying((v) => !v)}
-              className="inline-flex items-center gap-1 text-body-sm text-ink-soft hover:text-primary-strong"
-            >
-              <CornerDownRight className="h-3.5 w-3.5" />
-              답글
-            </button>
-          )}
-          {(mine || canModerate) && <DeleteBtn commentId={c.id} postId={postId} />}
-        </div>
-        {replying && (
-          <CommentForm postId={postId} parentId={c.id} compact onDone={() => setReplying(false)} />
-        )}
+    <div className={cn("py-3.5", isReply && "ml-5 border-l-2 border-line/70 pl-4")}>
+      <div className="flex items-center gap-2 text-body-sm">
+        <Avatar name={c.author?.username} src={c.author?.avatar_url} size="sm" />
+        <span className="font-bold text-ink">{c.author?.username ?? "알 수 없음"}</span>
+        <time className="text-ink-soft">
+          {formatDistanceToNow(new Date(c.created_at), { addSuffix: true, locale: ko })}
+        </time>
       </div>
+      <p className="mt-1.5 whitespace-pre-wrap text-body-md leading-relaxed text-ink">{c.body}</p>
+      <div className="mt-1.5 flex items-center gap-3">
+        {!isReply && currentUserId && (
+          <button
+            type="button"
+            onClick={() => setReplying((v) => !v)}
+            className="inline-flex items-center gap-1 text-body-sm text-ink-soft hover:text-primary-strong"
+          >
+            <CornerDownRight className="h-3.5 w-3.5" />
+            답글
+          </button>
+        )}
+        {(mine || canModerate) && <DeleteBtn commentId={c.id} postId={postId} />}
+      </div>
+      {replying && (
+        <CommentForm postId={postId} parentId={c.id} compact onDone={() => setReplying(false)} />
+      )}
     </div>
   );
 }
@@ -138,12 +144,26 @@ export function CommentSection({
   const childrenOf = (id: string) => comments.filter((c) => c.parent_id === id);
 
   return (
-    <section className="mt-8">
-      <h2 className="section-title mb-3">댓글 {comments.length}</h2>
+    <section className="mt-10">
+      <h2 className="mb-3 text-title-md font-bold text-ink">
+        댓글 <span className="text-primary-strong">{comments.length}</span>
+      </h2>
 
-      <div className="divide-y divide-line/70 rounded-2xl border border-line/80 bg-card px-4 shadow-e1">
+      {currentUserId ? (
+        <CommentForm postId={postId} />
+      ) : (
+        <p className="rounded-xl bg-subcanvas px-4 py-3 text-body-sm text-ink-soft">
+          댓글을 쓰려면{" "}
+          <a href="/login" className="font-bold text-primary-strong">
+            로그인
+          </a>
+          하세요.
+        </p>
+      )}
+
+      <div className="mt-2 divide-y divide-line/50">
         {roots.length === 0 && (
-          <p className="py-6 text-center text-body-sm text-ink-soft">첫 댓글을 남겨보세요.</p>
+          <p className="py-8 text-center text-body-sm text-ink-soft">첫 댓글을 남겨보세요.</p>
         )}
         {roots.map((c) => (
           <div key={c.id}>
@@ -166,14 +186,6 @@ export function CommentSection({
           </div>
         ))}
       </div>
-
-      {currentUserId ? (
-        <CommentForm postId={postId} />
-      ) : (
-        <p className="mt-4 rounded-xl bg-subcanvas px-4 py-3 text-body-sm text-ink-soft">
-          댓글을 쓰려면 <a href="/login" className="font-semibold text-primary-strong">로그인</a>하세요.
-        </p>
-      )}
     </section>
   );
 }

@@ -1,11 +1,13 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
+import Link from "next/link";
 import { notFound } from "next/navigation";
-import { PageHeading } from "@/components/ui/page-heading";
+import { ChevronLeft } from "lucide-react";
 import { BoardToolbar } from "@/components/community/board-toolbar";
 import { PostList } from "@/components/community/post-list";
 import { Pagination } from "@/components/community/pagination";
 import { RecentBoards } from "@/components/community/recent-boards";
+import { metaFor } from "@/components/community/category-meta";
 import { getPosts, getPopularPosts, getRecentByCategory } from "@/lib/community";
 import { COMMUNITY_CATEGORIES, POSTS_PER_PAGE } from "@/lib/constants";
 import type { CommunityCategory } from "@/lib/types/database";
@@ -50,9 +52,27 @@ export default async function BoardPage({
     return s ? `/community/${slug}?${s}` : `/community/${slug}`;
   };
 
+  const m = metaFor(slug);
+  const Icon = m.icon;
+
   return (
     <div>
-      <PageHeading title={category.label} description={category.desc} />
+      <Link
+        href="/community"
+        className="mb-3 inline-flex items-center gap-1 text-body-sm text-ink-soft hover:text-primary-strong"
+      >
+        <ChevronLeft className="h-4 w-4" />
+        커뮤니티
+      </Link>
+      <header className="mb-6 flex items-center gap-3">
+        <span className={`grid h-11 w-11 shrink-0 place-items-center rounded-2xl ${m.soft} ${m.fg}`}>
+          <Icon className="h-5 w-5" />
+        </span>
+        <div>
+          <h1 className="font-display text-headline-sm text-ink">{category.label}</h1>
+          <p className="text-body-sm text-ink-soft">{category.desc}</p>
+        </div>
+      </header>
       <Suspense fallback={<div className="mb-4 h-24" />}>
         <BoardToolbar writeHref={`/community/new?category=${slug}`} />
       </Suspense>

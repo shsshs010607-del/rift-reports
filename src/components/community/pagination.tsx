@@ -26,8 +26,8 @@ export function Pagination({
         href={hrefFor(Math.max(1, page - 1))}
         aria-disabled={page === 1}
         className={cn(
-          "grid h-9 w-9 place-items-center rounded-lg border border-line",
-          page === 1 && "pointer-events-none opacity-40",
+          "grid h-9 w-9 place-items-center rounded-lg text-ink-soft transition hover:bg-subcanvas",
+          page === 1 && "pointer-events-none opacity-30",
         )}
       >
         <ChevronLeft className="h-4 w-4" />
@@ -36,9 +36,12 @@ export function Pagination({
         <Link
           key={n}
           href={hrefFor(n)}
+          aria-current={n === page ? "page" : undefined}
           className={cn(
-            "grid h-9 min-w-9 place-items-center rounded-lg px-2 text-label-lg",
-            n === page ? "bg-primary text-white" : "border border-line text-ink-soft hover:bg-subcanvas",
+            "grid h-9 min-w-9 place-items-center rounded-lg px-2 text-body-md font-semibold transition",
+            n === page
+              ? "bg-primary text-white"
+              : "text-ink-soft hover:bg-subcanvas hover:text-ink",
           )}
         >
           {n}
@@ -48,8 +51,8 @@ export function Pagination({
         href={hrefFor(Math.min(pages, page + 1))}
         aria-disabled={page === pages}
         className={cn(
-          "grid h-9 w-9 place-items-center rounded-lg border border-line",
-          page === pages && "pointer-events-none opacity-40",
+          "grid h-9 w-9 place-items-center rounded-lg text-ink-soft transition hover:bg-subcanvas",
+          page === pages && "pointer-events-none opacity-30",
         )}
       >
         <ChevronRight className="h-4 w-4" />
