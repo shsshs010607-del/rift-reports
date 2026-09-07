@@ -1,8 +1,9 @@
 import { Fragment } from "react";
+import { DeckShowcase } from "@/components/community/deck-showcase";
 
 /**
  * 의존성 없는 마크다운-라이트 렌더러.
- * 지원: # ## ### 제목 · > 인용 · ``` 코드블록 · - / 1. 목록 · **굵게** · [텍스트](url) · 빈 줄 문단
+ * 지원: # ## ### 제목 · > 인용 · ``` 코드블록 · ```deck 덱 미리보기 · - / 1. 목록 · **굵게** · [텍스트](url) · 빈 줄 문단
  */
 export function PostBody({ text }: { text: string }) {
   const lines = text.replace(/\r\n/g, "\n").split("\n");
@@ -30,6 +31,7 @@ export function PostBody({ text }: { text: string }) {
 
     // 코드블록
     if (line.trimStart().startsWith("```")) {
+      const lang = line.trimStart().slice(3).trim().toLowerCase();
       const buf: string[] = [];
       i++;
       while (i < lines.length && !lines[i].trimStart().startsWith("```")) {
@@ -37,6 +39,10 @@ export function PostBody({ text }: { text: string }) {
         i++;
       }
       i++; // closing fence
+      if (lang === "deck" && buf.join("").trim()) {
+        blocks.push(<DeckShowcase key={key++} code={buf.join("\n").trim()} />);
+        continue;
+      }
       blocks.push(
         <pre
           key={key++}

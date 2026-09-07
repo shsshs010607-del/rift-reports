@@ -16,6 +16,16 @@ const postSchema = z.object({
   is_notice: z.boolean().optional(),
 });
 
+/** 유효해 보이는 덱 코드면 반환, 아니면 null. */
+function normalizeDeckCode(raw: FormDataEntryValue | null): string | null {
+  if (typeof raw !== "string") return null;
+  const s = raw.trim();
+  if (!s) return null;
+  if (s.startsWith("rr1.")) return s.slice(0, 4000);
+  if (/^[A-Za-z0-9_-]{16,4000}$/.test(s)) return s; // base64url 공유 코드
+  return null;
+}
+
 export type ActionState = { error?: string; fieldErrors?: Record<string, string> };
 
 async function requireUser() {
@@ -50,12 +60,19 @@ export async function createPost(_prev: ActionState, formData: FormData): Promis
     return { error: "공지는 관리자만 작성할 수 있습니다" };
   }
 
+  // 덱공략 + 덱 코드 → 본문 상단에 ```deck 블록 삽입 (이미 있으면 생략)
+  let body = parsed.data.body;
+  const deckCode = normalizeDeckCode(formData.get("deck_code"));
+  if (parsed.data.category === "deck-guide" && deckCode && !/```deck/.test(body)) {
+    body = `\`\`\`deck\n${deckCode}\n\`\`\`\n\n${body}`;
+  }
+
   const { data, error } = await supabase
     .from("posts")
     .insert({
       category: parsed.data.category as CommunityCategory,
       title: parsed.data.title,
-      body: parsed.data.body,
+      body,
       author_id: userId,
       is_notice: parsed.data.is_notice ?? false,
     })

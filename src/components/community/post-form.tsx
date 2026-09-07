@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { useFormState, useFormStatus } from "react-dom";
 import { createPost, type ActionState } from "@/lib/actions/community";
 import { COMMUNITY_CATEGORIES } from "@/lib/constants";
@@ -34,6 +35,7 @@ export function PostForm({
   canWriteNotice: boolean;
 }) {
   const [state, formAction] = useFormState(createPost, initial);
+  const [category, setCategory] = useState(defaultCategory ?? COMMUNITY_CATEGORIES[0].slug);
 
   return (
     <form action={formAction} className="flex flex-col gap-4">
@@ -41,7 +43,8 @@ export function PostForm({
         <Label>게시판</Label>
         <select
           name="category"
-          defaultValue={defaultCategory ?? COMMUNITY_CATEGORIES[0].slug}
+          value={category}
+          onChange={(e) => setCategory(e.target.value)}
           className={INPUT}
         >
           {COMMUNITY_CATEGORIES.map((c) => (
@@ -51,6 +54,21 @@ export function PostForm({
           ))}
         </select>
       </div>
+
+      {category === "deck-guide" && (
+        <div>
+          <Label>덱 코드 (선택)</Label>
+          <input
+            name="deck_code"
+            placeholder="rr1.… 또는 덱 시뮬레이터 공유 코드 붙여넣기"
+            className={INPUT}
+            autoComplete="off"
+          />
+          <p className="mt-1 text-body-sm text-ink-soft">
+            입력하면 글 상단에 덱 카드가 자동으로 표시됩니다. 덱 시뮬레이터 → 덱 코드 버튼으로 복사하세요.
+          </p>
+        </div>
+      )}
 
       <div>
         <Label>제목</Label>
