@@ -9,11 +9,32 @@
  * 흐름: /cards?game=riftbound... 전체 수집(≈8콜) → card_prints upsert
  *       → 기존 스냅샷 is_current=false → 새 스냅샷 insert → 90일 초과 정리
  */
+import { readFileSync } from "node:fs";
 import { loadEnv, requireEnv, supabaseAdmin } from "./_shared";
 import { PRICE } from "../src/lib/constants";
 import { fetchAllCards, toPrintRow, toSnapshotRows, type JustTcgConfig } from "../src/lib/justtcg";
 
 loadEnv();
+
+/**
+ * data/cards.json (Riftcodex 고화질 스냅샷) → tcgplayer_id 기준 이미지 맵.
+ * JustTCG 는 이미지를 안 주므로, 우리가 가진 rgpub 원본 이미지로 교체한다.
+ */
+function localImageByTcgId(): Map<string, string> {
+  const map = new Map<string, string>();
+  try {
+    const raw = JSON.parse(readFileSync(new URL("../data/cards.json", import.meta.url), "utf8"));
+    const arr: any[] = Array.isArray(raw) ? raw : raw.cards ?? raw.items ?? [];
+    for (const c of arr) {
+      const tid = c.tcgplayer_id ?? c.tcgplayerId;
+      const url = c.media?.image_url ?? c.image_url ?? c.imageUrl;
+      if (tid && url) map.set(String(tid), url);
+    }
+  } catch (e) {
+    console.warn("  · data/cards.json 로드 실패 — TCGplayer 이미지로 폴백", (e as Error).message);
+  }
+  return map;
+}
 
 const DRY = process.argv.includes("--dry"); // JustTCG 만 확인, DB 미기록
 
@@ -50,8 +71,20 @@ async function main() {
 
   const db = supabaseAdmin();
 
-  // 1. card_prints upsert
-  const printRows = cards.map(toPrintRow);
+  // 1. card_prints upsert (이미지는 우리 고화질 스냅샷으로 교체)
+  const localImg = localImageByTcgId();
+  let swapped = 0;
+  const printRows = cards.map((c) => {
+    const row = toPrintRow(c);
+    const tid = c.tcgplayerId ? String(c.tcgplayerId) : row.tcgplayer_url?.match(/product\/(\d+)/)?.[1];
+    const ours = tid && localImg.get(tid);
+    if (ours) {
+      row.image_url = ours;
+      swapped++;
+    }
+    return row;
+  });
+  console.log(`  이미지 교체 ${swapped}/${printRows.length} (나머지는 TCGplayer CDN)`);
   for (const part of chunk(printRows, 500)) {
     const { error } = await db.from("card_prints").upsert(part, { onConflict: "justtcg_card_id" });
     if (error) throw new Error(`card_prints: ${error.message}`);
