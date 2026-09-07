@@ -22,7 +22,7 @@ function MoverList({
   up: boolean;
 }) {
   return (
-    <div className="surface p-4">
+    <div className="surface note-card p-4">
       <h3 className="mb-3 flex items-center gap-1.5 font-display text-title-md text-ink">
         {up ? (
           <TrendingUp className="h-4 w-4 text-emerald" />

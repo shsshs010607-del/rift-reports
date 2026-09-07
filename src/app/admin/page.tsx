@@ -50,28 +50,28 @@ export default async function AdminPage() {
       <div className="flex flex-col gap-10">
         <section>
           <h2 className="section-title mb-3">알림 발송</h2>
-          <div className="surface p-5">
+          <div className="surface note-card p-5">
             <NotificationForm />
           </div>
         </section>
 
         <section>
           <h2 className="section-title mb-3">리포트 작성</h2>
-          <div className="surface p-5">
+          <div className="surface note-card p-5">
             <ReportForm />
           </div>
         </section>
 
         <section>
           <h2 className="section-title mb-3">대회 등록</h2>
-          <div className="surface p-5">
+          <div className="surface note-card p-5">
             <TournamentForm />
           </div>
         </section>
 
         <section>
           <h2 className="section-title mb-3">카드샵 등록</h2>
-          <div className="surface p-5">
+          <div className="surface note-card p-5">
             <ShopForm />
           </div>
         </section>

@@ -16,12 +16,12 @@ const langLabel = (s: string) =>
 const pct = (n: number | null | undefined) =>
   n == null ? "" : `${n > 0 ? "+" : ""}${n.toFixed(1)}%`;
 
-type SortKey = "price" | "change" | "name";
+type SortKey = "price" | "change" | "changePct";
 
 const SORTS: { key: SortKey; label: string }[] = [
   { key: "price", label: "시세" },
   { key: "change", label: "7일 변동액" },
-  { key: "name", label: "이름" },
+  { key: "changePct", label: "7일 변동%" },
 ];
 
 const PER_PAGE = 10;
@@ -59,15 +59,8 @@ export function PriceBoard({ rows, fx }: { rows: PriceRow[]; fx: FxRate }) {
     const delta = (r: PriceRow) =>
       r.market_price != null && r.change_7d != null ? deltaUsd(r.market_price, r.change_7d) : 0;
     return [...filtered].sort((a, b) => {
-      if (sort === "name")
-        return (
-          dir *
-          (a.print?.ko_name ?? a.print?.name ?? "").localeCompare(
-            b.print?.ko_name ?? b.print?.name ?? "",
-            "ko",
-          )
-        );
       if (sort === "change") return dir * (delta(a) - delta(b));
+      if (sort === "changePct") return dir * ((a.change_7d ?? 0) - (b.change_7d ?? 0));
       return dir * ((a.market_price ?? 0) - (b.market_price ?? 0));
     });
   }, [rows, q, set, sort, asc]);

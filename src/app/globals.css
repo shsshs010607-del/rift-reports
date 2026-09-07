@@ -86,6 +86,47 @@ h1, h2, h3, h4 {
     @apply transition duration-200 hover:-translate-y-0.5 hover:shadow-e2;
   }
 
+  /*
+   * 메모지 카드 — 오른쪽 위가 접힌 종이 느낌 ("리프트 리포트" 모티프).
+   * 주요 콘텐츠 패널에만 쓴다. overflow-hidden 요소에는 쓰지 말 것(접힘이 잘림).
+   */
+  .note-card {
+    position: relative;
+    border-radius: 0.875rem;
+    border-top-right-radius: 0;
+    border: 1px solid rgb(var(--outline-variant) / 0.55);
+    background-color: rgb(var(--surface-container-lowest));
+  }
+  /* 잘려나간 모서리 — 뒤 배경이 비쳐 보이는 삼각형 */
+  .note-card::before {
+    content: "";
+    position: absolute;
+    top: -1px;
+    right: -1px;
+    width: 16px;
+    height: 16px;
+    background-color: rgb(var(--background));
+    border-left: 1px solid rgb(var(--outline-variant) / 0.55);
+    clip-path: polygon(0 0, 100% 0, 100% 100%);
+  }
+  /* 접힌 종이 조각 — 크레아스 기준으로 살짝 들린 느낌 */
+  .note-card::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 15px;
+    height: 15px;
+    background-image: linear-gradient(
+      to top right,
+      rgb(var(--surface-dim)),
+      rgb(var(--surface-container-low))
+    );
+    clip-path: polygon(0 0, 100% 100%, 0 100%);
+    border-bottom-left-radius: 3px;
+    filter: drop-shadow(-1px 1px 1px rgb(30 27 75 / 0.16));
+  }
+
   .section-title {
     @apply font-display text-headline-sm font-bold text-on-surface;
   }

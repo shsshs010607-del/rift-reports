@@ -27,16 +27,16 @@ export default async function TradingPage({
 
   return (
     <div className="flex flex-col gap-10">
-      <header className="flex flex-wrap items-end justify-between gap-3">
+      <header className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <h1 className="font-display text-headline-md text-ink">트레이딩</h1>
           <p className="mt-0.5 text-body-md text-ink-soft">이용자 간 직거래 · 실시간 시세</p>
         </div>
         <Link
           href="/trading/new"
-          className="inline-flex items-center gap-1.5 rounded-full bg-primary px-4 py-2 text-label-md font-bold text-white transition hover:bg-primary-container"
+          className="inline-flex items-center gap-2 rounded-2xl bg-primary px-6 py-3.5 text-title-md font-bold text-white shadow-[0_6px_18px_rgba(70,72,212,0.28)] transition hover:bg-primary-container"
         >
-          <PlusSquare className="h-4 w-4" />
+          <PlusSquare className="h-5 w-5" />
           거래글 등록
         </Link>
       </header>
