@@ -38,6 +38,26 @@ export const getTopGainers = (limit = 5) => moverQuery("desc", limit);
 /** 급락 Top N */
 export const getTopLosers = (limit = 5) => moverQuery("asc", limit);
 
+/**
+ * 시세표 — 현재 대표(headline) 스냅샷 + 프린트 전체 목록.
+ * 정렬·검색·세트 필터는 클라이언트(<PriceBoard/>)에서 처리한다.
+ */
+export function getPriceBoard(limit = 600) {
+  return safe<PriceRow[]>(async () => {
+    const supabase = createClient();
+    const { data, error } = await supabase
+      .from("price_snapshots")
+      .select("*, print:card_prints(*)")
+      .eq("is_current", true)
+      .eq("is_headline", true)
+      .not("market_price", "is", null)
+      .order("market_price", { ascending: false })
+      .limit(limit);
+    if (error) throw error;
+    return (data as unknown as PriceRow[]) ?? [];
+  }, []);
+}
+
 /** 프린트 + 현재 대표 시세 */
 export function getPrintWithPrice(printId: string) {
   return safe<{ print: CardPrint; price: PriceSnapshot | null } | null>(async () => {
