@@ -7,6 +7,7 @@ import { ko } from "date-fns/locale";
 import { ChevronLeft } from "lucide-react";
 import { getReport } from "@/lib/queries";
 import { ViewCounter } from "@/components/community/view-counter";
+import { PostBody } from "@/components/community/post-body";
 
 export const revalidate = 120;
 
@@ -72,8 +73,8 @@ export default async function ReportDetailPage({ params }: { params: { slug: str
         </p>
       )}
 
-      <div className="mt-6 whitespace-pre-wrap text-body-lg leading-relaxed text-ink">
-        {report.body}
+      <div className="mt-6">
+        <PostBody text={report.body} />
       </div>
     </article>
   );
