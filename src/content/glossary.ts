@@ -508,6 +508,46 @@ export const GLOSSARY: GlossaryTerm[] = [
     related: ["Damage"],
     cardSearchable: true,
   },
+  {
+    term: "기절",
+    en: "Stun",
+    symbol: "[기절]",
+    category: "키워드",
+    definition:
+      "대상 유닛을 기절시킨다. 기절한 유닛은 이번 턴 전투의 피해 단계 동안 위력을 제공하지 못한다(전투에 있어도 위력 0으로 취급). 방어·처치 판정을 무력화하는 데 쓰인다.",
+    related: ["Might", "Combat", "Damage"],
+    cardSearchable: true,
+  },
+  {
+    term: "예측",
+    en: "Predict",
+    symbol: "[예측]",
+    category: "키워드",
+    definition:
+      "메인 덱 맨 위 카드를 확인한 뒤, 그대로 두거나 덱 맨 아래로 보낸다. 통찰(Vision)과 함께 드로우 품질을 끌어올리는 효과.",
+    related: ["Vision", "Draw", "Main Deck"],
+    cardSearchable: true,
+  },
+  {
+    term: "장착",
+    en: "Equip",
+    symbol: "[장착]",
+    category: "키워드",
+    definition:
+      "장착 비용을 지불하고 내 유닛 1명에게 장비(도구) 카드를 부착한다. 장착한 유닛에게 능력치·능력을 부여하며, 장비 재부착으로 다른 유닛에게 옮길 수 있다.",
+    related: ["Quick-Draw", "Energy"],
+    cardSearchable: true,
+  },
+  {
+    term: "빨리 뽑기",
+    en: "Quick-Draw",
+    symbol: "[빨리 뽑기]",
+    category: "키워드",
+    definition:
+      "장비를 반응(Reaction) 타이밍에, 장착 비용 없이 내 유닛에게 즉시 장착한다. 전투 중 기습적으로 능력치를 붙이는 데 쓰인다.",
+    related: ["Equip", "Reaction"],
+    cardSearchable: true,
+  },
 
   // ── 존 ────────────────────────────────────────────────
   {
