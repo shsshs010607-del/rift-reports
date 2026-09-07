@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { Search, ArrowUpDown, ChevronDown } from "lucide-react";
+import { Search, ArrowUpDown, ChevronLeft, ChevronRight } from "lucide-react";
 import type { PriceRow } from "@/lib/prices";
 import type { FxRate } from "@/lib/fx";
 import { PRINT_LANGUAGES } from "@/lib/constants";
@@ -24,10 +24,10 @@ const SORTS: { key: SortKey; label: string }[] = [
   { key: "name", label: "이름" },
 ];
 
-const PAGE = 12;
+const PER_PAGE = 10;
 
 /**
- * 카드 시세표 — 검색·세트·정렬. 기본 12장만 보여주고 "더보기"로 늘린다.
+ * 카드 시세표 — 검색·세트·정렬 + 페이지네이션.
  * 행을 누르면 /trading/cards/[printId] 상세로 이동.
  */
 export function PriceBoard({ rows, fx }: { rows: PriceRow[]; fx: FxRate }) {
@@ -35,7 +35,7 @@ export function PriceBoard({ rows, fx }: { rows: PriceRow[]; fx: FxRate }) {
   const [set, setSet] = useState("");
   const [sort, setSort] = useState<SortKey>("price");
   const [asc, setAsc] = useState(false);
-  const [visible, setVisible] = useState(PAGE);
+  const [page, setPage] = useState(1);
 
   const sets = useMemo(() => {
     const s = new Set<string>();
@@ -64,8 +64,8 @@ export function PriceBoard({ rows, fx }: { rows: PriceRow[]; fx: FxRate }) {
     });
   }, [rows, q, set, sort, asc]);
 
-  // 조건이 바뀌면 다시 12장부터
-  useEffect(() => setVisible(PAGE), [q, set, sort, asc]);
+  // 조건이 바뀌면 1페이지로
+  useEffect(() => setPage(1), [q, set, sort, asc]);
 
   if (rows.length === 0) {
     return (
@@ -75,7 +75,9 @@ export function PriceBoard({ rows, fx }: { rows: PriceRow[]; fx: FxRate }) {
     );
   }
 
-  const shown = view.slice(0, visible);
+  const pages = Math.max(1, Math.ceil(view.length / PER_PAGE));
+  const cur = Math.min(page, pages);
+  const shown = view.slice((cur - 1) * PER_PAGE, cur * PER_PAGE);
 
   return (
     <div className="flex flex-col gap-3">
@@ -182,18 +184,61 @@ export function PriceBoard({ rows, fx }: { rows: PriceRow[]; fx: FxRate }) {
         </ul>
       )}
 
-      {view.length > visible && (
-        <button
-          type="button"
-          onClick={() => setVisible((v) => v + PAGE * 2)}
-          className="mx-auto inline-flex items-center gap-1.5 rounded-full border border-line px-5 py-2 text-label-md font-bold text-ink-soft transition hover:border-primary/40 hover:text-ink"
-        >
-          더보기 ({(view.length - visible).toLocaleString("ko-KR")})
-          <ChevronDown className="h-4 w-4" />
-        </button>
+      {pages > 1 && (
+        <div className="flex items-center justify-center gap-1 pt-1">
+          <button
+            type="button"
+            onClick={() => setPage(cur - 1)}
+            disabled={cur === 1}
+            className="grid h-8 w-8 place-items-center rounded-lg text-ink-soft transition hover:bg-subcanvas disabled:opacity-30"
+          >
+            <ChevronLeft className="h-4 w-4" />
+          </button>
+          {pageNums(cur, pages).map((n, i) =>
+            n === "…" ? (
+              <span key={`e${i}`} className="px-1 text-label-sm text-ink-soft">
+                …
+              </span>
+            ) : (
+              <button
+                key={n}
+                type="button"
+                onClick={() => setPage(n)}
+                className={cn(
+                  "grid h-8 min-w-8 place-items-center rounded-lg px-2 text-body-sm font-semibold transition",
+                  n === cur ? "bg-primary text-white" : "text-ink-soft hover:bg-subcanvas hover:text-ink",
+                )}
+              >
+                {n}
+              </button>
+            ),
+          )}
+          <button
+            type="button"
+            onClick={() => setPage(cur + 1)}
+            disabled={cur === pages}
+            className="grid h-8 w-8 place-items-center rounded-lg text-ink-soft transition hover:bg-subcanvas disabled:opacity-30"
+          >
+            <ChevronRight className="h-4 w-4" />
+          </button>
+        </div>
       )}
     </div>
   );
+}
+
+/** 1 … 4 5 [6] 7 8 … 40 형태 페이지 번호 */
+function pageNums(cur: number, pages: number): (number | "…")[] {
+  const out: (number | "…")[] = [];
+  const add = (n: number) => out.push(n);
+  const lo = Math.max(2, cur - 1);
+  const hi = Math.min(pages - 1, cur + 1);
+  add(1);
+  if (lo > 2) out.push("…");
+  for (let n = lo; n <= hi; n++) add(n);
+  if (hi < pages - 1) out.push("…");
+  if (pages > 1) add(pages);
+  return out;
 }
 
 function FilterChip({

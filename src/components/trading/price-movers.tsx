@@ -83,18 +83,20 @@ export function PriceMovers({
   gainers,
   losers,
   fx,
+  layout = "grid",
 }: {
   gainers: PriceRow[];
   losers: PriceRow[];
   fx: FxRate;
+  layout?: "grid" | "stacked";
 }) {
   return (
     <section>
       <div className="mb-3 flex flex-wrap items-end justify-between gap-x-4 gap-y-1">
-        <h2 className="section-title">시세 변동 (7일 · 변동액)</h2>
-        <FxNote fx={fx} />
+        <h2 className="text-title-md font-bold text-ink">시세 변동 (7일)</h2>
+        {layout === "grid" && <FxNote fx={fx} />}
       </div>
-      <div className="grid gap-4 sm:grid-cols-2">
+      <div className={layout === "stacked" ? "flex flex-col gap-4" : "grid gap-4 sm:grid-cols-2"}>
         <MoverList title="급등 Top 5" rows={gainers} fx={fx} up />
         <MoverList title="급락 Top 5" rows={losers} fx={fx} up={false} />
       </div>

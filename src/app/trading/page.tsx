@@ -10,9 +10,13 @@ import { getUsdKrw } from "@/lib/fx";
 import { getListings } from "@/lib/trading";
 
 export const metadata: Metadata = { title: "트레이딩" };
-export const revalidate = 900; // 15분 (시세 6시간 갱신이라 충분)
+export const revalidate = 900;
 
-export default async function TradingPage() {
+export default async function TradingPage({
+  searchParams,
+}: {
+  searchParams: { q?: string };
+}) {
   const [fx, gainers, losers, board, listings] = await Promise.all([
     getUsdKrw(),
     getTopGainers(5),
@@ -37,22 +41,25 @@ export default async function TradingPage() {
         </Link>
       </header>
 
-      {/* 1. 거래글 (최신순 · 검색) */}
-      <section>
+      {/* 시세: 좌 카드 시세 / 우 급등·급락 */}
+      <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
+        <section className="min-w-0">
+          <div className="mb-3 flex flex-wrap items-end justify-between gap-x-4 gap-y-1">
+            <h2 className="text-title-md font-bold text-ink">카드 시세</h2>
+            <FxNote fx={fx} />
+          </div>
+          <PriceBoard rows={board} fx={fx} />
+        </section>
+
+        <aside className="lg:sticky lg:top-24 lg:self-start">
+          <PriceMovers gainers={gainers} losers={losers} fx={fx} layout="stacked" />
+        </aside>
+      </div>
+
+      {/* 거래글 */}
+      <section id="listings" className="scroll-mt-24">
         <h2 className="mb-3 text-title-md font-bold text-ink">거래글</h2>
-        <TradeBoard listings={listings} />
-      </section>
-
-      {/* 2. 급등 · 급락 */}
-      <PriceMovers gainers={gainers} losers={losers} fx={fx} />
-
-      {/* 3. 카드 시세 (접힌 목록) */}
-      <section>
-        <div className="mb-3 flex flex-wrap items-end justify-between gap-x-4 gap-y-1">
-          <h2 className="text-title-md font-bold text-ink">카드 시세</h2>
-          <FxNote fx={fx} />
-        </div>
-        <PriceBoard rows={board} fx={fx} />
+        <TradeBoard listings={listings} initialQuery={searchParams.q ?? ""} />
       </section>
     </div>
   );

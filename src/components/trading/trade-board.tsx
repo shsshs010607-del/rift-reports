@@ -7,8 +7,14 @@ import { TRADING_CATEGORIES, KR_SIDO } from "@/lib/constants";
 import { ListingCard } from "@/components/trading/listing-card";
 import { cn } from "@/lib/utils";
 
-export function TradeBoard({ listings }: { listings: ListingWithSeller[] }) {
-  const [q, setQ] = useState("");
+export function TradeBoard({
+  listings,
+  initialQuery = "",
+}: {
+  listings: ListingWithSeller[];
+  initialQuery?: string;
+}) {
+  const [q, setQ] = useState(initialQuery);
   const [cat, setCat] = useState<string>("");
   const [region, setRegion] = useState<string>("");
   const [hideClosed, setHideClosed] = useState(true);

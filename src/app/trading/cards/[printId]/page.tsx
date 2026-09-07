@@ -95,12 +95,23 @@ export default async function PrintPricePage({ params }: { params: { printId: st
         </div>
       </div>
 
-      {history.length > 1 && (
-        <div className="surface mt-6 p-4">
-          <p className="mb-2 text-label-lg text-ink">시세 추이</p>
-          <PriceSparkline points={history} />
+      <div className="mt-6 rounded-2xl border border-line/70 bg-card p-4">
+        <div className="mb-2 flex items-center justify-between">
+          <p className="text-label-lg font-bold text-ink">시세 추이 (7일)</p>
+          {price && (
+            <p className="text-body-sm text-ink-soft">
+              90일 {money(price.min_price_90d)} ~ {money(price.max_price_90d)}
+            </p>
+          )}
         </div>
-      )}
+        {history.length > 1 ? (
+          <PriceSparkline points={history} format={(v) => fmtKrw(v, fx.usdKrw)} />
+        ) : (
+          <p className="py-6 text-center text-body-sm text-ink-soft">
+            추이 데이터가 아직 부족합니다.
+          </p>
+        )}
+      </div>
 
       <div className="mt-6 flex flex-wrap gap-3">
         {print.tcgplayer_url && (
@@ -109,7 +120,10 @@ export default async function PrintPricePage({ params }: { params: { printId: st
             TCGplayer 에서 거래
           </a>
         )}
-        <Link href={`/trading?print=${print.id}`} className="btn-ghost">
+        <Link
+          href={`/trading?q=${encodeURIComponent(print.name)}#listings`}
+          className="btn-ghost"
+        >
           <MessagesSquare className="h-4 w-4" />
           커뮤니티 거래글
         </Link>
