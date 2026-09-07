@@ -3,7 +3,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { hasSupabaseEnv } from "@/lib/supabase/env";
 import { PageHeading } from "@/components/ui/page-heading";
-import { ReportForm, TournamentForm } from "@/components/admin/admin-forms";
+import { ReportForm, TournamentForm, ShopForm } from "@/components/admin/admin-forms";
 
 export const metadata: Metadata = { title: "운영" };
 export const dynamic = "force-dynamic";
@@ -54,6 +54,13 @@ export default async function AdminPage() {
           <h2 className="section-title mb-3">대회 등록</h2>
           <div className="surface p-5">
             <TournamentForm />
+          </div>
+        </section>
+
+        <section>
+          <h2 className="section-title mb-3">카드샵 등록</h2>
+          <div className="surface p-5">
+            <ShopForm />
           </div>
         </section>
       </div>

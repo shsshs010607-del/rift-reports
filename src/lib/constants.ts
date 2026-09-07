@@ -15,6 +15,9 @@ export const ADSENSE = {
   footerSlot: process.env.NEXT_PUBLIC_ADSENSE_FOOTER_SLOT ?? "",
 } as const;
 
+/** Kakao Map JavaScript 키. 없으면 지도 대신 목록만. (콘솔에서 웹 도메인 등록 필수) */
+export const KAKAO_MAP_KEY = process.env.NEXT_PUBLIC_KAKAO_MAP_KEY ?? "";
+
 export const NAV_ITEMS = [
   { href: "/", label: "덱 티어리스트" },
   { href: "/cards", label: "카드 정보" },

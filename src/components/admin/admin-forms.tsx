@@ -2,6 +2,8 @@
 
 import { useFormState, useFormStatus } from "react-dom";
 import { createReport, createTournament, type AdminState } from "@/app/admin/actions";
+import { createShop, type ShopState } from "@/lib/actions/shops";
+import { KR_SIDO } from "@/lib/constants";
 
 function Text({
   name,
@@ -119,6 +121,47 @@ export function TournamentForm() {
       </label>
       <Msg state={state} />
       <SubmitBtn label="대회 저장" />
+    </form>
+  );
+}
+
+export function ShopForm() {
+  const [state, action] = useFormState<ShopState, FormData>(createShop, {});
+  return (
+    <form action={action} className="flex flex-col gap-3">
+      <Text name="name" label="매장명" required />
+      <div className="grid gap-3 sm:grid-cols-[140px_1fr]">
+        <label className="flex flex-col gap-1">
+          <span className="text-label-sm font-bold text-ink">
+            시/도 <span className="text-coral">*</span>
+          </span>
+          <select name="sido" className="field" required defaultValue="">
+            <option value="" disabled>
+              선택
+            </option>
+            {KR_SIDO.map((s) => (
+              <option key={s} value={s}>
+                {s}
+              </option>
+            ))}
+          </select>
+        </label>
+        <Text name="sigungu" label="시/군/구" placeholder="강남구" />
+      </div>
+      <Text name="address" label="주소" required placeholder="도로명 주소 (지도 핀은 이 주소로 자동)" />
+      <div className="grid gap-3 sm:grid-cols-2">
+        <Text name="lat" label="위도 (선택)" placeholder="37.4979" />
+        <Text name="lng" label="경도 (선택)" placeholder="127.0276" />
+      </div>
+      <Text name="phone" label="전화" placeholder="02-000-0000" />
+      <Text name="hours" label="영업시간" placeholder="평일 13-22시 / 주말 12-23시" />
+      <Text name="url" label="홈페이지 · SNS URL" placeholder="https://…" />
+      <label className="flex items-center gap-2 text-body-md text-ink">
+        <input type="checkbox" name="is_official" className="h-4 w-4" /> 리프트바운드 공인샵
+      </label>
+      <Area name="note" label="메모" rows={2} placeholder="주간 대회 요일 등" />
+      <Msg state={state} />
+      <SubmitBtn label="매장 저장" />
     </form>
   );
 }

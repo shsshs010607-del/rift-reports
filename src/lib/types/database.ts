@@ -205,6 +205,30 @@ export interface Database {
         Update: Partial<Database["public"]["Tables"]["saved_decks"]["Insert"]>;
         Relationships: [];
       };
+      shops: {
+        Row: {
+          id: string;
+          name: string;
+          sido: string;
+          sigungu: string | null;
+          address: string;
+          lat: number | null;
+          lng: number | null;
+          phone: string | null;
+          hours: string | null;
+          url: string | null;
+          is_official: boolean;
+          note: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: Omit<
+          Database["public"]["Tables"]["shops"]["Row"],
+          "id" | "is_official" | "created_at" | "updated_at"
+        > & { id?: string; is_official?: boolean; created_at?: string; updated_at?: string };
+        Update: Partial<Database["public"]["Tables"]["shops"]["Insert"]>;
+        Relationships: [];
+      };
       comments: {
         Row: {
           id: string;
@@ -376,3 +400,4 @@ export type Profile = Database["public"]["Tables"]["profiles"]["Row"];
 export type CardPrint = Database["public"]["Tables"]["card_prints"]["Row"];
 export type PriceSnapshot = Database["public"]["Tables"]["price_snapshots"]["Row"];
 export type SavedDeck = Database["public"]["Tables"]["saved_decks"]["Row"];
+export type Shop = Database["public"]["Tables"]["shops"]["Row"];
