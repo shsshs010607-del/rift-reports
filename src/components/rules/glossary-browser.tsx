@@ -35,11 +35,9 @@ export function GlossaryBrowser() {
 
   return (
     <div>
-      {/* 임시 번역 안내 */}
-      <p className="mb-4 flex items-start gap-2 rounded-xl bg-amber/10 px-3.5 py-2.5 text-body-sm text-[#B45309]">
-        <Info className="mt-0.5 h-4 w-4 shrink-0" />
-        한글 용어명은 <b className="mx-0.5 font-semibold">임시 번역</b>입니다. Riot 공식 API/한글판이 나오면 공식
-        번역명으로 일괄 교체됩니다. 영문명(작은 글씨)이 정식 명칭입니다.
+      <p className="mb-4 flex items-start gap-2 text-body-sm text-ink-soft">
+        <Info className="mt-0.5 h-3.5 w-3.5 shrink-0" />
+        한글명은 임시 번역이고 영문명이 정식 명칭입니다. 공식 한글판이 나오면 교체됩니다.
       </p>
 
       <div className="sticky top-16 z-10 -mx-1 bg-canvas/90 px-1 py-3 backdrop-blur">
@@ -74,25 +72,25 @@ export function GlossaryBrowser() {
 
       <div className="grid gap-3 sm:grid-cols-2">
         {results.map((t) => {
-          const provisional = !t.official && t.term !== t.en;
           return (
-            <article key={t.en} id={`term-${t.en}`} className="surface scroll-mt-44 p-4">
+            <article
+              key={t.en}
+              id={`term-${t.en}`}
+              className="scroll-mt-44 rounded-2xl border border-line/70 bg-card p-4"
+            >
               <div className="flex items-baseline justify-between gap-2">
-                <div className="min-w-0">
-                  <h3 className="font-display text-title-md text-ink">
-                    {t.term}
-                    {provisional && (
-                      <span className="ml-1.5 align-middle rounded bg-amber/15 px-1 py-0.5 text-[10px] font-bold text-[#B45309]">
-                        임시
-                      </span>
-                    )}
-                  </h3>
-                  <p className="text-body-sm text-ink-soft">
-                    {t.en}
-                    {t.symbol && <span className="ml-1.5 font-mono text-primary-strong">{t.symbol}</span>}
-                  </p>
-                </div>
-                <span className="chip shrink-0">{t.category}</span>
+                <h3 className="min-w-0 font-display text-title-md text-ink">
+                  {t.term}
+                  <span className="ml-1.5 text-body-sm font-normal text-ink-soft">· {t.en}</span>
+                  {t.symbol && (
+                    <span className="ml-1.5 rounded bg-primary/10 px-1.5 py-0.5 font-mono text-[12px] text-primary-strong">
+                      {t.symbol}
+                    </span>
+                  )}
+                </h3>
+                <span className="shrink-0 rounded-md bg-subcanvas px-1.5 py-0.5 text-[11px] font-bold text-ink-soft">
+                  {t.category}
+                </span>
               </div>
 
               <p className="mt-2 text-body-md text-ink-soft">{t.definition}</p>

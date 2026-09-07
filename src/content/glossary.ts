@@ -55,9 +55,9 @@ export const GLOSSARY: GlossaryTerm[] = [
     related: ["Domain", "Champion Legend"],
   },
   {
-    term: "마이트",
+    term: "위력",
     en: "Might",
-    symbol: "[M]",
+    symbol: "[위력]",
     category: "전투",
     definition:
       "유닛의 전투 수치. 전투 기여도와 처치 판정에 쓰인다. 쌓인 데미지가 Might 이상이면 처치. (이전 표기 [S])",
@@ -65,9 +65,9 @@ export const GLOSSARY: GlossaryTerm[] = [
     cardSearchable: true,
   },
   {
-    term: "지침 / 준비",
+    term: "탈진 / 준비",
     en: "Exhausted / Ready",
-    symbol: "[E]",
+    symbol: "[탈진]",
     category: "기본",
     definition:
       "지친 상태는 카드가 옆으로 눕혀진 상태로, 비용이나 이동으로 소모됨을 뜻한다. 각성 페이즈에 모두 준비 상태로 되돌아온다. 유닛은 기본적으로 지쳐서 등장한다.",
@@ -165,10 +165,10 @@ export const GLOSSARY: GlossaryTerm[] = [
   {
     term: "파워",
     en: "Power",
-    symbol: "[A] / [C]",
+    symbol: "[아무색] / [자기색]",
     category: "자원",
     definition:
-      "카드 비용의 색 기호를 낸다. 도메인이 있다. 룬을 재활용하면 그 룬 도메인의 파워 1 생성. [A]=아무 도메인 파워, [C]=이 카드 도메인의 파워.",
+      "카드 비용의 색 기호를 낸다. 도메인이 있다. 룬을 재활용하면 그 룬 도메인의 파워 1 생성. [아무색]=아무 도메인 파워, [자기색]=이 카드 도메인의 파워.",
     related: ["Energy", "Recycle", "Domain"],
     cardSearchable: true,
   },

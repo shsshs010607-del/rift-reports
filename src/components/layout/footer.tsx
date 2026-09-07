@@ -1,14 +1,15 @@
 import Link from "next/link";
 import { MessageSquare, Youtube, Mail } from "lucide-react";
-import { NAV_ITEMS, SITE } from "@/lib/constants";
+import { SITE } from "@/lib/constants";
 import { LogoMark } from "@/components/ui/logo";
 import { AdSenseUnit } from "@/components/ads/adsense-unit";
 
 const TOOLS = [
   { href: "/", label: "덱 티어리스트" },
   { href: "/cards", label: "카드 정보" },
-  { href: "/rules", label: "룰 & 용어" },
-  { href: "/trading", label: "카드 시세" },
+  { href: "/rules", label: "룰 가이드" },
+  { href: "/glossary", label: "용어 사전" },
+  { href: "/trading", label: "트레이딩" },
   { href: "/tournaments", label: "대회 정보" },
 ];
 
@@ -76,11 +77,6 @@ export function Footer() {
             © {new Date().getFullYear()} {SITE.nameEn} Hub. Riftbound is a registered trademark of Riot Games.
           </p>
           <div className="flex items-center gap-space-md">
-            {NAV_ITEMS.filter((i) => i.href === "/rules").map((i) => (
-              <Link key={i.href} href={i.href} className="transition-colors hover:text-on-surface">
-                {i.label}
-              </Link>
-            ))}
             <Link href="/privacy" className="transition-colors hover:text-on-surface">
               개인정보처리방침
             </Link>

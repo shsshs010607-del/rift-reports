@@ -18,7 +18,7 @@ export function CardText({ text, className }: { text: string; className?: string
             return (
               <Link
                 key={i}
-                href={`/rules#term-${term.en}`}
+                href={`/glossary#term-${term.en}`}
                 className="font-bold text-primary-strong underline decoration-primary/30 underline-offset-2 hover:decoration-primary"
               >
                 {part}

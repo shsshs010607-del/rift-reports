@@ -100,7 +100,7 @@ export default function CardsPage({ searchParams }: { searchParams: RawSearchPar
           <ul className="flex flex-col gap-2">
             {termHits.map((t) => (
               <li key={t.en} className="text-body-sm text-ink-soft">
-                <Link href={`/rules#term-${t.en}`} className="font-semibold text-ink hover:text-primary-strong">
+                <Link href={`/glossary#term-${t.en}`} className="font-semibold text-ink hover:text-primary-strong">
                   {t.term} <span className="text-ink-soft">({t.en})</span>
                 </Link>
                 {" — "}
