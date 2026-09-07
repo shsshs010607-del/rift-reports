@@ -41,7 +41,10 @@ export default async function PrintPricePage({ params }: { params: { printId: st
           )}
         </div>
         <div className="min-w-0 flex-1">
-          <h1 className="font-display text-headline-md text-ink">{print.name}</h1>
+          <h1 className="font-display text-headline-md text-ink">{print.ko_name || print.name}</h1>
+          {print.ko_name && print.ko_name !== print.name && (
+            <p className="text-body-sm text-ink-soft">{print.name}</p>
+          )}
           <p className="mt-1 flex flex-wrap gap-1.5">
             <span className="chip">{langLabel(print.language)}</span>
             {print.rarity && <span className="chip">{print.rarity}</span>}
@@ -121,7 +124,7 @@ export default async function PrintPricePage({ params }: { params: { printId: st
           </a>
         )}
         <Link
-          href={`/trading?q=${encodeURIComponent(print.name)}#listings`}
+          href={`/trading?q=${encodeURIComponent(print.ko_name || print.name)}#listings`}
           className="btn-ghost"
         >
           <MessagesSquare className="h-4 w-4" />
@@ -178,7 +181,7 @@ export default async function PrintPricePage({ params }: { params: { printId: st
                     {g.image_url && <Image src={g.image_url} alt="" fill sizes="32px" className="object-cover" />}
                   </span>
                   <span className="min-w-0 flex-1 truncate text-body-md text-ink">
-                    {g.name} <span className="text-ink-soft">· {langLabel(g.language)}</span>
+                    {g.ko_name || g.name} <span className="text-ink-soft">· {langLabel(g.language)}</span>
                   </span>
                   <span className="shrink-0 text-right">
                     <span className="block text-body-md text-ink">{money(gp?.market_price)}</span>

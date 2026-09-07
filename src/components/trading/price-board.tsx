@@ -49,6 +49,7 @@ export function PriceBoard({ rows, fx }: { rows: PriceRow[]; fx: FxRate }) {
       if (set && r.print?.set_code !== set) return false;
       if (!needle) return true;
       return (
+        r.print?.ko_name?.toLowerCase().includes(needle) ||
         r.print?.name.toLowerCase().includes(needle) ||
         r.print?.name_en?.toLowerCase().includes(needle) ||
         r.print?.number?.toLowerCase().includes(needle)
@@ -58,7 +59,14 @@ export function PriceBoard({ rows, fx }: { rows: PriceRow[]; fx: FxRate }) {
     const delta = (r: PriceRow) =>
       r.market_price != null && r.change_7d != null ? deltaUsd(r.market_price, r.change_7d) : 0;
     return [...filtered].sort((a, b) => {
-      if (sort === "name") return dir * (a.print?.name ?? "").localeCompare(b.print?.name ?? "", "ko");
+      if (sort === "name")
+        return (
+          dir *
+          (a.print?.ko_name ?? a.print?.name ?? "").localeCompare(
+            b.print?.ko_name ?? b.print?.name ?? "",
+            "ko",
+          )
+        );
       if (sort === "change") return dir * (delta(a) - delta(b));
       return dir * ((a.market_price ?? 0) - (b.market_price ?? 0));
     });
@@ -148,7 +156,7 @@ export function PriceBoard({ rows, fx }: { rows: PriceRow[]; fx: FxRate }) {
                   </span>
                   <span className="min-w-0 flex-1">
                     <span className="block truncate text-body-md font-medium text-ink">
-                      {r.print?.name ?? "—"}
+                      {r.print?.ko_name || r.print?.name || "—"}
                     </span>
                     <span className="block truncate text-[13px] text-ink-soft">
                       {[

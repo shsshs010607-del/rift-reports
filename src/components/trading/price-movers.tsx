@@ -53,7 +53,9 @@ function MoverList({
                     )}
                   </span>
                   <span className="min-w-0 flex-1">
-                    <span className="block truncate text-body-md text-ink">{r.print?.name ?? "—"}</span>
+                    <span className="block truncate text-body-md text-ink">
+                      {r.print?.ko_name || r.print?.name || "—"}
+                    </span>
                     <span className="block text-body-sm text-ink-soft">
                       {r.print && `${langLabel(r.print.language)} · ${r.print.rarity ?? ""}`}
                     </span>

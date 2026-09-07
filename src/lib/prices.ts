@@ -3,9 +3,16 @@ import { createClient } from "@/lib/supabase/server";
 import { hasSupabaseEnv } from "@/lib/supabase/env";
 import { PRICE } from "@/lib/constants";
 import { deltaUsd } from "@/lib/money";
+import { koCardName } from "@/lib/card-names";
 import type { CardPrint, PriceSnapshot } from "@/lib/types/database";
 
-export type PriceRow = PriceSnapshot & { print: CardPrint | null };
+export type PrintWithKo = CardPrint & { ko_name?: string };
+export type PriceRow = PriceSnapshot & { print: PrintWithKo | null };
+
+/** print.name(영문) 에 대응하는 한글명을 ko_name 으로 채운다. */
+function localizePrint<T extends { name: string; name_en?: string | null }>(p: T): T & { ko_name: string } {
+  return { ...p, ko_name: koCardName(p.name_en ?? p.name) };
+}
 
 async function safe<T>(fn: () => Promise<T>, fallback: T): Promise<T> {
   if (!hasSupabaseEnv) return fallback;
@@ -30,9 +37,9 @@ function moverQuery(dir: "asc" | "desc", limit: number) {
       .limit(600);
     if (error) throw error;
     // 퍼센트가 아니라 "절대 변동액(USD)" 기준으로 정렬한다.
-    const rows = ((data as unknown as PriceRow[]) ?? []).filter(
-      (r) => r.market_price != null && r.change_7d != null && r.change_7d !== 0,
-    );
+    const rows = ((data as unknown as PriceRow[]) ?? [])
+      .filter((r) => r.market_price != null && r.change_7d != null && r.change_7d !== 0)
+      .map((r) => (r.print ? { ...r, print: localizePrint(r.print) } : r));
     rows.sort((a, b) => {
       const da = deltaUsd(a.market_price!, a.change_7d!);
       const db = deltaUsd(b.market_price!, b.change_7d!);
@@ -63,13 +70,15 @@ export function getPriceBoard(limit = 600) {
       .order("market_price", { ascending: false })
       .limit(limit);
     if (error) throw error;
-    return (data as unknown as PriceRow[]) ?? [];
+    return ((data as unknown as PriceRow[]) ?? []).map((r) =>
+      r.print ? { ...r, print: localizePrint(r.print) } : r,
+    );
   }, []);
 }
 
 /** 프린트 + 현재 대표 시세 */
 export function getPrintWithPrice(printId: string) {
-  return safe<{ print: CardPrint; price: PriceSnapshot | null } | null>(async () => {
+  return safe<{ print: PrintWithKo; price: PriceSnapshot | null } | null>(async () => {
     const supabase = createClient();
     const { data: print, error } = await supabase
       .from("card_prints")
@@ -87,7 +96,7 @@ export function getPrintWithPrice(printId: string) {
       .eq("is_headline", true)
       .maybeSingle();
 
-    return { print: print as CardPrint, price: (price as PriceSnapshot) ?? null };
+    return { print: localizePrint(print as CardPrint), price: (price as PriceSnapshot) ?? null };
   }, null);
 }
 
@@ -108,7 +117,7 @@ export function getPrintVariants(printId: string) {
 
 /** 같은 카드의 다른 언어·일러스트·레어도 프린트 + 각 대표가 */
 export function getPrintGroup(groupId: string) {
-  return safe<{ print: CardPrint; price: PriceSnapshot | null }[]>(async () => {
+  return safe<{ print: PrintWithKo; price: PriceSnapshot | null }[]>(async () => {
     const supabase = createClient();
     const { data: prints, error } = await supabase
       .from("card_prints")
@@ -128,7 +137,7 @@ export function getPrintGroup(groupId: string) {
         prints.map((p) => p.id),
       );
     const byPrint = new Map((prices ?? []).map((p) => [p.print_id, p as PriceSnapshot]));
-    return prints.map((p) => ({ print: p as CardPrint, price: byPrint.get(p.id) ?? null }));
+    return prints.map((p) => ({ print: localizePrint(p as CardPrint), price: byPrint.get(p.id) ?? null }));
   }, []);
 }
 
