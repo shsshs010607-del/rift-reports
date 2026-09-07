@@ -210,7 +210,7 @@ export function DeckSimulator({
       switch (plan.kind) {
         case "legend":
           setDeck((d) => fillRunes(setLegend(d, plan.id), card, runesByDomain.current));
-          flashMsg(`${card.name} 선택 · 룬 12장 자동 완성 → 다음: 챔피언`);
+          flashMsg(`${card.name} 선택 · 룬 12장 자동 채움 → 다음: 챔피언`);
           advance("champion");
           break;
         case "champion":
