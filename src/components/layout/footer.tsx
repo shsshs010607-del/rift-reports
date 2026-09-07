@@ -2,6 +2,7 @@ import Link from "next/link";
 import { MessageSquare, Youtube, Mail } from "lucide-react";
 import { NAV_ITEMS, SITE } from "@/lib/constants";
 import { LogoMark } from "@/components/ui/logo";
+import { AdSenseUnit } from "@/components/ads/adsense-unit";
 
 const TOOLS = [
   { href: "/", label: "덱 티어리스트" },
@@ -15,6 +16,8 @@ export function Footer() {
   return (
     <footer className="mt-space-3xl w-full bg-surface-container-low shadow-[0_-4px_20px_-2px_rgba(99,102,241,0.04)]">
       <div className="mx-auto max-w-[1280px] px-gutter-desktop py-space-2xl">
+        <AdSenseUnit className="mb-space-2xl border-b border-outline-variant/50 pb-space-xl" />
+
         <div className="mb-space-2xl grid grid-cols-1 gap-space-xl md:grid-cols-4">
           <div className="space-y-space-sm md:col-span-2">
             <div className="flex items-center gap-2.5">

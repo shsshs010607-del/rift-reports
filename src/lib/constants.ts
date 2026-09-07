@@ -5,6 +5,16 @@ export const SITE = {
   url: process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000",
 } as const;
 
+/**
+ * Google AdSense. 두 값이 모두 있어야 광고가 렌더된다 (없으면 아무것도 안 나옴).
+ *   NEXT_PUBLIC_ADSENSE_CLIENT      = "ca-pub-0000000000000000"
+ *   NEXT_PUBLIC_ADSENSE_FOOTER_SLOT = "0000000000"  (푸터 광고 단위 슬롯 ID)
+ */
+export const ADSENSE = {
+  client: process.env.NEXT_PUBLIC_ADSENSE_CLIENT ?? "",
+  footerSlot: process.env.NEXT_PUBLIC_ADSENSE_FOOTER_SLOT ?? "",
+} as const;
+
 export const NAV_ITEMS = [
   { href: "/", label: "덱 티어리스트" },
   { href: "/cards", label: "카드 정보" },

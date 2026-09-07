@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
+import Script from "next/script";
 import { Plus_Jakarta_Sans, Inter } from "next/font/google";
-import { SITE } from "@/lib/constants";
+import { SITE, ADSENSE } from "@/lib/constants";
 import { Navbar } from "@/components/layout/navbar";
 import { Footer } from "@/components/layout/footer";
 import "./globals.css";
@@ -45,6 +46,15 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           rel="stylesheet"
           href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css"
         />
+        {ADSENSE.client && (
+          <Script
+            id="adsbygoogle-init"
+            async
+            src={`https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${ADSENSE.client}`}
+            crossOrigin="anonymous"
+            strategy="afterInteractive"
+          />
+        )}
         <Navbar />
         <main className="w-full flex-1 pt-20">
           <div className="mx-auto w-full max-w-[1280px] px-gutter-desktop py-space-xl">{children}</div>
