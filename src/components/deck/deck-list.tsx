@@ -203,7 +203,13 @@ function SlotRow({ card, onRemove }: { card: Card; onRemove: () => void }) {
     <div className="flex items-center gap-2 rounded-xl border border-line bg-subcanvas/40 p-1.5">
       <div className="relative h-12 w-12 shrink-0 overflow-hidden rounded-lg bg-subcanvas">
         {card.imageUrl && (
-          <Image src={card.imageUrl} alt={card.name} fill sizes="48px" className="object-cover object-top" />
+          <Image
+            src={card.imageUrl}
+            alt={card.name}
+            fill
+            sizes="48px"
+            className={card.orientation === "landscape" ? "object-contain" : "object-cover object-top"}
+          />
         )}
       </div>
       <DomainBars card={card} />

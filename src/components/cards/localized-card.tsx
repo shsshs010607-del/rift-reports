@@ -56,6 +56,8 @@ export function LocalizedCard({
             .map((d) => DOMAIN_COLOR.get(d) ?? "#777")
             .join(", ")})`;
 
+  const isLandscape = card.orientation === "landscape";
+
   return (
     <div
       className={`relative aspect-[744/1039] overflow-hidden rounded-[4.5%] bg-subcanvas ${className ?? ""}`}
@@ -67,7 +69,7 @@ export function LocalizedCard({
           alt={card.localization.en.name}
           fill
           sizes={sizes}
-          className="object-cover"
+          className={isLandscape ? "object-contain" : "object-cover"}
           priority={priority}
         />
       ) : (
