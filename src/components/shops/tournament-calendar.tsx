@@ -4,17 +4,17 @@ import { useMemo, useState } from "react";
 import Link from "next/link";
 import { ChevronLeft, ChevronRight, MapPin, Globe, CalendarDays } from "lucide-react";
 import type { Tournament } from "@/lib/types/database";
+import { fmtKstMonthDayTime, kstYmd } from "@/lib/datetime";
 import { cn } from "@/lib/utils";
 
 const WEEKDAYS = ["일", "월", "화", "수", "목", "금", "토"];
 const ymd = (d: Date) => `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`;
+const ymdKst = (iso: string) => {
+  const k = kstYmd(iso);
+  return `${k.y}-${k.m - 1}-${k.d}`;
+};
 
-function fmtRange(t: Tournament) {
-  const s = new Date(t.starts_at);
-  const opts: Intl.DateTimeFormatOptions = { month: "long", day: "numeric", weekday: "short" };
-  const time = s.toLocaleTimeString("ko-KR", { hour: "2-digit", minute: "2-digit" });
-  return `${s.toLocaleDateString("ko-KR", opts)} ${time}`;
-}
+const fmtRange = (t: Tournament) => fmtKstMonthDayTime(t.starts_at);
 
 export function TournamentCalendar({ tournaments }: { tournaments: Tournament[] }) {
   const today = new Date();
@@ -24,7 +24,7 @@ export function TournamentCalendar({ tournaments }: { tournaments: Tournament[] 
   const byDay = useMemo(() => {
     const map = new Map<string, Tournament[]>();
     for (const t of tournaments) {
-      const key = ymd(new Date(t.starts_at));
+      const key = ymdKst(t.starts_at);
       const arr = map.get(key) ?? [];
       arr.push(t);
       map.set(key, arr);
@@ -52,8 +52,8 @@ export function TournamentCalendar({ tournaments }: { tournaments: Tournament[] 
     () =>
       tournaments
         .filter((t) => {
-          const d = new Date(t.starts_at);
-          return d.getFullYear() === cursor.getFullYear() && d.getMonth() === cursor.getMonth();
+          const k = kstYmd(t.starts_at);
+          return k.y === cursor.getFullYear() && k.m - 1 === cursor.getMonth();
         })
         .sort((a, b) => +new Date(a.starts_at) - +new Date(b.starts_at)),
     [tournaments, cursor],
@@ -152,10 +152,10 @@ export function TournamentCalendar({ tournaments }: { tournaments: Tournament[] 
             >
               <div className="grid shrink-0 place-items-center rounded-lg bg-primary/10 px-2 py-1 text-center">
                 <span className="text-label-sm font-bold text-primary-strong">
-                  {new Date(t.starts_at).toLocaleDateString("ko-KR", { month: "short" })}
+                  {kstYmd(t.starts_at).m}월
                 </span>
                 <span className="font-display text-title-md font-black leading-none text-ink">
-                  {new Date(t.starts_at).getDate()}
+                  {kstYmd(t.starts_at).d}
                 </span>
               </div>
               <div className="min-w-0 flex-1">

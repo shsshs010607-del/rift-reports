@@ -1,9 +1,8 @@
 import Link from "next/link";
 import Image from "next/image";
-import { format } from "date-fns";
-import { ko } from "date-fns/locale";
 import { CalendarDays, MapPin, Globe, Trophy } from "lucide-react";
 import type { Tournament } from "@/lib/types/database";
+import { fmtKstShort } from "@/lib/datetime";
 import { cn } from "@/lib/utils";
 
 export const STATUS_LABEL: Record<Tournament["status"], string> = {
@@ -48,7 +47,7 @@ export function TournamentCard({ t }: { t: Tournament }) {
         <div className="mt-auto flex flex-col gap-1 pt-1 text-body-sm text-ink-soft">
           <span className="inline-flex items-center gap-1.5">
             <CalendarDays className="h-3.5 w-3.5" />
-            {format(new Date(t.starts_at), "yyyy.MM.dd(EEE) HH:mm", { locale: ko })}
+            {fmtKstShort(t.starts_at)}
           </span>
           <span className="inline-flex items-center gap-1.5">
             {t.is_online ? <Globe className="h-3.5 w-3.5" /> : <MapPin className="h-3.5 w-3.5" />}

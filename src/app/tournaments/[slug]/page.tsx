@@ -2,10 +2,9 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
-import { format } from "date-fns";
-import { ko } from "date-fns/locale";
 import { ChevronLeft, CalendarDays, MapPin, Globe, Trophy, Users, ExternalLink } from "lucide-react";
 import { getTournament } from "@/lib/queries";
+import { fmtKstFull, fmtKstMonthDayTime } from "@/lib/datetime";
 import { STATUS_LABEL } from "@/components/tournaments/tournament-card";
 
 export const revalidate = 120;
@@ -53,8 +52,8 @@ export default async function TournamentDetailPage({ params }: { params: { slug:
 
       <div className="mt-5 flex flex-col gap-2 rounded-2xl border border-line/80 bg-card p-4">
         <Row icon={<CalendarDays className="h-4 w-4" />}>
-          {format(new Date(t.starts_at), "yyyy년 M월 d일(EEE) HH:mm", { locale: ko })}
-          {t.ends_at && ` ~ ${format(new Date(t.ends_at), "M월 d일 HH:mm", { locale: ko })}`}
+          {fmtKstFull(t.starts_at)}
+          {t.ends_at && ` ~ ${fmtKstMonthDayTime(t.ends_at)}`}
         </Row>
         <Row icon={t.is_online ? <Globe className="h-4 w-4" /> : <MapPin className="h-4 w-4" />}>
           {t.is_online ? "온라인 진행" : (t.location ?? "장소 미정")}

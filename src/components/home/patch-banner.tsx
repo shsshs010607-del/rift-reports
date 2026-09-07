@@ -9,10 +9,10 @@ export function PatchBanner() {
     <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 rounded-2xl border border-primary/20 bg-primary-wash/50 px-4 py-3 text-body-sm">
       <span className="inline-flex items-center gap-1.5 rounded-full bg-primary px-2.5 py-0.5 text-label-sm font-bold text-white">
         <Sparkles className="h-3 w-3" />
-        패치 준비 중
+        OGN 출시
       </span>
       <span className="text-ink-soft">
-        완성 덱·시세·랭킹 데이터 연동 전입니다. 카드 정보와 덱 시뮬레이터는 지금 사용할 수 있어요.
+        리프트바운드 &lsquo;오리진&rsquo;이 9월 18일 한국 정식 출시됩니다. 카드 DB·덱 시뮬레이터·시세는 지금 이용할 수 있어요.
       </span>
       <Link
         href="/rules"

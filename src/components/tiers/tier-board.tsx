@@ -91,7 +91,7 @@ export async function TierBoard() {
         );
       })}
       <p className="px-1 text-label-sm text-ink-soft">
-        ※ 완성 덱 데이터 연동 전 임시 표입니다. 카드 이미지는 각 덱의 레전드입니다.
+        ※ 출시 초기 메타 예상 기준입니다. 대회·플레이 데이터가 쌓이면 갱신됩니다. 카드 이미지는 각 덱의 레전드입니다.
       </p>
     </div>
   );

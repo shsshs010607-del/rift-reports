@@ -1,15 +1,41 @@
 import { Instagram, MessageCircle, Youtube, Users } from "lucide-react";
+import { SITE } from "@/lib/constants";
+import { cn } from "@/lib/utils";
 
 const CHANNELS = [
-  { icon: Youtube, name: "유튜브 채널", handle: "리프트 리포트 공식 영상", note: "메타 해설 & 덱 가이드", href: "#" },
-  { icon: Instagram, name: "인스타그램", handle: "@riftreport", note: "카드 일러스트 & 신규 소식", href: "#" },
-  { icon: Users, name: "네이버 카페", handle: "리프트바운드 유저 모임", note: "한국 커뮤니티 & 거래", href: "#" },
-  { icon: MessageCircle, name: "디스코드", handle: "RiftReport Community", note: "실시간 덱 토론 & 친선전", href: "#" },
+  {
+    icon: Youtube,
+    name: "유튜브 채널",
+    handle: "리프트 리포트 공식 영상",
+    note: "메타 해설 & 덱 가이드",
+    href: SITE.youtube,
+  },
+  {
+    icon: Instagram,
+    name: "인스타그램",
+    handle: "@riftreport",
+    note: "카드 일러스트 & 신규 소식",
+    href: SITE.instagram,
+  },
+  {
+    icon: Users,
+    name: "네이버 카페",
+    handle: "리프트바운드 유저 모임",
+    note: "한국 커뮤니티 & 거래",
+    href: SITE.naverCafe,
+  },
+  {
+    icon: MessageCircle,
+    name: "디스코드",
+    handle: "RiftReport Community",
+    note: "실시간 덱 토론 & 친선전",
+    href: SITE.discord,
+  },
 ];
 
-/**
- * 커뮤니티 & SNS 채널 그리드. 실제 채널 URL 확정 전 플레이스홀더(#).
- */
+const ready = (href: string) => Boolean(href) && href !== "#";
+
+/** 커뮤니티 & SNS 채널 그리드. URL 미확정 채널은 "준비 중"으로 비활성. */
 export function SnsChannels() {
   return (
     <section>
@@ -18,20 +44,29 @@ export function SnsChannels() {
         공략 영상, 일러스트 프리뷰, 실시간 덱 상담에 참여해 보세요.
       </p>
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-        {CHANNELS.map((c) => (
-          <a
-            key={c.name}
-            href={c.href}
-            className="flex flex-col gap-2 rounded-2xl border border-line bg-card p-4 transition hover:-translate-y-0.5 hover:border-primary/40"
-          >
-            <span className="grid h-9 w-9 place-items-center rounded-xl bg-primary-wash text-primary-strong">
-              <c.icon className="h-[18px] w-[18px]" />
-            </span>
-            <span className="text-label-lg font-bold text-ink">{c.name}</span>
-            <span className="text-label-sm text-ink-soft">{c.handle}</span>
-            <span className="text-label-sm font-semibold text-primary-strong">{c.note}</span>
-          </a>
-        ))}
+        {CHANNELS.map((c) => {
+          const on = ready(c.href);
+          const Wrapper = on ? "a" : "div";
+          return (
+            <Wrapper
+              key={c.name}
+              {...(on ? { href: c.href, target: "_blank", rel: "noopener noreferrer" } : {})}
+              className={cn(
+                "flex flex-col gap-2 rounded-2xl border border-line bg-card p-4 transition",
+                on ? "hover:-translate-y-0.5 hover:border-primary/40" : "opacity-60",
+              )}
+            >
+              <span className="grid h-9 w-9 place-items-center rounded-xl bg-primary-wash text-primary-strong">
+                <c.icon className="h-[18px] w-[18px]" />
+              </span>
+              <span className="text-label-lg font-bold text-ink">{c.name}</span>
+              <span className="text-label-sm text-ink-soft">{on ? c.handle : "준비 중"}</span>
+              <span className="text-label-sm font-semibold text-primary-strong">
+                {on ? c.note : "채널 공개 후 연결됩니다"}
+              </span>
+            </Wrapper>
+          );
+        })}
       </div>
     </section>
   );
