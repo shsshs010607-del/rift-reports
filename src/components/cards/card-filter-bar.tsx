@@ -1,7 +1,8 @@
 "use client";
 
+import { useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { X, SlidersHorizontal } from "lucide-react";
+import { X, SlidersHorizontal, ChevronDown } from "lucide-react";
 
 import { CARD_DOMAINS, CARD_RARITIES, CARD_SETS, CARD_TYPES } from "@/lib/constants";
 import { cn } from "@/lib/utils";
@@ -17,15 +18,18 @@ const KEY_LABEL: Record<string, string> = {
   type: "유형",
   setCode: "확장팩",
   rarity: "레어도",
+  cost: "코스트",
 };
+const COSTS = ["0", "1", "2", "3", "4", "5", "6", "7"];
 
 /**
- * 카드 검색 필터 — 도메인 색칩 / 유형·확장팩·레어도 필터.
- * 선택하면 URL 쿼리스트링 갱신(page 리셋). 서버 컴포넌트가 읽어 필터링.
+ * 카드 검색 필터 — 도메인 색스와치 / 코스트 / 유형·확장팩·레어도.
+ * 선택 → URL 쿼리스트링 갱신(page 리셋). 서버 컴포넌트가 읽어 필터링.
  */
 export function CardFilterBar() {
   const router = useRouter();
   const params = useSearchParams();
+  const [open, setOpen] = useState(true);
 
   const push = (next: URLSearchParams) => {
     next.delete("page");
@@ -54,133 +58,183 @@ export function CardFilterBar() {
   };
 
   const active = (key: string, value: string) => params.get(key) === value;
-  const activeKeys = ["domain", "type", "setCode", "rarity", "cost"].filter((k) => params.get(k));
+  const activeKeys = ["domain", "cost", "type", "setCode", "rarity"].filter((k) => params.get(k));
 
   return (
-    <div className="rounded-2xl border border-line/70 bg-card p-3">
+    <div className="note-card p-4 pr-6">
+      {/* 헤더 */}
+      <div className="flex items-center justify-between">
+        <button
+          type="button"
+          onClick={() => setOpen((v) => !v)}
+          className="flex items-center gap-2 text-label-lg font-bold text-ink"
+        >
+          <SlidersHorizontal className="h-4 w-4 text-primary" />
+          필터
+          {activeKeys.length > 0 && (
+            <span className="grid h-5 min-w-5 place-items-center rounded-full bg-primary px-1 text-[11px] font-black text-white">
+              {activeKeys.length}
+            </span>
+          )}
+          <ChevronDown className={cn("h-4 w-4 text-ink-soft transition", open && "rotate-180")} />
+        </button>
+        {activeKeys.length > 0 && (
+          <button
+            type="button"
+            onClick={clearAll}
+            className="text-label-sm font-bold text-ink-soft transition hover:text-error"
+          >
+            전체 해제
+          </button>
+        )}
+      </div>
+
       {/* 활성 필터 요약 */}
       {activeKeys.length > 0 && (
-        <div className="mb-3 flex flex-wrap items-center gap-1.5 border-b border-line/50 pb-3">
-          <SlidersHorizontal className="h-3.5 w-3.5 text-ink-soft" />
+        <div className="mt-3 flex flex-wrap gap-1.5">
           {activeKeys.map((k) => {
             const v = params.get(k)!;
-            const label =
-              k === "cost" ? `${v}코스트` : (LABELS[k]?.[v] ?? v);
+            const label = k === "cost" ? v : (LABELS[k]?.[v] ?? v);
             return (
               <button
                 key={k}
                 type="button"
                 onClick={() => clearOne(k)}
-                className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-2 py-0.5 text-label-sm font-bold text-primary-strong hover:bg-primary/20"
+                className="inline-flex items-center gap-1 rounded-full bg-primary/12 px-2.5 py-1 text-label-sm font-bold text-primary-strong transition hover:bg-primary/20"
               >
-                {KEY_LABEL[k] ?? k}: {label}
+                {KEY_LABEL[k] ?? k} · {label}
                 <X className="h-3 w-3" />
               </button>
             );
           })}
-          <button
-            type="button"
-            onClick={clearAll}
-            className="text-label-sm font-bold text-ink-soft hover:text-error"
-          >
-            전체 해제
-          </button>
         </div>
       )}
 
-      <div className="flex flex-col gap-2.5">
-        {/* 도메인 — 색칩 */}
-        <Row label="도메인">
-          {CARD_DOMAINS.map((d) => (
-            <button
-              key={d.slug}
-              type="button"
-              onClick={() => toggle("domain", d.slug)}
-              aria-pressed={active("domain", d.slug)}
-              title={d.label}
-              className={cn(
-                "group relative grid h-7 w-7 place-items-center rounded-full transition",
-                active("domain", d.slug)
-                  ? "ring-2 ring-primary ring-offset-2 ring-offset-card"
-                  : "opacity-70 hover:opacity-100",
-              )}
-            >
-              <span
-                className="h-5 w-5 rounded-full ring-1 ring-black/10"
-                style={{ backgroundColor: d.color }}
-              />
-            </button>
-          ))}
-        </Row>
+      {open && (
+        <div className="mt-4 flex flex-col gap-4">
+          {/* 도메인 — 색 스와치 */}
+          <section>
+            <p className="mb-2 text-label-sm font-bold uppercase tracking-wide text-ink-soft">
+              도메인
+            </p>
+            <div className="flex flex-wrap gap-2">
+              {CARD_DOMAINS.map((d) => {
+                const on = active("domain", d.slug);
+                return (
+                  <button
+                    key={d.slug}
+                    type="button"
+                    onClick={() => toggle("domain", d.slug)}
+                    aria-pressed={on}
+                    className={cn(
+                      "group flex flex-col items-center gap-1 rounded-xl px-2 py-1.5 transition",
+                      on ? "bg-primary/10" : "hover:bg-subcanvas",
+                    )}
+                  >
+                    <span
+                      className={cn(
+                        "grid h-9 w-9 place-items-center rounded-full ring-1 ring-black/10 transition",
+                        on
+                          ? "scale-110 ring-2 ring-primary ring-offset-2 ring-offset-card"
+                          : "opacity-75 group-hover:opacity-100",
+                      )}
+                      style={{ backgroundColor: d.color }}
+                    />
+                    <span
+                      className={cn(
+                        "text-[11px] font-bold",
+                        on ? "text-primary-strong" : "text-ink-soft",
+                      )}
+                    >
+                      {d.label}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+          </section>
 
-        <Row label="유형">
-          {CARD_TYPES.map((t) => (
-            <Chip key={t.slug} on={active("type", t.slug)} onClick={() => toggle("type", t.slug)}>
-              {t.label}
-            </Chip>
-          ))}
-        </Row>
+          {/* 코스트 */}
+          <section>
+            <p className="mb-2 text-label-sm font-bold uppercase tracking-wide text-ink-soft">
+              코스트
+            </p>
+            <div className="flex flex-wrap gap-1.5">
+              {COSTS.map((c) => (
+                <button
+                  key={c}
+                  type="button"
+                  onClick={() => toggle("cost", c)}
+                  aria-pressed={active("cost", c)}
+                  className={cn(
+                    "grid h-9 w-9 place-items-center rounded-xl text-body-md font-black transition",
+                    active("cost", c)
+                      ? "bg-primary text-white shadow-sm"
+                      : "bg-subcanvas text-ink-soft hover:bg-subcanvas/70 hover:text-ink",
+                  )}
+                >
+                  {c}
+                </button>
+              ))}
+            </div>
+          </section>
 
-        <Row label="확장팩">
-          {CARD_SETS.map((s) => (
-            <Chip
-              key={s.code}
-              on={active("setCode", s.code)}
-              onClick={() => toggle("setCode", s.code)}
-              title={s.name}
-            >
-              <span className="font-mono text-[11px] font-extrabold">{s.code}</span>
-              <span className="hidden sm:inline">{s.label}</span>
-            </Chip>
-          ))}
-        </Row>
-
-        <Row label="레어도">
-          {CARD_RARITIES.map((r) => (
-            <Chip key={r.slug} on={active("rarity", r.slug)} onClick={() => toggle("rarity", r.slug)}>
-              {r.label}
-            </Chip>
-          ))}
-        </Row>
-      </div>
+          <PillGroup
+            title="유형"
+            items={CARD_TYPES.map((t) => ({ key: t.slug, label: t.label }))}
+            isOn={(k) => active("type", k)}
+            onPick={(k) => toggle("type", k)}
+          />
+          <PillGroup
+            title="확장팩"
+            items={CARD_SETS.map((s) => ({ key: s.code, label: `${s.code} ${s.label}` }))}
+            isOn={(k) => active("setCode", k)}
+            onPick={(k) => toggle("setCode", k)}
+          />
+          <PillGroup
+            title="레어도"
+            items={CARD_RARITIES.map((r) => ({ key: r.slug, label: r.label }))}
+            isOn={(k) => active("rarity", k)}
+            onPick={(k) => toggle("rarity", k)}
+          />
+        </div>
+      )}
     </div>
   );
 }
 
-function Row({ label, children }: { label: string; children: React.ReactNode }) {
-  return (
-    <div className="flex items-center gap-2">
-      <span className="w-11 shrink-0 text-label-sm font-bold text-ink-soft">{label}</span>
-      <div className="flex flex-1 flex-wrap items-center gap-1.5">{children}</div>
-    </div>
-  );
-}
-
-function Chip({
-  on,
-  onClick,
+function PillGroup({
   title,
-  children,
+  items,
+  isOn,
+  onPick,
 }: {
-  on: boolean;
-  onClick: () => void;
-  title?: string;
-  children: React.ReactNode;
+  title: string;
+  items: { key: string; label: string }[];
+  isOn: (key: string) => boolean;
+  onPick: (key: string) => void;
 }) {
   return (
-    <button
-      type="button"
-      onClick={onClick}
-      title={title}
-      aria-pressed={on}
-      className={cn(
-        "inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-body-sm font-semibold transition",
-        on
-          ? "bg-primary text-white shadow-sm"
-          : "bg-subcanvas text-ink-soft hover:bg-subcanvas/70 hover:text-ink",
-      )}
-    >
-      {children}
-    </button>
+    <section>
+      <p className="mb-2 text-label-sm font-bold uppercase tracking-wide text-ink-soft">{title}</p>
+      <div className="flex flex-wrap gap-1.5">
+        {items.map((it) => (
+          <button
+            key={it.key}
+            type="button"
+            onClick={() => onPick(it.key)}
+            aria-pressed={isOn(it.key)}
+            className={cn(
+              "rounded-full px-3 py-1.5 text-body-sm font-semibold transition",
+              isOn(it.key)
+                ? "bg-primary text-white shadow-sm"
+                : "bg-subcanvas text-ink-soft hover:bg-subcanvas/70 hover:text-ink",
+            )}
+          >
+            {it.label}
+          </button>
+        ))}
+      </div>
+    </section>
   );
 }
