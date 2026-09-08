@@ -42,8 +42,9 @@ export const RIFTBOUND_VIDEOS = [
  *   NEXT_PUBLIC_ADSENSE_FOOTER_SLOT = "0000000000"  (푸터 광고 단위 슬롯 ID)
  */
 export const ADSENSE = {
-  client: process.env.NEXT_PUBLIC_ADSENSE_CLIENT ?? "",
-  footerSlot: process.env.NEXT_PUBLIC_ADSENSE_FOOTER_SLOT ?? "",
+  // 퍼블리셔 ID·슬롯 ID 는 공개 값이라 기본값으로 박아둔다. (env 로 덮어쓰기 가능)
+  client: process.env.NEXT_PUBLIC_ADSENSE_CLIENT ?? "ca-pub-5310171214105326",
+  footerSlot: process.env.NEXT_PUBLIC_ADSENSE_FOOTER_SLOT ?? "2066782718",
 } as const;
 
 /** Kakao Map JavaScript 키. 없으면 지도 대신 목록만. (콘솔에서 웹 도메인 등록 필수) */
