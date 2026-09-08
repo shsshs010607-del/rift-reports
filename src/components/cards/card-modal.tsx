@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { ExternalLink, X } from "lucide-react";
+import { Tag, X } from "lucide-react";
 
 import type { Card } from "@/lib/types/card";
 import { resolveCardText, cardNumber } from "@/lib/types/card";
@@ -173,25 +173,41 @@ export function CardModal({ card, onClose }: { card: Card; onClose: () => void }
                 })}
               </span>
             </Row>
-            {card.subtypes.length > 0 && <Row label="태그">{card.subtypes.join(", ")}</Row>}
+            {card.subtypes.length > 0 && (
+              <Row label="태그">
+                <span className="flex flex-wrap gap-1.5">
+                  {card.subtypes.map((tag) => (
+                    <Link
+                      key={tag}
+                      href={`/cards?q=${encodeURIComponent(tag)}`}
+                      onClick={onClose}
+                      className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-2 py-0.5 text-label-sm font-bold text-primary-strong transition hover:bg-primary/20"
+                    >
+                      <Tag className="h-3 w-3" />
+                      {tag}
+                    </Link>
+                  ))}
+                </span>
+              </Row>
+            )}
           </dl>
 
           {t.text && (
             <CardText
               text={t.text}
+              linkTo="cards"
+              onNavigate={onClose}
               className="whitespace-pre-line rounded-xl bg-subcanvas/60 p-3 text-body-sm leading-relaxed text-ink"
             />
+          )}
+          {t.text && (
+            <p className="-mt-1 text-label-sm text-ink-soft/70">
+              태그·<span className="font-bold text-primary-strong">[대괄호]</span> 용어를 누르면 그 효과가 있는 카드로 이동합니다.
+            </p>
           )}
           {!hasKo && (
             <p className="text-label-sm text-ink-soft/70">한국어 번역 준비 중입니다.</p>
           )}
-
-          <Link
-            href={`/cards/${encodeURIComponent(card.id)}`}
-            className="mt-auto inline-flex items-center gap-1 self-start text-label-md font-semibold text-primary-strong hover:underline"
-          >
-            카드 전체 정보 <ExternalLink className="h-3.5 w-3.5" />
-          </Link>
         </div>
       </div>
     </div>
