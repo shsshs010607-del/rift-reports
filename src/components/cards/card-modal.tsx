@@ -2,12 +2,13 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { Tag, X } from "lucide-react";
+import { Tag, X, Printer } from "lucide-react";
 
 import type { Card } from "@/lib/types/card";
 import { resolveCardText, cardNumber } from "@/lib/types/card";
 import { CARD_DOMAINS, CARD_SETS, CARD_TREATMENTS, CARD_TYPES } from "@/lib/constants";
 import { domainGradient, domainWash, rarityStyle } from "@/lib/card-style";
+import { renderProxyImage, proxyFileName } from "@/lib/cards/proxy-image";
 import { LocalizedCard } from "@/components/cards/localized-card";
 import { CardText } from "@/components/cards/card-text";
 import { cn } from "@/lib/utils";
@@ -25,6 +26,7 @@ export function CardModal({ card, onClose }: { card: Card; onClose: () => void }
     () => (card.printings.find((p) => p.isBase) ?? card.printings[0])?.id,
   );
   const [locale, setLocale] = useState<"ko" | "en">("ko");
+  const [proxyBusy, setProxyBusy] = useState(false);
 
   const hasKo = Boolean(card.localization.ko);
   const activePrinting = card.printings.find((p) => p.id === printingId) ?? card.printings[0];
@@ -32,6 +34,25 @@ export function CardModal({ card, onClose }: { card: Card; onClose: () => void }
   const t = locale === "ko" && hasKo && isBase ? resolveCardText(card, "ko") : card.localization.en;
   const wash = domainWash(card.domains);
   const rarity = rarityStyle(card.rarity);
+
+  async function downloadProxy() {
+    setProxyBusy(true);
+    try {
+      const blob = await renderProxyImage(card, locale);
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = proxyFileName(card);
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+    } catch {
+      /* noop */
+    } finally {
+      setProxyBusy(false);
+    }
+  }
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => e.key === "Escape" && onClose();
@@ -208,6 +229,21 @@ export function CardModal({ card, onClose }: { card: Card; onClose: () => void }
           {!hasKo && (
             <p className="text-label-sm text-ink-soft/70">한국어 번역 준비 중입니다.</p>
           )}
+
+          <div className="mt-auto border-t border-line/60 pt-3">
+            <button
+              type="button"
+              onClick={downloadProxy}
+              disabled={proxyBusy}
+              className="inline-flex items-center gap-1.5 rounded-full border border-line bg-card px-3.5 py-2 text-label-md font-bold text-ink-soft transition hover:border-primary/40 hover:text-ink disabled:opacity-50"
+            >
+              <Printer className="h-4 w-4" />
+              {proxyBusy ? "만드는 중…" : "프록시 다운로드"}
+            </button>
+            <p className="mt-1.5 text-label-sm text-ink-soft/70">
+              리프트바운드 규격(63×88mm · 300DPI) PNG. 실제 크기로 인쇄해 컷 가이드대로 자르세요.
+            </p>
+          </div>
         </div>
       </div>
     </div>
