@@ -6,14 +6,14 @@ import { ExternalLink, X } from "lucide-react";
 
 import type { Card } from "@/lib/types/card";
 import { resolveCardText, cardNumber } from "@/lib/types/card";
-import { CARD_DOMAINS, CARD_RARITIES, CARD_SETS, CARD_TREATMENTS, CARD_TYPES } from "@/lib/constants";
+import { CARD_DOMAINS, CARD_SETS, CARD_TREATMENTS, CARD_TYPES } from "@/lib/constants";
+import { domainGradient, domainWash, rarityStyle } from "@/lib/card-style";
 import { LocalizedCard } from "@/components/cards/localized-card";
 import { CardText } from "@/components/cards/card-text";
 import { cn } from "@/lib/utils";
 
 const DOMAIN_BY_SLUG = new Map(CARD_DOMAINS.map((d) => [d.slug, d]));
 const TYPE_LABEL = new Map(CARD_TYPES.map((t) => [t.slug, t.label]));
-const RARITY_LABEL = new Map<string, string>(CARD_RARITIES.map((r) => [r.slug, r.label]));
 const SET_LABEL = new Map<string, string>(CARD_SETS.map((s) => [s.code, s.label]));
 
 /**
@@ -30,6 +30,8 @@ export function CardModal({ card, onClose }: { card: Card; onClose: () => void }
   const activePrinting = card.printings.find((p) => p.id === printingId) ?? card.printings[0];
   const isBase = activePrinting?.isBase ?? true;
   const t = locale === "ko" && hasKo && isBase ? resolveCardText(card, "ko") : card.localization.en;
+  const wash = domainWash(card.domains);
+  const rarity = rarityStyle(card.rarity);
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => e.key === "Escape" && onClose();
@@ -47,11 +49,16 @@ export function CardModal({ card, onClose }: { card: Card; onClose: () => void }
       onClick={onClose}
     >
       <div
-        className="flex max-h-[92vh] w-full max-w-3xl flex-col overflow-hidden rounded-2xl border border-line bg-card shadow-xl sm:flex-row"
+        className="relative flex max-h-[92vh] w-full max-w-3xl flex-col overflow-hidden rounded-2xl border border-line bg-card shadow-xl sm:flex-row"
         onClick={(e) => e.stopPropagation()}
       >
+        <span
+          aria-hidden
+          className="absolute inset-x-0 top-0 z-10 h-1"
+          style={{ background: domainGradient(card.domains) }}
+        />
         {/* 카드 이미지 */}
-        <div className="shrink-0 bg-subcanvas/50 p-4 sm:w-[300px]">
+        <div className="shrink-0 p-4 sm:w-[300px]" style={{ backgroundImage: wash }}>
           <LocalizedCard
             card={card}
             locale={locale}
@@ -84,7 +91,23 @@ export function CardModal({ card, onClose }: { card: Card; onClose: () => void }
         <div className="flex min-w-0 flex-1 flex-col gap-3 overflow-y-auto p-5">
           <div className="flex items-start justify-between gap-3">
             <div className="min-w-0">
-              <h2 className="font-display text-title-md font-bold text-ink">{t.name}</h2>
+              <div className="mb-1 flex flex-wrap items-center gap-1.5">
+                <span
+                  className={cn(
+                    "rounded-full px-2 py-0.5 text-[10px] font-black uppercase tracking-wide",
+                    rarity.className,
+                  )}
+                >
+                  {rarity.label}
+                </span>
+                <span className="flex items-center gap-1">
+                  {card.domains.map((slug) => (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img key={slug} src={`/domains/${slug}.svg`} alt="" width={14} height={14} className="h-3.5 w-3.5" />
+                  ))}
+                </span>
+              </div>
+              <h2 className="font-display text-title-lg font-bold text-ink">{t.name}</h2>
               <p className="truncate text-body-sm text-ink-soft">
                 {card.localization.en.name}
                 {cardNumber(card) ? ` · ${cardNumber(card)}` : ""}
@@ -128,7 +151,11 @@ export function CardModal({ card, onClose }: { card: Card; onClose: () => void }
               </Row>
             )}
             <Row label="타입">{TYPE_LABEL.get(card.type) ?? card.type}</Row>
-            <Row label="레어도">{RARITY_LABEL.get(card.rarity) ?? card.rarity}</Row>
+            <Row label="레어도">
+              <span className={cn("rounded-full px-2 py-0.5 text-label-sm font-bold", rarity.className)}>
+                {rarity.label}
+              </span>
+            </Row>
             <Row label="코스트">{card.cost ?? "—"}</Row>
             {card.power != null && <Row label="위력">{card.power}</Row>}
             <Row label="도메인">

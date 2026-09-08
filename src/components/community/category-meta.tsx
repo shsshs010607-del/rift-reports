@@ -11,6 +11,8 @@ type Meta = {
   fg: string;
   /** 카드 호버 링 */
   ring: string;
+  /** 헤더 배너용 그라디언트 */
+  band: string;
 };
 
 export const CATEGORY_META: Record<string, Meta> = {
@@ -20,6 +22,7 @@ export const CATEGORY_META: Record<string, Meta> = {
     soft: "bg-violet-100",
     fg: "text-violet-700",
     ring: "hover:border-violet-300",
+    band: "from-violet-200/70 via-violet-100/40",
   },
   report: {
     icon: Newspaper,
@@ -27,6 +30,7 @@ export const CATEGORY_META: Record<string, Meta> = {
     soft: "bg-sky-100",
     fg: "text-sky-700",
     ring: "hover:border-sky-300",
+    band: "from-sky-200/70 via-sky-100/40",
   },
   "deck-guide": {
     icon: Layers,
@@ -34,6 +38,7 @@ export const CATEGORY_META: Record<string, Meta> = {
     soft: "bg-green-100",
     fg: "text-green-700",
     ring: "hover:border-green-300",
+    band: "from-green-200/70 via-green-100/40",
   },
   tournament: {
     icon: Trophy,
@@ -41,6 +46,7 @@ export const CATEGORY_META: Record<string, Meta> = {
     soft: "bg-yellow-100",
     fg: "text-yellow-800",
     ring: "hover:border-yellow-300",
+    band: "from-amber-200/70 via-amber-100/40",
   },
   recruit: {
     icon: Users,
@@ -48,6 +54,7 @@ export const CATEGORY_META: Record<string, Meta> = {
     soft: "bg-rose-100",
     fg: "text-rose-700",
     ring: "hover:border-rose-300",
+    band: "from-rose-200/70 via-rose-100/40",
   },
 };
 

@@ -64,12 +64,16 @@ export default async function BoardPage({
         <ChevronLeft className="h-4 w-4" />
         커뮤니티
       </Link>
-      <header className="mb-6 flex items-center gap-3">
-        <span className={`grid h-11 w-11 shrink-0 place-items-center rounded-2xl ${m.soft} ${m.fg}`}>
-          <Icon className="h-5 w-5" />
+      <header
+        className={`mb-6 flex items-center gap-3.5 rounded-2xl bg-gradient-to-r ${m.band} to-transparent p-4`}
+      >
+        <span
+          className={`grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-card ${m.fg} shadow-sm`}
+        >
+          <Icon className="h-6 w-6" />
         </span>
         <div>
-          <h1 className="font-display text-headline-sm text-ink">{category.label}</h1>
+          <h1 className="font-display text-headline-md text-ink">{category.label}</h1>
           <p className="text-body-sm text-ink-soft">{category.desc}</p>
         </div>
       </header>
