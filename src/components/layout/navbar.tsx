@@ -3,8 +3,8 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { Menu, X, Search, PenSquare, Home } from "lucide-react";
-import { NAV_PRIMARY, NAV_SECONDARY } from "@/lib/constants";
+import { Menu, X, Search, PenSquare, Home, ChevronDown } from "lucide-react";
+import { NAV_PRIMARY, NAV_SECONDARY, SITE } from "@/lib/constants";
 import { NotificationBell } from "@/components/layout/notification-bell";
 import { LogoMark } from "@/components/ui/logo";
 import { cn } from "@/lib/utils";
@@ -51,7 +51,13 @@ export function Navbar() {
 
         <nav className="hidden flex-1 items-center gap-1 xl:flex">
           {NAV_PRIMARY.map((item) => (
-            <NavPill key={item.href} {...item} active={isActive(item.href)} />
+            <NavPill
+              key={item.href}
+              href={item.href}
+              label={item.label}
+              sub={item.children}
+              active={isActive(item.href)}
+            />
           ))}
         </nav>
 
@@ -172,19 +178,44 @@ export function Navbar() {
               <Home className="h-[18px] w-[18px]" />홈
             </Link>
             {[...NAV_PRIMARY, ...NAV_SECONDARY].map((item) => (
-              <Link
-                key={item.href}
-                href={item.href}
-                onClick={() => setOpen(false)}
-                className={cn(
-                  "rounded-xl px-space-sm py-space-sm text-title-md transition-colors",
-                  isActive(item.href)
-                    ? "bg-surface-container-high font-bold text-primary"
-                    : "text-on-surface-variant hover:bg-surface-container hover:text-on-surface",
-                )}
-              >
-                {item.label}
-              </Link>
+              <div key={item.href}>
+                <Link
+                  href={item.href}
+                  onClick={() => setOpen(false)}
+                  className={cn(
+                    "block rounded-xl px-space-sm py-space-sm text-title-md transition-colors",
+                    isActive(item.href)
+                      ? "bg-surface-container-high font-bold text-primary"
+                      : "text-on-surface-variant hover:bg-surface-container hover:text-on-surface",
+                  )}
+                >
+                  {item.label}
+                </Link>
+                {"children" in item &&
+                  item.children?.map((s) => {
+                    const { url, external, disabled } = subHref(s.href);
+                    if (disabled)
+                      return (
+                        <span
+                          key={s.href}
+                          className="block px-space-sm py-2 pl-8 text-body-md text-on-surface-variant/60"
+                        >
+                          {s.label} · 준비 중
+                        </span>
+                      );
+                    return (
+                      <Link
+                        key={s.href}
+                        href={url}
+                        {...(external ? { target: "_blank", rel: "noopener noreferrer" } : {})}
+                        onClick={() => setOpen(false)}
+                        className="block px-space-sm py-2 pl-8 text-body-md text-on-surface-variant hover:text-on-surface"
+                      >
+                        {s.label}
+                      </Link>
+                    );
+                  })}
+              </div>
             ))}
             <Link
               href={user ? "/me" : "/login"}
@@ -200,19 +231,94 @@ export function Navbar() {
   );
 }
 
-function NavPill({ href, label, active }: { href: string; label: string; active: boolean }) {
+type SubItem = { href: string; label: string };
+
+/** report: 센티널 → 디스코드 신고 게시판. 아직 URL 없으면 비활성. */
+function subHref(href: string): { url: string; external: boolean; disabled: boolean } {
+  if (href === "report:") {
+    const ready = SITE.discordReport && SITE.discordReport !== "#";
+    return { url: ready ? SITE.discordReport : "#", external: true, disabled: !ready };
+  }
+  return { url: href, external: false, disabled: false };
+}
+
+function NavPill({
+  href,
+  label,
+  active,
+  sub,
+}: {
+  href: string;
+  label: string;
+  active: boolean;
+  sub?: readonly SubItem[];
+}) {
+  const [open, setOpen] = useState(false);
+
+  const pillCls = cn(
+    "whitespace-nowrap rounded-full px-3.5 py-2 text-body-md transition-all",
+    active
+      ? "bg-surface-container-high font-bold text-primary"
+      : "text-on-surface-variant hover:bg-surface-container hover:text-on-surface",
+  );
+
+  if (!sub?.length) {
+    return (
+      <Link href={href} aria-current={active ? "page" : undefined} className={pillCls}>
+        {label}
+      </Link>
+    );
+  }
+
   return (
-    <Link
-      href={href}
-      aria-current={active ? "page" : undefined}
-      className={cn(
-        "whitespace-nowrap rounded-full px-3.5 py-2 text-body-md transition-all",
-        active
-          ? "bg-surface-container-high font-bold text-primary"
-          : "text-on-surface-variant hover:bg-surface-container hover:text-on-surface",
-      )}
+    <div
+      className="relative"
+      onMouseEnter={() => setOpen(true)}
+      onMouseLeave={() => setOpen(false)}
     >
-      {label}
-    </Link>
+      <div className={cn("flex items-center", pillCls, "gap-0.5 pr-2")}>
+        <Link href={href} aria-current={active ? "page" : undefined} className="hover:underline">
+          {label}
+        </Link>
+        <button
+          type="button"
+          onClick={() => setOpen((v) => !v)}
+          aria-label={`${label} 하위 메뉴`}
+          className="grid h-5 w-5 place-items-center rounded-full hover:bg-surface-container-high"
+        >
+          <ChevronDown className={cn("h-3.5 w-3.5 transition", open && "rotate-180")} />
+        </button>
+      </div>
+
+      {open && (
+        <div className="absolute left-0 top-[calc(100%+4px)] z-50 min-w-[160px] overflow-hidden rounded-xl border border-outline-variant/60 bg-surface-container-lowest py-1 shadow-e2">
+          {sub.map((s) => {
+            const { url, external, disabled } = subHref(s.href);
+            if (disabled) {
+              return (
+                <span
+                  key={s.href}
+                  className="flex items-center justify-between px-3.5 py-2 text-body-sm text-on-surface-variant/60"
+                >
+                  {s.label}
+                  <span className="text-label-sm">준비 중</span>
+                </span>
+              );
+            }
+            return (
+              <Link
+                key={s.href}
+                href={url}
+                {...(external ? { target: "_blank", rel: "noopener noreferrer" } : {})}
+                onClick={() => setOpen(false)}
+                className="block px-3.5 py-2 text-body-sm text-on-surface transition-colors hover:bg-surface-container hover:text-primary"
+              >
+                {s.label}
+              </Link>
+            );
+          })}
+        </div>
+      )}
+    </div>
   );
 }

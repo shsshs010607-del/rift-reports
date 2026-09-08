@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useTransition } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { X, SlidersHorizontal, ChevronDown } from "lucide-react";
 
@@ -33,11 +33,14 @@ export function CardFilterBar({ facets }: { facets?: CardFacets | null }) {
   const params = useSearchParams();
   const advActive = Boolean(params.get("setCode") || params.get("rarity"));
   const [adv, setAdv] = useState(false);
+  const [pending, startTransition] = useTransition();
 
   const push = (next: URLSearchParams) => {
     next.delete("page");
     const qs = next.toString();
-    router.push(qs ? `/cards?${qs}` : "/cards", { scroll: false });
+    startTransition(() => {
+      router.push(qs ? `/cards?${qs}` : "/cards", { scroll: false });
+    });
   };
 
   const toggle = (key: string, value: string) => {
@@ -67,7 +70,10 @@ export function CardFilterBar({ facets }: { facets?: CardFacets | null }) {
   const costMax = Math.max(1, ...COSTS.map((c) => costCounts[c] ?? 0));
 
   return (
-    <div className="note-card p-4 pr-6">
+    <div
+      aria-busy={pending}
+      className={cn("note-card p-4 pr-6 transition-opacity", pending && "opacity-70")}
+    >
       {/* 헤더 */}
       <div className="flex items-center justify-between">
         <span className="flex items-center gap-2 text-label-lg font-bold text-ink">

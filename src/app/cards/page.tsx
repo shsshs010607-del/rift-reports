@@ -81,9 +81,6 @@ export default function CardsPage({ searchParams }: { searchParams: RawSearchPar
     return qs ? `/cards?${qs}` : "/cards";
   };
 
-  // Suspense 재마운트 키 — 질의/페이지가 바뀌면 로딩 상태를 다시 보여준다.
-  const resultsKey = `${JSON.stringify(query)}#${page}`;
-
   return (
     <div>
       <PageHeading
@@ -116,13 +113,13 @@ export default function CardsPage({ searchParams }: { searchParams: RawSearchPar
       <div className="mt-6 grid gap-6 xl:grid-cols-[minmax(0,1fr)_320px] xl:items-start">
         {/* 필터 — 데스크톱 우측 고정, 모든 필터 한눈에 */}
         <div className="xl:order-2 xl:sticky xl:top-[128px] xl:max-h-[calc(100vh-144px)] xl:overflow-y-auto xl:pr-1">
-          <Suspense key={JSON.stringify(query)} fallback={<div className="h-28" />}>
+          <Suspense fallback={<div className="h-28" />}>
             <CardFilterPanel query={query} />
           </Suspense>
         </div>
 
         <div className="min-w-0 xl:order-1">
-          <Suspense key={resultsKey} fallback={<CardResultsSkeleton />}>
+          <Suspense fallback={<CardResultsSkeleton />}>
             <CardResults query={query} page={page} perPage={PER_PAGE} hrefForPage={hrefForPage} />
           </Suspense>
           <AdSenseUnit className="mt-8" />

@@ -6,6 +6,8 @@ export const SITE = {
   url: process.env.NEXT_PUBLIC_SITE_URL ?? "https://riba.gg",
   /** 커뮤니티 채널 — 실제 URL 확정 전 "#" (그 사이엔 "준비 중" 표시) */
   discord: "#" as string,
+  /** 디스코드 신고/제보 게시판 (오역·버그·문의). 개발자 대상 신고는 전부 여기로. */
+  discordReport: "#" as string,
   youtube: "#" as string,
   instagram: "#" as string,
   naverCafe: "https://cafe.naver.com/riftboundmarketplace" as string,
@@ -52,13 +54,25 @@ export const ADSENSE = {
 export const KAKAO_MAP_KEY = process.env.NEXT_PUBLIC_KAKAO_MAP_KEY ?? "";
 
 /** 상단바 1행 — 카드·덱·거래·커뮤니티 (플레이/참여 도구). */
-export const NAV_PRIMARY = [
-  { href: "/cards", label: "카드 정보" },
+export const NAV_PRIMARY: readonly {
+  href: string;
+  label: string;
+  children?: readonly { href: string; label: string }[];
+}[] = [
+  {
+    href: "/cards",
+    label: "카드 정보",
+    children: [
+      { href: "/cards", label: "카드 검색" },
+      { href: "/cards/proxy", label: "프록시 출력" },
+      { href: "report:", label: "오역 신고" },
+    ],
+  },
   { href: "/deck-simulator", label: "덱 시뮬레이터" },
   { href: "/tiers", label: "덱 티어리스트" },
   { href: "/trading", label: "트레이딩" },
   { href: "/community", label: "커뮤니티" },
-] as const;
+];
 
 /** 상단바 2행 — 룰·용어·지역 (레퍼런스/오프라인). */
 export const NAV_SECONDARY = [
