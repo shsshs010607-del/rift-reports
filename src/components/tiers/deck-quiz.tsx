@@ -2,22 +2,21 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { Wand2, X, RotateCcw, ArrowRight } from "lucide-react";
 
 import { TIER_DECKS } from "@/lib/data/tier-list";
 import { QUIZ_QUESTIONS, scoreQuiz, type QuizResult } from "@/lib/data/deck-quiz";
-import { TIER_STYLES } from "@/lib/constants";
-import { cn } from "@/lib/utils";
 
 const DECK_HREF = "/community/deck-guide";
+const listHref = (d: { guidePostId?: string }) =>
+  d.guidePostId ? `/community/post/${d.guidePostId}` : DECK_HREF;
 
 /** "내게 맞는 덱 유형" 테스트 — /tiers 안에서 모달로 뜬다. */
-export function DeckQuiz() {
+export function DeckQuiz({ images = {} }: { images?: Record<string, string> }) {
   const [open, setOpen] = useState(false);
   const [step, setStep] = useState(0);
-  const [answers, setAnswers] = useState<(number | null)[]>(
-    QUIZ_QUESTIONS.map(() => null),
-  );
+  const [answers, setAnswers] = useState<(number | null)[]>(QUIZ_QUESTIONS.map(() => null));
 
   const total = QUIZ_QUESTIONS.length;
   const done = step >= total;
@@ -68,7 +67,7 @@ export function DeckQuiz() {
           onClick={() => setOpen(false)}
         >
           <div
-            className="flex w-full max-w-md flex-col overflow-hidden rounded-2xl border border-line bg-card shadow-xl"
+            className="flex max-h-[92vh] w-full max-w-md flex-col overflow-hidden rounded-2xl border border-line bg-card shadow-xl"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-center justify-between border-b border-line/60 px-5 py-3">
@@ -86,7 +85,7 @@ export function DeckQuiz() {
               </button>
             </div>
 
-            <div className="p-5">
+            <div className="overflow-y-auto p-5">
               {!done ? (
                 <>
                   <div className="mb-3 flex items-center gap-2">
@@ -135,28 +134,35 @@ export function DeckQuiz() {
                   </p>
 
                   {deck ? (
-                    <div className="mt-3 rounded-2xl border border-line/70 bg-subcanvas/40 p-4">
-                      <div className="flex items-center justify-center gap-2">
-                        <span
-                          className={cn(
-                            "grid h-7 w-7 place-items-center rounded-md text-label-sm font-black text-white",
-                            TIER_STYLES[deck.tier].dot,
-                          )}
-                        >
-                          {deck.tier}
-                        </span>
+                    <div className="mt-3 overflow-hidden rounded-2xl border border-line/70 bg-card">
+                      <div className="relative aspect-[16/9] w-full bg-subcanvas">
+                        {images[deck.id] ? (
+                          <Image
+                            src={images[deck.id]}
+                            alt={deck.name}
+                            fill
+                            sizes="420px"
+                            className="object-cover object-top"
+                          />
+                        ) : (
+                          <div className="grid h-full place-items-center text-body-sm text-ink-soft">
+                            {deck.keyCard}
+                          </div>
+                        )}
+                      </div>
+                      <div className="p-4">
                         <p className="font-display text-headline-sm font-bold text-ink">
                           {deck.name}
                         </p>
+                        <p className="mt-0.5 text-body-sm text-ink-soft">{deck.subtitle}</p>
+                        <Link
+                          href={listHref(deck)}
+                          onClick={() => setOpen(false)}
+                          className="mt-3 inline-flex items-center gap-1 rounded-full bg-primary px-4 py-2 text-label-md font-bold text-white transition hover:bg-primary-container"
+                        >
+                          덱리스트 보기 <ArrowRight className="h-4 w-4" />
+                        </Link>
                       </div>
-                      <p className="mt-1 text-body-sm text-ink-soft">{deck.subtitle}</p>
-                      <Link
-                        href={deck.guidePostId ? `/community/post/${deck.guidePostId}` : DECK_HREF}
-                        onClick={() => setOpen(false)}
-                        className="mt-3 inline-flex items-center gap-1 rounded-full bg-primary px-4 py-2 text-label-md font-bold text-white transition hover:bg-primary-container"
-                      >
-                        공략 보기 <ArrowRight className="h-4 w-4" />
-                      </Link>
                     </div>
                   ) : (
                     <p className="mt-4 text-body-sm text-ink-soft">추천 덱을 찾지 못했어요.</p>
@@ -169,18 +175,10 @@ export function DeckQuiz() {
                         {alsoDecks.map((d) => (
                           <Link
                             key={d!.id}
-                            href={d!.guidePostId ? `/community/post/${d!.guidePostId}` : DECK_HREF}
+                            href={listHref(d!)}
                             onClick={() => setOpen(false)}
-                            className="inline-flex items-center gap-1 rounded-full border border-line bg-card px-2.5 py-1 text-label-sm font-bold text-ink transition hover:border-primary/50"
+                            className="rounded-full border border-line bg-card px-3 py-1 text-label-sm font-bold text-ink transition hover:border-primary/50"
                           >
-                            <span
-                              className={cn(
-                                "grid h-4 w-4 place-items-center rounded text-[10px] font-black text-white",
-                                TIER_STYLES[d!.tier].dot,
-                              )}
-                            >
-                              {d!.tier}
-                            </span>
                             {d!.name}
                           </Link>
                         ))}

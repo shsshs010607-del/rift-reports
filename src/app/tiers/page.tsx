@@ -4,6 +4,8 @@ import type { Metadata } from "next";
 import { PageHeading } from "@/components/ui/page-heading";
 import { TierBoard } from "@/components/tiers/tier-board";
 import { DeckQuiz } from "@/components/tiers/deck-quiz";
+import { getCardService } from "@/lib/services/cardService";
+import { TIER_DECKS } from "@/lib/data/tier-list";
 
 export const metadata: Metadata = {
   title: "덱 티어리스트",
@@ -11,7 +13,24 @@ export const metadata: Metadata = {
 };
 export const revalidate = 60;
 
-export default function TiersPage() {
+async function legendImages(): Promise<Record<string, string>> {
+  try {
+    const legends = await getCardService().searchCards({ type: "legend" });
+    const byName = new Map(legends.map((c) => [c.localization.en.name, c]));
+    const out: Record<string, string> = {};
+    for (const d of TIER_DECKS) {
+      const art = byName.get(d.legendEn)?.localization.en.imageUrl ?? byName.get(d.legendEn)?.imageUrl;
+      if (art) out[d.id] = art;
+    }
+    return out;
+  } catch {
+    return {};
+  }
+}
+
+export default async function TiersPage() {
+  const images = await legendImages();
+
   return (
     <div>
       <div className="mb-4 flex flex-wrap items-end justify-between gap-3">
@@ -19,7 +38,7 @@ export default function TiersPage() {
           title="덱 티어리스트"
           description="현재 메타 예상 기준 · 덱을 누르면 공략으로 이동"
         />
-        <DeckQuiz />
+        <DeckQuiz images={images} />
       </div>
       <Suspense fallback={<BoardSkeleton />}>
         <TierBoard />
