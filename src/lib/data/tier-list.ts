@@ -148,6 +148,14 @@ const RAW_DECKS: Omit<TierDeck, "guidePostId">[] = [
     legendEn: "Jinx - Loose Cannon",
     keyCard: "징크스",
   },
+  {
+    id: "lux",
+    tier: "C",
+    name: "럭스",
+    subtitle: "지혜·질서 주문 컨트롤",
+    legendEn: "Lux - Lady of Luminosity (Starter)",
+    keyCard: "럭스",
+  },
 
   // ── Z ──────────────────────────────────────────────
   {
