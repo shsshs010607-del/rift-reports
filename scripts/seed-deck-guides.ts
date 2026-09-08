@@ -41,8 +41,11 @@ function body(deck: (typeof TIER_DECKS)[number], domains: string[]) {
   const traits = domains.map((d) => DOMAIN_TRAIT[d] ?? d).join(", ");
   return `# ${deck.name} — ${deck.tier}티어 덱
 
+[[${deck.keyCard}]]
+
 > ⚠️ 이 글은 **공략 템플릿**입니다. 실전 덱리스트와 세부 운영은 댓글 또는 수정으로 채워주세요.
 > 기준: OGN(오리진) + OGS(증명의 전장) · 현행 밴 리스트 적용
+> 본문에 \`[[카드명]]\` 을 쓰면 카드 이미지가 자동으로 들어갑니다.
 
 ## 덱 개요
 - 레전드: ${deck.keyCard} (${deck.legendEn.replace(/\s*\(Starter\)\s*$/, "")})
