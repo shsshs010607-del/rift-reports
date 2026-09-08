@@ -69,7 +69,7 @@ export default async function BoardPage({
         className={`mb-6 flex items-center gap-3.5 rounded-2xl bg-gradient-to-r ${m.band} to-transparent p-4`}
       >
         <span
-          className={`grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-card ${m.fg} shadow-sm`}
+          className={`grid h-12 w-12 shrink-0 place-items-center rounded-2xl ${m.soft} ${m.fg} shadow-sm`}
         >
           <Icon className="h-6 w-6" />
         </span>

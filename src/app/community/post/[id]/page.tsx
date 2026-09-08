@@ -50,7 +50,7 @@ export default async function PostDetailPage({ params }: { params: { id: string 
       <header
         className={cn(
           "overflow-hidden rounded-2xl border border-line/70 bg-gradient-to-b to-card to-[42%] p-5 sm:p-6",
-          post.is_notice ? "from-primary/[0.08]" : m.band.split(" ")[0],
+          post.is_notice ? "from-primary/[0.08]" : m.bandFrom,
         )}
       >
         <div className="flex items-center gap-1.5">

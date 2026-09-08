@@ -12,8 +12,10 @@ type Meta = {
   fg: string;
   /** 카드 호버 링 */
   ring: string;
-  /** 헤더 배너용 그라디언트 */
+  /** 헤더 배너용 그라디언트 (from+via, 라이트+다크) */
   band: string;
+  /** from- 토큰만 (라이트+다크) — 단색 배너용 */
+  bandFrom: string;
   /** 배지 전체 클래스 (라이트+다크) */
   badge: string;
 };
@@ -25,7 +27,8 @@ export const CATEGORY_META: Record<string, Meta> = {
     soft: "bg-violet-100",
     fg: "text-violet-700",
     ring: "hover:border-violet-300",
-    band: "from-violet-200/70 via-violet-100/40",
+    band: "from-violet-200/70 via-violet-100/40 dark:from-violet-500/20 dark:via-violet-500/8",
+    bandFrom: "from-violet-200/70 dark:from-violet-500/18",
     badge:
       "bg-violet-500/12 text-violet-700 ring-violet-500/25 dark:bg-violet-400/15 dark:text-violet-300 dark:ring-violet-400/30",
   },
@@ -35,7 +38,8 @@ export const CATEGORY_META: Record<string, Meta> = {
     soft: "bg-sky-100",
     fg: "text-sky-700",
     ring: "hover:border-sky-300",
-    band: "from-sky-200/70 via-sky-100/40",
+    band: "from-sky-200/70 via-sky-100/40 dark:from-sky-500/20 dark:via-sky-500/8",
+    bandFrom: "from-sky-200/70 dark:from-sky-500/18",
     badge:
       "bg-sky-500/12 text-sky-700 ring-sky-500/25 dark:bg-sky-400/15 dark:text-sky-300 dark:ring-sky-400/30",
   },
@@ -45,7 +49,8 @@ export const CATEGORY_META: Record<string, Meta> = {
     soft: "bg-green-100",
     fg: "text-green-700",
     ring: "hover:border-green-300",
-    band: "from-green-200/70 via-green-100/40",
+    band: "from-green-200/70 via-green-100/40 dark:from-emerald-500/20 dark:via-emerald-500/8",
+    bandFrom: "from-green-200/70 dark:from-emerald-500/18",
     badge:
       "bg-emerald-500/12 text-emerald-700 ring-emerald-500/25 dark:bg-emerald-400/15 dark:text-emerald-300 dark:ring-emerald-400/30",
   },
@@ -55,7 +60,8 @@ export const CATEGORY_META: Record<string, Meta> = {
     soft: "bg-yellow-100",
     fg: "text-yellow-800",
     ring: "hover:border-yellow-300",
-    band: "from-amber-200/70 via-amber-100/40",
+    band: "from-amber-200/70 via-amber-100/40 dark:from-amber-500/20 dark:via-amber-500/8",
+    bandFrom: "from-amber-200/70 dark:from-amber-500/18",
     badge:
       "bg-amber-500/15 text-amber-700 ring-amber-500/30 dark:bg-amber-400/15 dark:text-amber-300 dark:ring-amber-400/30",
   },
@@ -65,7 +71,8 @@ export const CATEGORY_META: Record<string, Meta> = {
     soft: "bg-rose-100",
     fg: "text-rose-700",
     ring: "hover:border-rose-300",
-    band: "from-rose-200/70 via-rose-100/40",
+    band: "from-rose-200/70 via-rose-100/40 dark:from-rose-500/20 dark:via-rose-500/8",
+    bandFrom: "from-rose-200/70 dark:from-rose-500/18",
     badge:
       "bg-rose-500/12 text-rose-700 ring-rose-500/25 dark:bg-rose-400/15 dark:text-rose-300 dark:ring-rose-400/30",
   },
