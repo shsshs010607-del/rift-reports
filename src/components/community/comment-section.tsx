@@ -4,7 +4,12 @@ import { useState } from "react";
 import { useFormState, useFormStatus } from "react-dom";
 import { CornerDownRight } from "lucide-react";
 import { fmtKstRelative } from "@/lib/datetime";
-import { createComment, deleteComment, type ActionState } from "@/lib/actions/community";
+import {
+  createComment,
+  deleteComment,
+  updateComment,
+  type ActionState,
+} from "@/lib/actions/community";
 import type { CommentItem } from "@/lib/community";
 import { cn } from "@/lib/utils";
 import { Avatar } from "./avatar";
@@ -63,6 +68,50 @@ function CommentForm({
   );
 }
 
+function CommentEditForm({
+  commentId,
+  postId,
+  initialBody,
+  onDone,
+}: {
+  commentId: string;
+  postId: string;
+  initialBody: string;
+  onDone: () => void;
+}) {
+  const [state, formAction] = useFormState(
+    async (p: ActionState, fd: FormData) => {
+      const res = await updateComment(commentId, postId, p, fd);
+      if (!res.error) onDone();
+      return res;
+    },
+    initial,
+  );
+
+  return (
+    <form action={formAction} className="mt-2 flex flex-col gap-2">
+      <textarea
+        name="body"
+        required
+        rows={3}
+        defaultValue={initialBody}
+        className={INPUT}
+      />
+      <div className="flex items-center gap-2">
+        <SubmitBtn label="수정" />
+        <button
+          type="button"
+          onClick={onDone}
+          className="rounded-full px-3 py-2 text-label-md font-bold text-ink-soft hover:text-ink"
+        >
+          취소
+        </button>
+      </div>
+      {state.error && <p className="text-body-sm text-coral">{state.error}</p>}
+    </form>
+  );
+}
+
 function DeleteBtn({ commentId, postId }: { commentId: string; postId: string }) {
   const [busy, setBusy] = useState(false);
   return (
@@ -96,6 +145,7 @@ function CommentNode({
   isReply?: boolean;
 }) {
   const [replying, setReplying] = useState(false);
+  const [editing, setEditing] = useState(false);
   const mine = currentUserId === c.author_id;
 
   return (
@@ -105,9 +155,18 @@ function CommentNode({
         <span className="font-bold text-ink">{c.author?.username ?? "알 수 없음"}</span>
         <time className="text-ink-soft">{fmtKstRelative(c.created_at)}</time>
       </div>
-      <p className="mt-1.5 whitespace-pre-wrap text-body-md leading-relaxed text-ink">{c.body}</p>
+      {editing ? (
+        <CommentEditForm
+          commentId={c.id}
+          postId={postId}
+          initialBody={c.body}
+          onDone={() => setEditing(false)}
+        />
+      ) : (
+        <p className="mt-1.5 whitespace-pre-wrap text-body-md leading-relaxed text-ink">{c.body}</p>
+      )}
       <div className="mt-1.5 flex items-center gap-3">
-        {!isReply && currentUserId && (
+        {!isReply && currentUserId && !editing && (
           <button
             type="button"
             onClick={() => setReplying((v) => !v)}
@@ -117,7 +176,16 @@ function CommentNode({
             답글
           </button>
         )}
-        {(mine || canModerate) && <DeleteBtn commentId={c.id} postId={postId} />}
+        {mine && !editing && (
+          <button
+            type="button"
+            onClick={() => setEditing(true)}
+            className="text-body-sm text-ink-soft hover:text-primary-strong"
+          >
+            수정
+          </button>
+        )}
+        {(mine || canModerate) && !editing && <DeleteBtn commentId={c.id} postId={postId} />}
       </div>
       {replying && (
         <CommentForm postId={postId} parentId={c.id} compact onDone={() => setReplying(false)} />

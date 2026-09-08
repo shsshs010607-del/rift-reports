@@ -168,6 +168,34 @@ export async function createComment(_prev: ActionState, formData: FormData): Pro
   return {};
 }
 
+export async function updateComment(
+  commentId: string,
+  postId: string,
+  _prev: ActionState,
+  formData: FormData,
+): Promise<ActionState> {
+  const { supabase } = await requireUser();
+  const parsed = z
+    .string()
+    .trim()
+    .min(1, "댓글을 입력하세요")
+    .max(2000)
+    .safeParse(formData.get("body"));
+  if (!parsed.success) return { error: parsed.error.issues[0]?.message ?? "입력 오류" };
+
+  const { data, error } = await supabase
+    .from("comments")
+    .update({ body: parsed.data })
+    .eq("id", commentId) // RLS: 본인만
+    .select("id")
+    .maybeSingle();
+  if (error) return { error: error.message };
+  if (!data) return { error: "수정 권한이 없습니다" };
+
+  revalidatePath(`/community/post/${postId}`);
+  return {};
+}
+
 export async function deleteComment(commentId: string, postId: string) {
   const { supabase } = await requireUser();
   const { error } = await supabase.from("comments").delete().eq("id", commentId);

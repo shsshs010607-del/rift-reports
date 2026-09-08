@@ -77,6 +77,9 @@ export default async function PostDetailPage({ params }: { params: { id: string 
             </span>
             <span className="block text-[12px]">
               <time dateTime={post.created_at}>{fmtKstShort(post.created_at)}</time>
+              {new Date(post.updated_at).getTime() - new Date(post.created_at).getTime() > 60_000 && (
+                <span className="text-ink-soft/70"> (수정됨)</span>
+              )}
               {" · 조회 "}
               {post.view_count}
             </span>
