@@ -1,8 +1,7 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import { format } from "date-fns";
-import { ko } from "date-fns/locale";
 import { ChevronLeft } from "lucide-react";
+import { fmtKstShort } from "@/lib/datetime";
 import { createClient } from "@/lib/supabase/server";
 import { getPost, getComments, getLikedPostIds } from "@/lib/community";
 import { COMMUNITY_CATEGORIES } from "@/lib/constants";
@@ -68,9 +67,7 @@ export default async function PostDetailPage({ params }: { params: { id: string 
           <Avatar name={post.author?.username} src={post.author?.avatar_url} size="sm" />
           <span className="font-bold text-ink">{post.author?.username ?? "알 수 없음"}</span>
           <span aria-hidden>·</span>
-          <time dateTime={post.created_at}>
-            {format(new Date(post.created_at), "yyyy.MM.dd HH:mm", { locale: ko })}
-          </time>
+          <time dateTime={post.created_at}>{fmtKstShort(post.created_at)}</time>
           <span aria-hidden>·</span>
           <span>조회 {post.view_count}</span>
           {(isOwner || canModerate) && (

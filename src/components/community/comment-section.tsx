@@ -2,9 +2,8 @@
 
 import { useState } from "react";
 import { useFormState, useFormStatus } from "react-dom";
-import { formatDistanceToNow } from "date-fns";
-import { ko } from "date-fns/locale";
 import { CornerDownRight } from "lucide-react";
+import { fmtKstRelative } from "@/lib/datetime";
 import { createComment, deleteComment, type ActionState } from "@/lib/actions/community";
 import type { CommentItem } from "@/lib/community";
 import { cn } from "@/lib/utils";
@@ -104,9 +103,7 @@ function CommentNode({
       <div className="flex items-center gap-2 text-body-sm">
         <Avatar name={c.author?.username} src={c.author?.avatar_url} size="sm" />
         <span className="font-bold text-ink">{c.author?.username ?? "알 수 없음"}</span>
-        <time className="text-ink-soft">
-          {formatDistanceToNow(new Date(c.created_at), { addSuffix: true, locale: ko })}
-        </time>
+        <time className="text-ink-soft">{fmtKstRelative(c.created_at)}</time>
       </div>
       <p className="mt-1.5 whitespace-pre-wrap text-body-md leading-relaxed text-ink">{c.body}</p>
       <div className="mt-1.5 flex items-center gap-3">

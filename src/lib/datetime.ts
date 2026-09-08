@@ -54,6 +54,47 @@ export function fmtKstTime(iso: string): string {
   });
 }
 
+/** "2026.09.18" (KST) */
+export function fmtKstDate(iso: string): string {
+  const { y, m, d } = kstYmd(iso);
+  return `${y}.${String(m).padStart(2, "0")}.${String(d).padStart(2, "0")}`;
+}
+
+/**
+ * 목록용: 오늘이면 "14:30", 올해면 "09.18", 그 외 "24.09.18" (전부 KST).
+ * date-fns 의 서버 로컬(UTC) 버그를 피하려고 Intl 로 계산한다.
+ */
+export function fmtKstListTime(iso: string): string {
+  const now = kstYmd(new Date().toISOString());
+  const t = kstYmd(iso);
+  if (now.y === t.y && now.m === t.m && now.d === t.d) return fmtKstTime24(iso);
+  if (now.y === t.y) return `${String(t.m).padStart(2, "0")}.${String(t.d).padStart(2, "0")}`;
+  return `${String(t.y).slice(2)}.${String(t.m).padStart(2, "0")}.${String(t.d).padStart(2, "0")}`;
+}
+
+/** "14:30" (24시간, KST) */
+export function fmtKstTime24(iso: string): string {
+  return new Date(iso).toLocaleTimeString("ko-KR", {
+    timeZone: KST,
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+  });
+}
+
+/**
+ * 상대 시간: "방금 전" / "12분 전" / "3시간 전" / "2일 전", 일주일 넘으면 "2026.09.01".
+ * 렌더 시점(서버는 revalidate 주기, 클라는 마운트) 기준이라 약간 지연될 수 있다.
+ */
+export function fmtKstRelative(iso: string): string {
+  const diff = Math.floor((Date.now() - new Date(iso).getTime()) / 1000);
+  if (diff < 45) return "방금 전";
+  if (diff < 3600) return `${Math.floor(diff / 60)}분 전`;
+  if (diff < 86400) return `${Math.floor(diff / 3600)}시간 전`;
+  if (diff < 604800) return `${Math.floor(diff / 86400)}일 전`;
+  return fmtKstDate(iso);
+}
+
 /** KST 기준 그 날짜의 연/월/일 (달력 셀 매칭용). */
 export function kstYmd(iso: string): { y: number; m: number; d: number } {
   const parts = new Intl.DateTimeFormat("en-CA", {

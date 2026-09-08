@@ -34,8 +34,11 @@ export default async function NewPostPage({ searchParams }: { searchParams: { ca
         <ChevronLeft className="h-4 w-4" />
         돌아가기
       </Link>
-      <h1 className="mb-5 font-display text-headline-sm text-ink">글쓰기</h1>
-      <div className="rounded-2xl border border-line/70 bg-card p-5 sm:p-6">
+      <h1 className="mb-1 font-display text-headline-sm text-ink">글쓰기</h1>
+      <p className="mb-5 text-body-sm text-ink-soft">
+        작성 중인 글은 이 브라우저에 자동으로 임시 저장됩니다.
+      </p>
+      <div className="note-card p-5 sm:p-6">
         <PostForm defaultCategory={defaultCategory} canWriteNotice={canWriteNotice} />
       </div>
     </div>
