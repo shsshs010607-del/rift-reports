@@ -20,6 +20,7 @@ export const SITE = {
   officialYoutube: "https://www.youtube.com/@riftbound" as string,
   officialSite: "https://riftbound.leagueoflegends.com/" as string,
   officialHowToPlay: "https://www.youtube.com/watch?v=2koNsAKsipc" as string,
+  officialTwitter: "https://x.com/playriftbound" as string,
 } as const;
 
 /**

@@ -1,7 +1,15 @@
 import Image from "next/image";
-import { Play, Youtube } from "lucide-react";
+import { Play, Youtube, Globe } from "lucide-react";
 import { SITE, RIFTBOUND_VIDEOS } from "@/lib/constants";
 import { cn } from "@/lib/utils";
+
+function XIcon({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden className={className}>
+      <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
+    </svg>
+  );
+}
 
 /** 리프트바운드 영상 미리보기 (홈 중단). */
 export function OfficialLinks({ className }: { className?: string }) {
@@ -52,15 +60,43 @@ export function OfficialLinks({ className }: { className?: string }) {
           </a>
         ))}
 
-        <a
-          href={SITE.officialSite}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="group flex items-center justify-center gap-2 rounded-2xl border border-dashed border-line bg-subcanvas/40 p-4 text-body-md font-bold text-ink-soft transition hover:border-primary/40 hover:text-primary-strong sm:col-span-2 lg:col-span-1"
-        >
-          공식 홈페이지 →
-        </a>
+      </div>
+
+      <div className="mt-3 grid gap-2 sm:grid-cols-3">
+        <OfficialLink href={SITE.officialSite} icon={<Globe className="h-4 w-4" />} label="공식 홈페이지" />
+        <OfficialLink
+          href={SITE.officialTwitter}
+          icon={<XIcon className="h-3.5 w-3.5" />}
+          label="공식 트위터 (X)"
+        />
+        <OfficialLink
+          href={SITE.officialYoutube}
+          icon={<Youtube className="h-4 w-4" />}
+          label="공식 유튜브"
+        />
       </div>
     </section>
+  );
+}
+
+function OfficialLink({
+  href,
+  icon,
+  label,
+}: {
+  href: string;
+  icon: React.ReactNode;
+  label: string;
+}) {
+  return (
+    <a
+      href={href}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="flex items-center justify-center gap-1.5 rounded-xl border border-line/70 bg-card px-3 py-2.5 text-body-sm font-bold text-ink-soft transition hover:border-primary/40 hover:text-primary-strong"
+    >
+      {icon}
+      {label}
+    </a>
   );
 }

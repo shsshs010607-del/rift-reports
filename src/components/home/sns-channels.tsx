@@ -1,4 +1,4 @@
-import { Instagram, MessageCircle, Youtube, Users } from "lucide-react";
+import { Instagram, Youtube } from "lucide-react";
 import { SITE } from "@/lib/constants";
 import { cn } from "@/lib/utils";
 
@@ -17,33 +17,19 @@ const CHANNELS = [
     note: "카드 일러스트 & 신규 소식",
     href: SITE.instagram,
   },
-  {
-    icon: Users,
-    name: "네이버 카페",
-    handle: "리프트바운드 마켓플레이스",
-    note: "한국 유저 커뮤니티 & 카드 거래",
-    href: SITE.naverCafe,
-  },
-  {
-    icon: MessageCircle,
-    name: "디스코드",
-    handle: "RIBA.GG Community",
-    note: "실시간 덱 토론 & 친선전",
-    href: SITE.discord,
-  },
 ];
 
 const ready = (href: string) => Boolean(href) && href !== "#";
 
-/** 커뮤니티 & SNS 채널 그리드. URL 미확정 채널은 "준비 중"으로 비활성. */
+/** 리바지지 자체 채널. (네이버 카페·디스코드는 상단 배너에 있음) */
 export function SnsChannels() {
   return (
     <section>
-      <h2 className="mb-1 font-display text-title-md font-bold text-ink">커뮤니티 & SNS 채널</h2>
+      <h2 className="mb-1 font-display text-title-md font-bold text-ink">리바지지 채널</h2>
       <p className="mb-4 text-body-sm text-ink-soft">
-        공략 영상, 일러스트 프리뷰, 실시간 덱 상담에 참여해 보세요.
+        공략 영상, 일러스트 프리뷰 채널을 준비 중입니다. (거래·잡담은 상단 네이버 카페·디스코드)
       </p>
-      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-3 sm:grid-cols-2">
         {CHANNELS.map((c) => {
           const on = ready(c.href);
           const Wrapper = on ? "a" : "div";
