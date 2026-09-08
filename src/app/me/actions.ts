@@ -52,3 +52,23 @@ export async function updateProfile(
   revalidatePath("/me");
   return { ok: true };
 }
+
+/** 아바타 URL 저장 (null = 제거). 업로드 자체는 클라이언트가 Storage 로. */
+export async function setAvatar(url: string | null): Promise<ProfileState> {
+  const supabase = createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) redirect("/login?next=/me");
+
+  if (url && !/^https:\/\/[\w.-]+\.supabase\.co\/storage\/v1\/object\/public\/avatars\//.test(url)) {
+    return { error: "잘못된 이미지 주소예요." };
+  }
+
+  const { error } = await supabase.from("profiles").update({ avatar_url: url }).eq("id", user.id);
+  if (error) return { error: error.message };
+
+  revalidatePath("/me");
+  revalidatePath("/", "layout");
+  return { ok: true };
+}

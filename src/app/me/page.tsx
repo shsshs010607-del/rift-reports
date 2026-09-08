@@ -68,7 +68,13 @@ export default async function MePage() {
           </div>
           <SignOutButton />
         </div>
-        {profile && <ProfileEditor username={profile.username} bio={profile.bio} />}
+        {profile && (
+          <ProfileEditor
+            username={profile.username}
+            bio={profile.bio}
+            avatarUrl={profile.avatar_url}
+          />
+        )}
       </div>
 
       <section className="mt-8">
