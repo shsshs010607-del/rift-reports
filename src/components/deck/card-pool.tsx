@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Plus, Search, Layers } from "lucide-react";
+import { Plus, Minus, Search, Layers } from "lucide-react";
 
 import type { Card, CardType } from "@/lib/types/card";
 import type { Deck, ResolvedDeck } from "@/lib/types/deck";
@@ -37,6 +37,7 @@ export function CardPool({
   rd,
   deck,
   onPick,
+  onRemove,
   onResults,
 }: {
   tab: PoolTab;
@@ -44,6 +45,7 @@ export function CardPool({
   rd: ResolvedDeck;
   deck: Deck;
   onPick: (card: Card) => void;
+  onRemove: (card: Card) => void;
   onResults: (cards: Card[]) => void;
 }) {
   const [q, setQ] = useState("");
@@ -208,32 +210,42 @@ export function CardPool({
         )}
       </div>
 
-      {/* 결과 — "전체"를 제외한 탭에서는 넣을 수 있는 카드만 보여준다 */}
+      {/* 결과 — 넣을 수 있는 카드 + 이미 최대인 카드(반투명, 클릭 시 한 장 감소) */}
       <ul className="grid max-h-[62vh] grid-cols-2 gap-2 overflow-y-auto pr-1 sm:grid-cols-3">
         {cards
           .filter((card) => {
             if (ownedOnly && !((collection[card.id] ?? 0) > 0)) return false;
             if (tab === "all") return true;
             if (tab === "rune") return matchesIdentity(rd, card); // 색 맞는 룬 (가득 차도 표시)
-            return planAdd(deck, rd, card).kind !== "blocked";
+            if (planAdd(deck, rd, card).kind !== "blocked") return true;
+            // 못 넣는 카드라도 이미 덱에 있으면(=최대 도달) 남겨서 빼기 클릭을 받는다
+            return (qtyById.get(card.id) ?? 0) > 0;
           })
           .map((card) => {
             const inDeck = qtyById.get(card.id) ?? 0;
             const owned = collection[card.id] ?? 0;
             const plan = planAdd(deck, rd, card);
             const blocked = plan.kind === "blocked";
+            const maxed = blocked && inDeck > 0; // 덱에 있는데 더는 못 넣음 → 클릭하면 −1
+            const hardBlocked = blocked && !maxed; // 색·챔피언 불일치 등 → 비활성
             return (
               <li key={card.id}>
                 <button
                   type="button"
-                  onClick={() => !blocked && onPick(card)}
-                  disabled={blocked}
-                  title={blocked ? plan.reason : "덱에 추가"}
+                  onClick={() => (maxed ? onRemove(card) : blocked ? undefined : onPick(card))}
+                  disabled={hardBlocked}
+                  title={
+                    maxed
+                      ? `${plan.reason} · 클릭하면 한 장 뺍니다`
+                      : blocked
+                        ? plan.reason
+                        : "덱에 추가"
+                  }
                   className={cn(
                     "group relative block w-full overflow-hidden rounded-xl border border-line bg-subcanvas text-left transition",
-                    blocked
-                      ? "cursor-not-allowed opacity-45"
-                      : "hover:border-primary/50",
+                    hardBlocked && "cursor-not-allowed opacity-45",
+                    maxed && "opacity-55 hover:border-error/60 hover:opacity-90",
+                    !blocked && "hover:border-primary/50",
                   )}
                 >
                   <div className="relative">
@@ -248,7 +260,12 @@ export function CardPool({
                       </span>
                     )}
                     {inDeck > 0 && (
-                      <span className="absolute right-1 top-1 rounded-full bg-primary px-1.5 text-label-sm font-bold text-white">
+                      <span
+                        className={cn(
+                          "absolute right-1 top-1 rounded-full px-1.5 text-label-sm font-bold text-white",
+                          maxed ? "bg-error" : "bg-primary",
+                        )}
+                      >
                         ×{inDeck}
                       </span>
                     )}
@@ -257,7 +274,11 @@ export function CardPool({
                         보유 {owned}
                       </span>
                     )}
-                    {!blocked && (
+                    {maxed ? (
+                      <span className="absolute inset-x-0 bottom-0 flex items-center justify-center gap-1 bg-error/90 py-1 text-label-sm font-bold text-white opacity-0 transition group-hover:opacity-100">
+                        <Minus className="h-3 w-3" />한 장 빼기
+                      </span>
+                    ) : !blocked ? (
                       <span className="absolute inset-x-0 bottom-0 flex items-center justify-center gap-1 bg-primary/90 py-1 text-label-sm font-bold text-white opacity-0 transition group-hover:opacity-100">
                         <Plus className="h-3 w-3" />
                         {plan.kind === "legend"
@@ -266,7 +287,7 @@ export function CardPool({
                             ? "리더 챔피언"
                             : "추가"}
                       </span>
-                    )}
+                    ) : null}
                   </div>
                   <p className="truncate px-1.5 py-1 text-label-sm text-ink">
                     {card.name}

@@ -274,6 +274,7 @@ export function DeckSimulator({
           rd={rd}
           deck={deck}
           onPick={handlePick}
+          onRemove={(card) => changeEntry(card.id, -1)}
           onResults={registerCards}
         />
 
