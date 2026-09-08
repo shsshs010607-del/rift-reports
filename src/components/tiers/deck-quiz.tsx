@@ -22,7 +22,10 @@ export function DeckQuiz() {
   const total = QUIZ_QUESTIONS.length;
   const done = step >= total;
   const result: QuizResult | null = done ? scoreQuiz(answers) : null;
-  const deck = result ? TIER_DECKS.find((d) => d.id === result.deckId) : null;
+  const deck = result ? TIER_DECKS.find((d) => d.id === result.deckIds[0]) : null;
+  const alsoDecks = result
+    ? result.deckIds.slice(1).map((id) => TIER_DECKS.find((d) => d.id === id)).filter(Boolean)
+    : [];
 
   useEffect(() => {
     if (!open) return;
@@ -128,14 +131,11 @@ export function DeckQuiz() {
               ) : (
                 <div className="text-center">
                   <p className="text-label-sm font-bold uppercase tracking-wide text-primary-strong">
-                    추천 덱 유형
-                  </p>
-                  <p className="mt-1 font-display text-headline-sm text-ink">
-                    {result?.archetypeLabel}
+                    내게 맞는 덱
                   </p>
 
                   {deck ? (
-                    <div className="mt-4 rounded-2xl border border-line/70 bg-subcanvas/40 p-4">
+                    <div className="mt-3 rounded-2xl border border-line/70 bg-subcanvas/40 p-4">
                       <div className="flex items-center justify-center gap-2">
                         <span
                           className={cn(
@@ -145,7 +145,9 @@ export function DeckQuiz() {
                         >
                           {deck.tier}
                         </span>
-                        <p className="font-display text-title-md font-bold text-ink">{deck.name}</p>
+                        <p className="font-display text-headline-sm font-bold text-ink">
+                          {deck.name}
+                        </p>
                       </div>
                       <p className="mt-1 text-body-sm text-ink-soft">{deck.subtitle}</p>
                       <Link
@@ -160,6 +162,32 @@ export function DeckQuiz() {
                     <p className="mt-4 text-body-sm text-ink-soft">추천 덱을 찾지 못했어요.</p>
                   )}
 
+                  {alsoDecks.length > 0 && (
+                    <div className="mt-3">
+                      <p className="mb-1.5 text-label-sm font-bold text-ink-soft">이런 덱도 잘 맞아요</p>
+                      <div className="flex flex-wrap justify-center gap-1.5">
+                        {alsoDecks.map((d) => (
+                          <Link
+                            key={d!.id}
+                            href={d!.guidePostId ? `/community/post/${d!.guidePostId}` : DECK_HREF}
+                            onClick={() => setOpen(false)}
+                            className="inline-flex items-center gap-1 rounded-full border border-line bg-card px-2.5 py-1 text-label-sm font-bold text-ink transition hover:border-primary/50"
+                          >
+                            <span
+                              className={cn(
+                                "grid h-4 w-4 place-items-center rounded text-[10px] font-black text-white",
+                                TIER_STYLES[d!.tier].dot,
+                              )}
+                            >
+                              {d!.tier}
+                            </span>
+                            {d!.name}
+                          </Link>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
                   <button
                     type="button"
                     onClick={reset}
@@ -168,9 +196,6 @@ export function DeckQuiz() {
                     <RotateCcw className="h-3.5 w-3.5" />
                     다시 하기
                   </button>
-                  <p className="mt-3 text-[11px] text-ink-soft/70">
-                    ※ 문항·추천 로직은 준비 중입니다.
-                  </p>
                 </div>
               )}
             </div>
