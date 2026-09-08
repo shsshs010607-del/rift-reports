@@ -70,7 +70,10 @@ const JSON_LD = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#fcf8ff",
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#fcf8ff" },
+    { media: "(prefers-color-scheme: dark)", color: "#12111b" },
+  ],
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
@@ -101,8 +104,14 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             strategy="afterInteractive"
           />
         )}
+        <a
+          href="#main"
+          className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[100] focus:rounded-lg focus:bg-primary focus:px-4 focus:py-2 focus:text-label-md focus:font-bold focus:text-white"
+        >
+          본문 바로가기
+        </a>
         <Navbar />
-        <main className="w-full flex-1 pt-[68px] xl:pt-[116px]">
+        <main id="main" className="w-full flex-1 pt-[68px] xl:pt-[116px]">
           <div className="mx-auto w-full max-w-[1280px] px-gutter-desktop py-space-xl">{children}</div>
         </main>
         <Footer />
