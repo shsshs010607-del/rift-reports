@@ -11,33 +11,24 @@ function NaverIcon({ className }: { className?: string }) {
   );
 }
 
-/** 홈 상단 — 네이버 카페 · 디스코드 크게. */
+/** 네이버 카페 · 디스코드 바로가기 — 얇은 한 줄. */
 export function ChannelBanner({ className }: { className?: string }) {
   const discordReady = Boolean(SITE.discord && SITE.discord !== "#");
   const cafeReady = Boolean(SITE.naverCafe && SITE.naverCafe !== "#");
 
   return (
-    <div className={cn("grid gap-3 sm:grid-cols-2", className)}>
-      {cafeReady ? (
+    <div className={cn("flex flex-wrap gap-2", className)}>
+      {cafeReady && (
         <a
           href={SITE.naverCafe}
           target="_blank"
           rel="noopener noreferrer"
-          className="group flex items-center gap-4 rounded-2xl bg-[#03C75A] p-5 text-white shadow-[0_10px_30px_-8px_rgba(3,199,90,0.5)] transition hover:brightness-105"
+          className="group inline-flex items-center gap-2 rounded-full bg-[#03C75A] px-4 py-2 text-label-md font-bold text-white transition hover:brightness-105"
         >
-          <span className="grid h-12 w-12 shrink-0 place-items-center rounded-xl bg-white/15">
-            <NaverIcon className="h-5 w-5" />
-          </span>
-          <span className="min-w-0 flex-1">
-            <span className="block text-title-md font-black">네이버 카페</span>
-            <span className="block text-body-sm text-white/85">
-              리프트바운드 마켓플레이스 · 카드 거래
-            </span>
-          </span>
-          <ArrowUpRight className="h-5 w-5 shrink-0 transition group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+          <NaverIcon className="h-3.5 w-3.5" />
+          네이버 카페 카드거래
+          <ArrowUpRight className="h-3.5 w-3.5 opacity-80 transition group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
         </a>
-      ) : (
-        <ChannelStub label="네이버 카페" />
       )}
 
       {discordReady ? (
@@ -45,41 +36,19 @@ export function ChannelBanner({ className }: { className?: string }) {
           href={SITE.discord}
           target="_blank"
           rel="noopener noreferrer"
-          className="group flex items-center gap-4 rounded-2xl bg-[#5865F2] p-5 text-white shadow-[0_10px_30px_-8px_rgba(88,101,242,0.5)] transition hover:brightness-105"
+          className="group inline-flex items-center gap-2 rounded-full bg-[#5865F2] px-4 py-2 text-label-md font-bold text-white transition hover:brightness-105"
         >
-          <span className="grid h-12 w-12 shrink-0 place-items-center rounded-xl bg-white/15">
-            <DiscordIcon className="h-5 w-5" />
-          </span>
-          <span className="min-w-0 flex-1">
-            <span className="block text-title-md font-black">디스코드</span>
-            <span className="block text-body-sm text-white/85">실시간 덱 상담 · 흥정 · 매칭</span>
-          </span>
-          <ArrowUpRight className="h-5 w-5 shrink-0 transition group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+          <DiscordIcon className="h-3.5 w-3.5" />
+          디스코드
+          <ArrowUpRight className="h-3.5 w-3.5 opacity-80 transition group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
         </a>
       ) : (
-        <ChannelStub label="디스코드" icon="discord" />
+        <span className="inline-flex items-center gap-2 rounded-full border border-line bg-card px-4 py-2 text-label-md font-bold text-ink-soft">
+          <DiscordIcon className="h-3.5 w-3.5" />
+          디스코드
+          <span className="rounded-full bg-subcanvas px-1.5 py-0.5 text-[10px]">준비 중</span>
+        </span>
       )}
-    </div>
-  );
-}
-
-function ChannelStub({ label, icon }: { label: string; icon?: "discord" }) {
-  return (
-    <div className="flex items-center gap-4 rounded-2xl border border-line/70 bg-card p-5 text-ink-soft">
-      <span className="grid h-12 w-12 shrink-0 place-items-center rounded-xl bg-subcanvas text-ink-soft">
-        {icon === "discord" ? (
-          <DiscordIcon className="h-5 w-5" />
-        ) : (
-          <NaverIcon className="h-5 w-5" />
-        )}
-      </span>
-      <span className="min-w-0 flex-1">
-        <span className="block text-title-md font-black text-ink">{label}</span>
-        <span className="block text-body-sm">채널 개설 후 연결됩니다</span>
-      </span>
-      <span className="shrink-0 rounded-full bg-subcanvas px-2.5 py-1 text-label-sm font-bold">
-        준비 중
-      </span>
     </div>
   );
 }

@@ -14,13 +14,13 @@ import { AdSenseUnit } from "@/components/ads/adsense-unit";
 import { PatchBanner } from "@/components/home/patch-banner";
 import { SnsChannels } from "@/components/home/sns-channels";
 import { ChannelBanner } from "@/components/home/channel-banner";
+import { HomeCardSearch } from "@/components/home/home-card-search";
 import { MetaSnapshot } from "@/components/home/meta-snapshot";
 import { OfficialLinks } from "@/components/home/official-links";
 import { HomeCommunity } from "@/components/home/home-community";
+import { HomePopular } from "@/components/home/home-popular";
+import { HomePriceMini } from "@/components/home/home-price-mini";
 import { HomeExtras } from "@/components/home/home-extras";
-import { PriceMovers } from "@/components/trading/price-movers";
-import { getTopGainers, getTopLosers } from "@/lib/prices";
-import { getUsdKrw } from "@/lib/fx";
 
 export const revalidate = 60;
 
@@ -35,39 +35,47 @@ const SECTIONS = [
   { href: "/tournaments", label: "다가오는 대회", icon: Trophy },
 ];
 
-/** 홈 = 커뮤니티 중심 랜딩. 인기글·시세를 크게, 나머지는 압축. */
+/** 홈 = 커뮤니티 중심 랜딩. 추천덱 상단, 최신글 넓게, 인기글·시세는 우측 패널. */
 export default function HomePage() {
   return (
     <div className="flex flex-col gap-8">
       <PatchBanner />
 
-      <section className="rounded-3xl border border-primary/20 bg-gradient-to-br from-primary-wash via-card to-card p-5 sm:p-7">
-        <p className="text-label-md font-bold uppercase tracking-wide text-primary-strong">
-          Riftbound 한국 팬 커뮤니티
-        </p>
-        <h1 className="mt-1.5 font-display text-headline-lg text-ink sm:text-display-hero-mobile">
-          리바지지 · RIBA.GG
-        </h1>
-        <p className="mt-2 max-w-xl text-body-md text-ink-soft">
-          리프트바운드(Riftbound) TCG 커뮤니티 · 덱 티어리스트 · 카드 DB · 시세 · 매장 대회.
-        </p>
+      <section className="grid gap-5 rounded-3xl border border-primary/20 bg-gradient-to-br from-primary-wash via-card to-card p-5 sm:p-7 lg:grid-cols-[minmax(0,1fr)_320px] lg:items-center">
+        <div>
+          <p className="text-label-md font-bold uppercase tracking-wide text-primary-strong">
+            Riftbound 한국 팬 커뮤니티
+          </p>
+          <h1 className="mt-1.5 font-display text-headline-lg text-ink sm:text-display-hero-mobile">
+            리바지지 · RIBA.GG
+          </h1>
+          <p className="mt-2 max-w-xl text-body-md text-ink-soft">
+            리프트바운드(Riftbound) TCG 커뮤니티 · 덱 티어리스트 · 카드 DB · 시세 · 매장 대회.
+          </p>
+          <ChannelBanner className="mt-4" />
+        </div>
+        <HomeCardSearch />
       </section>
 
-      <ChannelBanner />
-
-      {/* 핵심: 커뮤니티 + 시세 */}
-      <div className="grid gap-5 lg:grid-cols-2 lg:items-start">
-        <Suspense fallback={<div className="h-96 animate-pulse rounded-2xl bg-subcanvas/50" />}>
-          <HomeCommunity />
-        </Suspense>
-        <Suspense fallback={<div className="h-96 animate-pulse rounded-2xl bg-subcanvas/50" />}>
-          <HomePrices />
-        </Suspense>
-      </div>
-
+      {/* 추천덱 — 상단 */}
       <Suspense fallback={<div className="h-52 animate-pulse rounded-2xl bg-subcanvas/50" />}>
         <MetaSnapshot />
       </Suspense>
+
+      {/* 커뮤니티 최신(넓게) + 인기글·시세(우측 패널) */}
+      <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_340px] xl:items-start">
+        <Suspense fallback={<div className="h-96 animate-pulse rounded-2xl bg-subcanvas/50" />}>
+          <HomeCommunity />
+        </Suspense>
+        <div className="flex flex-col gap-5">
+          <Suspense fallback={<div className="h-64 animate-pulse rounded-2xl bg-subcanvas/50" />}>
+            <HomePopular />
+          </Suspense>
+          <Suspense fallback={<div className="h-64 animate-pulse rounded-2xl bg-subcanvas/50" />}>
+            <HomePriceMini />
+          </Suspense>
+        </div>
+      </div>
 
       <section>
         <h2 className="section-title mb-3">전체 메뉴</h2>
@@ -106,13 +114,4 @@ export default function HomePage() {
       </p>
     </div>
   );
-}
-
-async function HomePrices() {
-  const [gainers, losers, fx] = await Promise.all([
-    getTopGainers(5),
-    getTopLosers(5),
-    getUsdKrw(),
-  ]);
-  return <PriceMovers gainers={gainers} losers={losers} fx={fx} layout="stacked" />;
 }
