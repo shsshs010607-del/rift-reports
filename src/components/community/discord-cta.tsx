@@ -29,14 +29,16 @@ export function DiscordCta({ className }: { className?: string }) {
         <DiscordIcon className="h-5 w-5" />
       </span>
       <div className="min-w-0 flex-1">
-        <p className="text-body-md font-bold text-ink">리바지지 디스코드</p>
+        <p className="text-body-md font-bold text-ink">1:1 대전 상대, 디스코드에서 찾기</p>
         <p className="text-body-sm text-ink-soft">
-          {ready ? "실시간 잡담 · 매칭 · 대회 공지 — 지금 참여하기" : "채널 준비 중 — 곧 공개됩니다"}
+          {ready
+            ? "리바지지 디스코드에서 실시간으로 상대를 구하고 대전하세요"
+            : "디스코드 채널 준비 중 — 곧 공개됩니다"}
         </p>
       </div>
       {ready && (
         <span className="shrink-0 rounded-full bg-[#5865F2] px-3 py-1.5 text-label-sm font-bold text-white">
-          입장
+          찾기
         </span>
       )}
     </Wrapper>
