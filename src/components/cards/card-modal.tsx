@@ -8,6 +8,7 @@ import type { Card } from "@/lib/types/card";
 import { resolveCardText, cardNumber } from "@/lib/types/card";
 import { CARD_DOMAINS, CARD_SETS, CARD_TREATMENTS, CARD_TYPES } from "@/lib/constants";
 import { domainGradient, domainWash, rarityStyle } from "@/lib/card-style";
+import { BAN_TAG } from "@/lib/cards/banned";
 import { renderProxyImage, proxyFileName } from "@/lib/cards/proxy-image";
 import { LocalizedCard } from "@/components/cards/localized-card";
 import { CardText } from "@/components/cards/card-text";
@@ -113,6 +114,11 @@ export function CardModal({ card, onClose }: { card: Card; onClose: () => void }
           <div className="flex items-start justify-between gap-3">
             <div className="min-w-0">
               <div className="mb-1 flex flex-wrap items-center gap-1.5">
+                {card.subtypes.includes(BAN_TAG) && (
+                  <span className="rounded-full bg-error px-2 py-0.5 text-[10px] font-black text-white">
+                    밴
+                  </span>
+                )}
                 <span
                   className={cn(
                     "rounded-full px-2 py-0.5 text-[10px] font-black uppercase tracking-wide",

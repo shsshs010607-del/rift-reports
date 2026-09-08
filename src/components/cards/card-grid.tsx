@@ -6,6 +6,7 @@ import type { Card } from "@/lib/types/card";
 import { resolveCardText, cardNumber } from "@/lib/types/card";
 import { CARD_DOMAINS, CARD_TYPES } from "@/lib/constants";
 import { domainGradient, rarityStyle } from "@/lib/card-style";
+import { BAN_TAG } from "@/lib/cards/banned";
 import { CardModal } from "@/components/cards/card-modal";
 import { LocalizedCard } from "@/components/cards/localized-card";
 
@@ -79,6 +80,11 @@ function CardTile({ card, onOpen }: { card: Card; onOpen: () => void }) {
             className={`absolute bottom-1.5 right-1.5 rounded-full px-1.5 py-0.5 text-[10px] font-black uppercase tracking-wide ${rarity.className}`}
           >
             {rarity.label}
+          </span>
+        )}
+        {card.subtypes.includes(BAN_TAG) && (
+          <span className="absolute bottom-1.5 left-1.5 rounded bg-error px-1.5 py-0.5 text-[10px] font-black text-white">
+            밴
           </span>
         )}
       </div>

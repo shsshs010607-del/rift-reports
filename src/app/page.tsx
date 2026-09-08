@@ -17,7 +17,7 @@ import { HomeCardSearch } from "@/components/home/home-card-search";
 import { MetaSnapshot } from "@/components/home/meta-snapshot";
 import { OfficialLinks } from "@/components/home/official-links";
 import { HomeCommunity } from "@/components/home/home-community";
-import { HomePopular } from "@/components/home/home-popular";
+import { HomeReports } from "@/components/home/home-reports";
 import { HomePriceMini } from "@/components/home/home-price-mini";
 import { HomeExtras } from "@/components/home/home-extras";
 
@@ -68,7 +68,7 @@ export default function HomePage() {
         </div>
         <div className="flex flex-col gap-5">
           <Suspense fallback={<div className="h-64 animate-pulse rounded-2xl bg-subcanvas/50" />}>
-            <HomePopular />
+            <HomeReports />
           </Suspense>
           <Suspense fallback={<div className="h-64 animate-pulse rounded-2xl bg-subcanvas/50" />}>
             <HomePriceMini />

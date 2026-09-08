@@ -17,6 +17,7 @@ import {
   CARD_TYPE_SLUGS,
 } from "@/lib/types/card";
 import { CARD_DOMAINS } from "@/lib/constants";
+import { isBanned, BAN_TAG } from "@/lib/cards/banned";
 
 /** 카드 DB 에 담을 세트 화이트리스트 (constants.CARD_SETS). 그 외 세트 카드는 로드 시 제외. */
 const SUPPORTED_SETS = new Set<string>(CARD_SET_CODES);
@@ -424,7 +425,7 @@ function mapRiftcodexCard(raw: RiftcodexCard, ko?: Map<string, KoEntry>): Card {
     toughness: null,
     type: normalizeType(raw.classification?.type, raw.classification?.supertype ?? undefined),
     orientation: raw.orientation === "landscape" ? "landscape" : "portrait",
-    subtypes: raw.tags ?? [],
+    subtypes: isBanned(raw.id) ? [BAN_TAG, ...(raw.tags ?? [])] : (raw.tags ?? []),
     domains: normalizeDomains(raw.classification?.domain),
     rarity: normalizeRarity(raw.classification?.rarity),
     imageUrl: imageEn,
