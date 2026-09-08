@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { Menu, X, Search, PenSquare, Home } from "lucide-react";
-import { NAV_ITEMS } from "@/lib/constants";
+import { NAV_PRIMARY, NAV_SECONDARY } from "@/lib/constants";
 import { NotificationBell } from "@/components/layout/notification-bell";
 import { LogoMark } from "@/components/ui/logo";
 import { cn } from "@/lib/utils";
@@ -40,42 +40,48 @@ export function Navbar() {
 
   return (
     <header className="fixed inset-x-0 top-0 z-50 bg-surface/95 shadow-header backdrop-blur-xl">
-      {/* ── 1행: 로고 · 알림 · 글쓰기 · 프로필 ── */}
-      <div className="mx-auto flex h-[72px] max-w-[1280px] items-center justify-between gap-4 px-gutter-desktop">
-        <Link href="/" className="flex shrink-0 items-center gap-3">
-          <LogoMark className="h-11 w-auto rounded-lg shadow-e1" />
-          <span className="font-display text-headline-md font-extrabold tracking-tight text-on-surface">
+      {/* ── 1행: 로고 · 주요 메뉴 · 알림/글쓰기/프로필 ── */}
+      <div className="mx-auto flex h-[68px] max-w-[1280px] items-center gap-4 px-gutter-desktop">
+        <Link href="/" className="flex shrink-0 items-center gap-2.5">
+          <LogoMark className="h-10 w-auto rounded-lg shadow-e1" />
+          <span className="font-display text-headline-sm font-extrabold tracking-tight text-on-surface sm:text-headline-md">
             리프트 리포트
           </span>
         </Link>
 
-        <div className="flex items-center gap-2.5">
+        <nav className="hidden flex-1 items-center gap-1 xl:flex">
+          {NAV_PRIMARY.map((item) => (
+            <NavPill key={item.href} {...item} active={isActive(item.href)} />
+          ))}
+        </nav>
+
+        <div className="flex flex-1 items-center justify-end gap-2.5 xl:flex-none">
           <NotificationBell />
 
           <Link
             href="/community/new"
-            className="hidden items-center gap-2 rounded-full bg-primary px-5 py-2.5 text-body-md font-bold text-white shadow-[0_4px_14px_rgba(70,72,212,0.3)] transition hover:bg-primary-container sm:inline-flex"
+            className="hidden items-center gap-2 rounded-full bg-primary px-4 py-2.5 text-body-md font-bold text-white shadow-[0_4px_14px_rgba(70,72,212,0.3)] transition hover:bg-primary-container sm:inline-flex"
           >
             <PenSquare className="h-[18px] w-[18px]" />
-            <span>새 글 쓰기</span>
+            <span className="hidden lg:inline">새 글 쓰기</span>
           </Link>
 
           {user ? (
             <Link
               href="/me"
-              className="flex items-center gap-2 rounded-full bg-surface-container-lowest py-1 pl-1 pr-3.5 shadow-xs"
+              className="flex items-center gap-2 rounded-full bg-surface-container-lowest py-1 pl-1 pr-3 shadow-xs"
             >
-              <span className="grid h-10 w-10 place-items-center rounded-full bg-primary-fixed text-body-md font-bold text-on-primary-fixed-variant ring-1 ring-outline-variant">
+              <span className="grid h-9 w-9 place-items-center rounded-full bg-primary-fixed text-body-md font-bold text-on-primary-fixed-variant ring-1 ring-outline-variant">
                 {(user.email ?? "U")[0].toUpperCase()}
               </span>
-              <span className="hidden text-body-md font-bold leading-tight text-on-surface sm:block">
+              <span className="hidden text-body-md font-bold leading-tight text-on-surface lg:block">
                 내 프로필
               </span>
             </Link>
           ) : (
             <Link
               href="/login"
-              className="hidden rounded-full bg-surface-container-high px-5 py-2.5 text-body-md font-bold text-primary transition hover:bg-surface-container-highest sm:inline-flex"
+              className="hidden rounded-full bg-surface-container-high px-4 py-2.5 text-body-md font-bold text-primary transition hover:bg-surface-container-highest sm:inline-flex"
             >
               로그인
             </Link>
@@ -92,29 +98,30 @@ export function Navbar() {
         </div>
       </div>
 
-      {/* ── 2행: 내비게이션(좌) · 검색(우) ── */}
-      <div className="hidden border-t border-outline-variant/40 xl:block">
-        <div className="mx-auto flex h-[52px] max-w-[1280px] items-center justify-between gap-4 px-gutter-desktop">
+      {/* ── 2행: 보조 메뉴(좌) · 검색(우) ── */}
+      <div className="hidden border-t border-outline-variant/40 bg-surface-container-low/40 xl:block">
+        <div className="mx-auto flex h-[48px] max-w-[1280px] items-center justify-between gap-4 px-gutter-desktop">
           <nav className="flex items-center gap-1">
             <Link
               href="/"
               aria-current={isActive("/") ? "page" : undefined}
+              aria-label="홈"
               className={cn(
-                "flex items-center gap-1.5 whitespace-nowrap rounded-full px-3.5 py-2 text-body-md transition-all",
+                "flex items-center gap-1.5 rounded-full px-3 py-1.5 text-body-sm transition-all",
                 isActive("/")
                   ? "bg-surface-container-high font-bold text-primary"
                   : "text-on-surface-variant hover:bg-surface-container hover:text-on-surface",
               )}
             >
-              <Home className="h-4 w-4" />홈
+              <Home className="h-4 w-4" />
             </Link>
-            {NAV_ITEMS.filter((i) => i.href !== "/").map((item) => (
+            {NAV_SECONDARY.map((item) => (
               <Link
                 key={item.href}
                 href={item.href}
                 aria-current={isActive(item.href) ? "page" : undefined}
                 className={cn(
-                  "whitespace-nowrap rounded-full px-3.5 py-2 text-body-md transition-all",
+                  "whitespace-nowrap rounded-full px-3 py-1.5 text-body-sm transition-all",
                   isActive(item.href)
                     ? "bg-surface-container-high font-bold text-primary"
                     : "text-on-surface-variant hover:bg-surface-container hover:text-on-surface",
@@ -132,7 +139,7 @@ export function Navbar() {
               value={q}
               onChange={(e) => setQ(e.target.value)}
               placeholder="커뮤니티 검색…"
-              className="w-52 rounded-full bg-surface-container-lowest py-2 pl-10 pr-4 text-body-md text-on-surface shadow-xs placeholder:text-outline-variant focus:outline-none focus:ring-2 focus:ring-primary-container 2xl:w-64"
+              className="w-48 rounded-full bg-surface-container-lowest py-1.5 pl-10 pr-4 text-body-sm text-on-surface shadow-xs placeholder:text-outline-variant focus:outline-none focus:ring-2 focus:ring-primary-container 2xl:w-60"
             />
           </form>
         </div>
@@ -164,7 +171,7 @@ export function Navbar() {
             >
               <Home className="h-[18px] w-[18px]" />홈
             </Link>
-            {NAV_ITEMS.filter((i) => i.href !== "/").map((item) => (
+            {[...NAV_PRIMARY, ...NAV_SECONDARY].map((item) => (
               <Link
                 key={item.href}
                 href={item.href}
@@ -190,5 +197,22 @@ export function Navbar() {
         </div>
       )}
     </header>
+  );
+}
+
+function NavPill({ href, label, active }: { href: string; label: string; active: boolean }) {
+  return (
+    <Link
+      href={href}
+      aria-current={active ? "page" : undefined}
+      className={cn(
+        "whitespace-nowrap rounded-full px-3.5 py-2 text-body-md transition-all",
+        active
+          ? "bg-surface-container-high font-bold text-primary"
+          : "text-on-surface-variant hover:bg-surface-container hover:text-on-surface",
+      )}
+    >
+      {label}
+    </Link>
   );
 }

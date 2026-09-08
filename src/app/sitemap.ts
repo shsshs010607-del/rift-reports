@@ -3,9 +3,11 @@ import { SITE, COMMUNITY_CATEGORIES } from "@/lib/constants";
 
 const STATIC_PATHS = [
   "",
+  "/tiers",
   "/cards",
   "/deck-simulator",
   "/rules",
+  "/rules/reference",
   "/glossary",
   "/community",
   "/trading",

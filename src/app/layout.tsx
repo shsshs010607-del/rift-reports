@@ -58,7 +58,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           />
         )}
         <Navbar />
-        <main className="w-full flex-1 pt-[72px] xl:pt-[124px]">
+        <main className="w-full flex-1 pt-[68px] xl:pt-[116px]">
           <div className="mx-auto w-full max-w-[1280px] px-gutter-desktop py-space-xl">{children}</div>
         </main>
         <Footer />

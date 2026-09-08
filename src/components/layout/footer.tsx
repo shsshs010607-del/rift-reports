@@ -5,12 +5,15 @@ import { LogoMark } from "@/components/ui/logo";
 import { AdSenseUnit } from "@/components/ads/adsense-unit";
 
 const TOOLS = [
-  { href: "/", label: "덱 티어리스트" },
+  { href: "/tiers", label: "덱 티어리스트" },
   { href: "/cards", label: "카드 정보" },
+  { href: "/deck-simulator", label: "덱 시뮬레이터" },
   { href: "/rules", label: "초보자 가이드" },
+  { href: "/rules/reference", label: "상세 룰" },
   { href: "/glossary", label: "용어 사전" },
   { href: "/trading", label: "트레이딩" },
-  { href: "/tournaments", label: "대회 정보" },
+  { href: "/shops", label: "주변 매장" },
+  { href: "/tournaments", label: "다가오는 대회" },
 ];
 
 export function Footer() {

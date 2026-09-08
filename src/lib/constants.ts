@@ -28,16 +28,26 @@ export const ADSENSE = {
 /** Kakao Map JavaScript 키. 없으면 지도 대신 목록만. (콘솔에서 웹 도메인 등록 필수) */
 export const KAKAO_MAP_KEY = process.env.NEXT_PUBLIC_KAKAO_MAP_KEY ?? "";
 
-export const NAV_ITEMS = [
-  { href: "/", label: "덱 티어리스트" },
+/** 상단바 1행 — 카드·덱·거래·커뮤니티 (플레이/참여 도구). */
+export const NAV_PRIMARY = [
   { href: "/cards", label: "카드 정보" },
   { href: "/deck-simulator", label: "덱 시뮬레이터" },
-  { href: "/rules", label: "초보자 가이드" },
-  { href: "/glossary", label: "용어" },
-  { href: "/community", label: "커뮤니티" },
+  { href: "/tiers", label: "덱 티어리스트" },
   { href: "/trading", label: "트레이딩" },
-  { href: "/shops", label: "주변 매장 및 대회" },
+  { href: "/community", label: "커뮤니티" },
 ] as const;
+
+/** 상단바 2행 — 가이드·룰·지역 (레퍼런스/오프라인). */
+export const NAV_SECONDARY = [
+  { href: "/rules", label: "초보자 가이드" },
+  { href: "/rules/reference", label: "상세 룰" },
+  { href: "/glossary", label: "용어" },
+  { href: "/shops", label: "주변 매장" },
+  { href: "/tournaments", label: "다가오는 대회" },
+] as const;
+
+/** 하위호환 — 푸터 등에서 참조. */
+export const NAV_ITEMS = [...NAV_PRIMARY, ...NAV_SECONDARY] as const;
 
 /** 대한민국 시/도 (카드샵 지역 필터). */
 export const KR_SIDO = [
