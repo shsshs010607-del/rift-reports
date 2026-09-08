@@ -40,7 +40,7 @@ export default function HomePage() {
     <div className="flex flex-col gap-6">
       <PatchBanner />
 
-      <section className="grid gap-5 rounded-3xl border border-primary/20 bg-gradient-to-br from-primary-wash via-card to-card p-5 sm:p-6 lg:grid-cols-[minmax(0,1fr)_320px] lg:items-center">
+      <section className="grid gap-5 rounded-3xl border border-primary/20 bg-gradient-to-br from-primary-wash via-card to-card p-5 sm:p-6 lg:grid-cols-[minmax(0,1fr)_380px] lg:items-center">
         <div>
           <p className="text-label-md font-bold uppercase tracking-wide text-primary-strong">
             Riftbound 한국 팬 커뮤니티
