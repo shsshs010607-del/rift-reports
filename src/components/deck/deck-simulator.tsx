@@ -8,7 +8,6 @@ import type { Card } from "@/lib/types/card";
 import type { Deck } from "@/lib/types/deck";
 import {
   encodeDeck,
-  decodeDeck,
   buildDeckRefMaps,
   encodeDeckCode,
   isDeckCode,
@@ -33,8 +32,6 @@ import { DeckSteps } from "@/components/deck/deck-steps";
 import { SampleHand } from "@/components/deck/sample-hand";
 import { ImportDialog } from "@/components/deck/import-dialog";
 import { cn } from "@/lib/utils";
-
-const LS_KEY = "rr:deck-simulator:last";
 
 /**
  * 레전드의 도메인에 맞춰 룬을 자동으로 채운다.
@@ -80,7 +77,6 @@ export function DeckSimulator({
   const [rightTab, setRightTab] = useState<"deck" | "hand">("deck");
   const [copied, setCopied] = useState(false);
   const [importOpen, setImportOpen] = useState(false);
-  const [restoredNote, setRestoredNote] = useState<number | null>(null);
   const [flash, setFlash] = useState<string | null>(null);
   const flashMsg = useCallback((m: string) => {
     setFlash(m);
@@ -130,44 +126,8 @@ export function DeckSimulator({
     setPoolTab(t);
   }, []);
 
-  // 최초: URL에 덱 없고 localStorage에 있으면 복원
-  const hydrated = useRef(false);
-  useEffect(() => {
-    if (hydrated.current) return;
-    hydrated.current = true;
-    if (initialDeck.legendId || initialDeck.championId || initialDeck.entries.length > 0) return;
-    try {
-      const saved = localStorage.getItem(LS_KEY);
-      const restored = saved && decodeDeck(saved);
-      if (restored && (restored.legendId || restored.championId || restored.entries.length > 0)) {
-        const n =
-          restored.entries.reduce((s, e) => s + e.qty, 0) +
-          (restored.legendId ? 1 : 0) +
-          (restored.championId ? 1 : 0);
-        const ids = [
-          restored.legendId,
-          restored.championId,
-          ...restored.entries.map((e) => e.id),
-        ].filter((x): x is string => Boolean(x));
-        // 복원 덱의 카드를 먼저 캐시에 채운 뒤 적용해야 즉시 제대로 보인다.
-        fetch("/api/cards?limit=500")
-          .then((r) => (r.ok ? r.json() : { cards: [] }))
-          .then((d: { cards: Card[] }) => {
-            const wanted = new Set(ids);
-            for (const c of d.cards ?? []) if (wanted.has(c.id)) cacheRef.current.set(c.id, c);
-          })
-          .catch(() => {})
-          .finally(() => {
-            setDeck(restored);
-            setRestoredNote(n);
-          });
-      }
-    } catch {
-      /* 무시 */
-    }
-  }, [initialDeck]);
-
-  // 덱 변경 → URL(짧은 코드) + localStorage(base64, 자체완결)
+  // 덱 변경 → URL(짧은 코드)만 동기화. 이전 세션 자동 복원은 하지 않음
+  // (공유 URL ?d= / 저장한 덱에서 불러오기로만 로드).
   const lsCode = useMemo(() => encodeDeck(deck), [deck]);
   const shareCode = useMemo(() => {
     const { refById } = buildDeckRefMaps([...cacheRef.current.values()]);
@@ -179,15 +139,9 @@ export function DeckSimulator({
         ? `/deck-simulator?${isDeckCode(shareCode) ? "d" : "deck"}=${shareCode}`
         : "/deck-simulator";
       router.replace(url, { scroll: false });
-      try {
-        if (lsCode) localStorage.setItem(LS_KEY, lsCode);
-        else localStorage.removeItem(LS_KEY);
-      } catch {
-        /* 무시 */
-      }
     }, 400);
     return () => clearTimeout(t);
-  }, [shareCode, lsCode, router]);
+  }, [shareCode, router]);
 
   const rd = useMemo(() => resolveDeck(deck, cacheRef.current), [deck]);
   const counts = useMemo(() => zoneCounts(rd), [rd]);
@@ -308,35 +262,6 @@ export function DeckSimulator({
           ) : null}
         </span>
       </div>
-
-      {restoredNote !== null && (
-        <div className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-primary/30 bg-primary/5 px-3 py-2 text-body-sm text-ink">
-          <span>
-            이전에 편집하던 덱을 불러왔어요 (<b>{restoredNote}장</b>).
-          </span>
-          <div className="flex gap-1.5">
-            <button
-              type="button"
-              onClick={() => setRestoredNote(null)}
-              className="rounded-full border border-line px-2.5 py-1 text-label-sm font-bold text-ink-soft hover:text-ink"
-            >
-              계속 편집
-            </button>
-            <button
-              type="button"
-              onClick={() => {
-                setDeck((d) => clearDeck(d));
-                autoFlow.current = true;
-                setPoolTab("legend");
-                setRestoredNote(null);
-              }}
-              className="rounded-full bg-primary px-2.5 py-1 text-label-sm font-bold text-white"
-            >
-              비우고 새로 시작
-            </button>
-          </div>
-        </div>
-      )}
 
       {/* 덱 작성 가이드 */}
       <DeckSteps counts={counts} activeTab={poolTab} valid={isComplete} onGoto={handleTabChange} />
