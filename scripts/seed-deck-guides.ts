@@ -39,7 +39,7 @@ function legendInfo() {
 function body(deck: (typeof TIER_DECKS)[number], domains: string[]) {
   const doms = domains.map((d) => `${DOMAIN_KO[d] ?? d}(${d})`).join(" · ");
   const traits = domains.map((d) => DOMAIN_TRAIT[d] ?? d).join(", ");
-  return `# ${deck.name} — ${deck.tier}티어 덱
+  return `# ${deck.name} 덱 공략
 
 [[${deck.keyCard}]]
 
@@ -102,7 +102,7 @@ async function main() {
   const map: Record<string, string> = {};
 
   for (const deck of TIER_DECKS) {
-    const title = `${deck.name} ${deck.tier}티어 덱 공략`;
+    const title = `${deck.name} 덱 공략`;
     if (byTitle.has(title)) {
       map[deck.id] = byTitle.get(title)!;
       console.log(`= 이미 있음: ${title}`);
