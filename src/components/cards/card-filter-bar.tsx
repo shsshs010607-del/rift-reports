@@ -33,6 +33,7 @@ export function CardFilterBar({ facets }: { facets?: CardFacets | null }) {
   const params = useSearchParams();
   const advActive = Boolean(params.get("setCode") || params.get("rarity"));
   const [adv, setAdv] = useState(false);
+  const [openMobile, setOpenMobile] = useState(false); // 모바일에서만 접힘(데스크톱은 항상 표시)
   const [pending, startTransition] = useTransition();
 
   const push = (next: URLSearchParams) => {
@@ -76,7 +77,11 @@ export function CardFilterBar({ facets }: { facets?: CardFacets | null }) {
     >
       {/* 헤더 */}
       <div className="flex items-center justify-between">
-        <span className="flex items-center gap-2 text-label-lg font-bold text-ink">
+        <button
+          type="button"
+          onClick={() => setOpenMobile((v) => !v)}
+          className="flex items-center gap-2 text-label-lg font-bold text-ink xl:pointer-events-none"
+        >
           <SlidersHorizontal className="h-4 w-4 text-primary" />
           필터
           {activeKeys.length > 0 && (
@@ -84,7 +89,10 @@ export function CardFilterBar({ facets }: { facets?: CardFacets | null }) {
               {activeKeys.length}
             </span>
           )}
-        </span>
+          <ChevronDown
+            className={cn("h-4 w-4 text-ink-soft transition xl:hidden", openMobile && "rotate-180")}
+          />
+        </button>
         <div className="flex items-center gap-2.5">
           {facets && (
             <span className="text-label-sm font-bold text-ink-soft">
@@ -124,7 +132,7 @@ export function CardFilterBar({ facets }: { facets?: CardFacets | null }) {
         </div>
       )}
 
-      <div className="mt-4 flex flex-col gap-4">
+      <div className={cn("mt-4 flex-col gap-4 xl:flex", openMobile ? "flex" : "hidden")}>
           {/* 도메인 — 색 스와치 + 개수 */}
           <section>
             <p className="mb-2 text-label-sm font-bold uppercase tracking-wide text-ink-soft">
