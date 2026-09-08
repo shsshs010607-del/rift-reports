@@ -1,8 +1,14 @@
 "use client";
 
+import { useEffect, useMemo, useState } from "react";
 import { useFormState, useFormStatus } from "react-dom";
+import { Layers, Search, ChevronDown } from "lucide-react";
+
 import { createListing, type TradeActionState } from "@/lib/actions/trading";
 import { TRADING_CATEGORIES, TRADE_CONDITIONS, KR_SIDO } from "@/lib/constants";
+import type { Card } from "@/lib/types/card";
+import { resolveCardText, cardNumber } from "@/lib/types/card";
+import { cn } from "@/lib/utils";
 
 function Field({
   label,
@@ -25,6 +31,7 @@ function Field({
 export function ListingForm() {
   const [state, formAction] = useFormState<TradeActionState, FormData>(createListing, {});
   const fe = state.fieldErrors ?? {};
+  const [title, setTitle] = useState("");
 
   return (
     <form action={formAction} className="flex flex-col gap-4">
@@ -48,11 +55,15 @@ export function ListingForm() {
         </div>
       </Field>
 
+      <CollectionPicker onPick={(name) => setTitle((t) => t || `${name} `)} />
+
       <Field label="제목" error={fe.title}>
         <input
           name="title"
           required
           maxLength={120}
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
           placeholder="예) 아리(오버넘버) 프로모 팝니다"
           className="field"
         />
@@ -129,5 +140,100 @@ function Submit() {
     <button type="submit" disabled={pending} className="btn-primary w-full">
       {pending ? "등록 중…" : "거래글 등록"}
     </button>
+  );
+}
+
+/** 내 컬렉션에서 카드를 골라 제목에 채운다. 컬렉션이 비어 있으면 렌더 안 함. */
+function CollectionPicker({ onPick }: { onPick: (name: string) => void }) {
+  const [collection, setCollection] = useState<Record<string, number>>({});
+  const [all, setAll] = useState<Card[]>([]);
+  const [open, setOpen] = useState(false);
+  const [q, setQ] = useState("");
+
+  useEffect(() => {
+    fetch("/api/collection")
+      .then((r) => (r.ok ? r.json() : {}))
+      .then((m: Record<string, number>) => setCollection(m ?? {}))
+      .catch(() => {});
+  }, []);
+
+  useEffect(() => {
+    if (!open || all.length) return;
+    fetch("/api/cards?limit=1000")
+      .then((r) => (r.ok ? r.json() : { cards: [] }))
+      .then((d: { cards: Card[] }) => setAll(d.cards ?? []))
+      .catch(() => {});
+  }, [open, all.length]);
+
+  const owned = useMemo(() => {
+    const term = q.trim().toLowerCase();
+    return all
+      .filter((c) => (collection[c.id] ?? 0) > 0)
+      .filter((c) =>
+        !term
+          ? true
+          : c.name.toLowerCase().includes(term) ||
+            c.localization.en.name.toLowerCase().includes(term) ||
+            (cardNumber(c) ?? "").toLowerCase().includes(term),
+      )
+      .sort((a, b) => a.name.localeCompare(b.name, "ko"))
+      .slice(0, 30);
+  }, [all, collection, q]);
+
+  if (Object.keys(collection).length === 0) return null;
+
+  return (
+    <div className="rounded-xl border border-line/70 bg-subcanvas/40 p-3">
+      <button
+        type="button"
+        onClick={() => setOpen((v) => !v)}
+        className="flex w-full items-center gap-1.5 text-label-md font-bold text-ink-soft transition hover:text-ink"
+      >
+        <Layers className="h-4 w-4 text-primary" />
+        내 컬렉션에서 카드 고르기
+        <ChevronDown className={cn("ml-auto h-4 w-4 transition", open && "rotate-180")} />
+      </button>
+
+      {open && (
+        <div className="mt-3">
+          <div className="relative">
+            <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-soft" />
+            <input
+              value={q}
+              onChange={(e) => setQ(e.target.value)}
+              placeholder="보유 카드 검색"
+              className="w-full rounded-lg border border-line bg-card py-2 pl-9 pr-3 text-body-sm text-ink focus:border-primary focus:outline-none"
+            />
+          </div>
+          <ul className="mt-2 flex max-h-56 flex-col divide-y divide-line/40 overflow-y-auto">
+            {owned.length === 0 ? (
+              <li className="py-3 text-center text-body-sm text-ink-soft">
+                {all.length ? "보유 카드가 없습니다." : "불러오는 중…"}
+              </li>
+            ) : (
+              owned.map((c) => (
+                <li key={c.id}>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      onPick(resolveCardText(c, "ko").name);
+                      setOpen(false);
+                    }}
+                    className="flex w-full items-center gap-2 py-2 text-left hover:text-primary-strong"
+                  >
+                    <span className="min-w-0 flex-1 truncate text-body-sm text-ink">
+                      {resolveCardText(c, "ko").name}
+                    </span>
+                    <span className="shrink-0 text-label-sm text-ink-soft">
+                      보유 {collection[c.id]}
+                    </span>
+                  </button>
+                </li>
+              ))
+            )}
+          </ul>
+        </div>
+      )}
+    </div>
   );
 }

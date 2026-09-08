@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Plus, Search } from "lucide-react";
+import { Plus, Search, Layers } from "lucide-react";
 
 import type { Card, CardType } from "@/lib/types/card";
 import type { Deck, ResolvedDeck } from "@/lib/types/deck";
@@ -53,6 +53,16 @@ export function CardPool({
   const [count, setCount] = useState(0);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [collection, setCollection] = useState<Record<string, number>>({});
+  const [ownedOnly, setOwnedOnly] = useState(false);
+
+  useEffect(() => {
+    fetch("/api/collection")
+      .then((r) => (r.ok ? r.json() : {}))
+      .then((m: Record<string, number>) => setCollection(m ?? {}))
+      .catch(() => {});
+  }, []);
+  const hasCollection = Object.keys(collection).length > 0;
 
   const apiType = TABS.find((t) => t.key === tab)?.apiType;
 
@@ -152,7 +162,7 @@ export function CardPool({
           </PoolChip>
         ))}
       </div>
-      <div className="flex flex-wrap gap-1">
+      <div className="flex flex-wrap items-center gap-1">
         {CARD_SETS.map((s) => (
           <PoolChip
             key={s.code}
@@ -163,6 +173,12 @@ export function CardPool({
             <span className="font-mono text-[11px] font-bold">{s.code}</span>
           </PoolChip>
         ))}
+        {hasCollection && (
+          <PoolChip on={ownedOnly} onClick={() => setOwnedOnly((v) => !v)}>
+            <Layers className="h-3 w-3" />
+            내 컬렉션만
+          </PoolChip>
+        )}
       </div>
 
       <div className="flex items-center justify-between gap-2">
@@ -196,12 +212,14 @@ export function CardPool({
       <ul className="grid max-h-[62vh] grid-cols-2 gap-2 overflow-y-auto pr-1 sm:grid-cols-3">
         {cards
           .filter((card) => {
+            if (ownedOnly && !((collection[card.id] ?? 0) > 0)) return false;
             if (tab === "all") return true;
             if (tab === "rune") return matchesIdentity(rd, card); // 색 맞는 룬 (가득 차도 표시)
             return planAdd(deck, rd, card).kind !== "blocked";
           })
           .map((card) => {
             const inDeck = qtyById.get(card.id) ?? 0;
+            const owned = collection[card.id] ?? 0;
             const plan = planAdd(deck, rd, card);
             const blocked = plan.kind === "blocked";
             return (
@@ -232,6 +250,11 @@ export function CardPool({
                     {inDeck > 0 && (
                       <span className="absolute right-1 top-1 rounded-full bg-primary px-1.5 text-label-sm font-bold text-white">
                         ×{inDeck}
+                      </span>
+                    )}
+                    {owned > 0 && (
+                      <span className="absolute left-1 bottom-1 rounded bg-emerald/90 px-1 text-[10px] font-bold text-white">
+                        보유 {owned}
                       </span>
                     )}
                     {!blocked && (
