@@ -63,8 +63,8 @@ export function Navbar() {
         </nav>
 
         <div className="flex flex-1 items-center justify-end gap-2.5 xl:flex-none">
-          <NotificationBell />
           <ThemeToggle />
+          <NotificationBell />
 
           <Link
             href="/community/new"

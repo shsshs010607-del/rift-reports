@@ -28,18 +28,22 @@ export default async function TradingPage({
 
   return (
     <div className="flex flex-col gap-10">
-      <header className="flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <h1 className="font-display text-headline-md text-ink">트레이딩</h1>
-          <p className="mt-0.5 text-body-md text-ink-soft">이용자 간 직거래 · 실시간 시세</p>
+      <header className="flex flex-col gap-3">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <h1 className="font-display text-headline-md text-ink">트레이딩</h1>
+            <p className="mt-0.5 text-body-md text-ink-soft">이용자 간 직거래 · 실시간 시세</p>
+          </div>
+          <Link
+            href="/trading/new"
+            className="inline-flex items-center gap-2 rounded-2xl bg-primary px-6 py-3.5 text-title-md font-bold text-white shadow-[0_6px_18px_rgba(70,72,212,0.28)] transition hover:bg-primary-container"
+          >
+            <PlusSquare className="h-5 w-5" />
+            거래글 등록
+          </Link>
         </div>
-        <Link
-          href="/trading/new"
-          className="inline-flex items-center gap-2 rounded-2xl bg-primary px-6 py-3.5 text-title-md font-bold text-white shadow-[0_6px_18px_rgba(70,72,212,0.28)] transition hover:bg-primary-container"
-        >
-          <PlusSquare className="h-5 w-5" />
-          거래글 등록
-        </Link>
+        {/* 거래글 등록과 함께: 디스코드·네이버 카페 거래소 바로가기 */}
+        <NaverCafeCta />
       </header>
 
       {/* 시세: 좌 카드 시세 / 우 급등·급락 */}
@@ -60,7 +64,6 @@ export default async function TradingPage({
       {/* 거래글 */}
       <section id="listings" className="scroll-mt-24">
         <h2 className="mb-3 text-title-md font-bold text-ink">거래글</h2>
-        <NaverCafeCta className="mb-4" />
         <TradeBoard listings={listings} initialQuery={searchParams.q ?? ""} />
       </section>
     </div>
