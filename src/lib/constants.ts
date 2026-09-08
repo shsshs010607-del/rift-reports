@@ -60,9 +60,8 @@ export const NAV_PRIMARY = [
   { href: "/community", label: "커뮤니티" },
 ] as const;
 
-/** 상단바 2행 — 가이드·룰·지역 (레퍼런스/오프라인). */
+/** 상단바 2행 — 룰·용어·지역 (레퍼런스/오프라인). */
 export const NAV_SECONDARY = [
-  { href: "/rules", label: "초보자 가이드" },
   { href: "/rules/reference", label: "상세 룰" },
   { href: "/glossary", label: "용어" },
   { href: "/shops", label: "주변 매장" },
