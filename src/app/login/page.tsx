@@ -9,7 +9,7 @@ export default function LoginPage({ searchParams }: { searchParams: { next?: str
     <div className="mx-auto max-w-md py-8">
       <h1 className="text-center font-display text-headline-md text-ink">리바지지 로그인</h1>
       <p className="mt-2 text-center text-body-md text-ink-soft">
-        이메일 매직 링크 또는 소셜 계정으로 로그인하세요.
+        카카오 · Google · Discord 계정으로 로그인하세요.
       </p>
       <div className="surface mt-6 p-6">
         <LoginForm next={searchParams.next} />

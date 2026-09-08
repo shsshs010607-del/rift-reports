@@ -21,18 +21,52 @@ const body = Inter({
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE.url),
-  title: { default: `${SITE.name} · ${SITE.nameEn}`, template: `%s · ${SITE.name}` },
+  title: { default: `${SITE.name} (${SITE.nameEn}) · 리프트바운드 커뮤니티`, template: `%s · ${SITE.name}` },
   description: SITE.description,
+  applicationName: SITE.name,
+  keywords: [
+    "리바지지",
+    "RIBA.GG",
+    "리바지지 리프트바운드",
+    "리프트바운드",
+    "Riftbound",
+    "리프트바운드 티어리스트",
+    "리프트바운드 덱",
+    "리프트바운드 카드",
+    "리프트바운드 시세",
+    "리프트바운드 커뮤니티",
+    "롤 TCG",
+    "라이엇 TCG",
+    "League of Legends TCG",
+  ],
+  alternates: { canonical: "/" },
   openGraph: {
-    title: SITE.name,
+    title: `${SITE.name} · ${SITE.nameEn}`,
     description: SITE.description,
     url: SITE.url,
     siteName: SITE.name,
     locale: "ko_KR",
     type: "website",
   },
+  twitter: { card: "summary_large_image", title: SITE.name, description: SITE.description },
   // AdSense 사이트 확인용 <meta name="google-adsense-account"> (head 에 렌더됨)
   ...(ADSENSE.client ? { other: { "google-adsense-account": ADSENSE.client } } : {}),
+};
+
+/** 검색엔진용 구조화 데이터 (WebSite + 사이트 검색). */
+const JSON_LD = {
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  name: SITE.name,
+  alternateName: [SITE.nameEn, "리바지지", "RIBA.GG"],
+  url: SITE.url,
+  description: SITE.description,
+  inLanguage: "ko-KR",
+  potentialAction: {
+    "@type": "SearchAction",
+    target: `${SITE.url.replace(/\/$/, "")}/cards?q={search_term_string}`,
+    "query-input": "required name=search_term_string",
+  },
 };
 
 export const viewport: Viewport = {
@@ -47,6 +81,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <link
           rel="stylesheet"
           href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css"
+        />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(JSON_LD) }}
         />
         {ADSENSE.client && (
           <Script

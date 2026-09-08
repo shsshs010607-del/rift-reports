@@ -3,20 +3,19 @@ import { TIER_DECKS } from "./tier-list";
 /**
  * "내게 맞는 덱 유형" 테스트.
  *
- * 성격/성향을 묻는 7문항 → 덱별 가중치를 합산 → 상위 덱 추천.
- * 가중치는 대부분 1, 덱의 대표 성향에만 2. 15개 정규 덱(+럭스) 전부 결과로 나올 수 있다.
+ * 성격/성향을 유머러스하게 묻는 6문항 → 덱별 가중치 합산 → 상위 덱 추천.
+ * 가중치는 대부분 1, 덱의 대표 성향에만 2. 16개 덱이 골고루 결과로 나오게 배분.
  * 문항·가중치는 이 파일만 고치면 되고 컴포넌트 수정은 불필요하다.
  *
- * 덱 성향 메모(가중치 근거):
- *  yi 빠름·연계폭딜   kaisa 후반성장·자원   viktor 주문램프·고난도   annie 분노번·화력
- *  sett 큰유닛·몸싸움  mf 광역·다수압박      yasuo 기절·반격콤보·변수  darius 어그로·출혈·처형
- *  volibear 큰유닛·지속전개  ahri 주문연계·매혹방해  leesin 킥콤보·이동·고난도  leona 방어·탱커·봉쇄
- *  jinx 폭딜피니시·한방  teemo 함정·견제·지속딜  garen 정직스탯·입문·쉬움  lux 빛주문·컨트롤·서포트
+ * 덱 성향 메모:
+ *  yi 빠름·연계폭딜   kaisa 후반성장·자원·수집   viktor 주문램프·장인   annie 분노번·화력
+ *  sett 큰유닛·몸싸움  mf 광역·다수압박·존버      yasuo 기절·반격·변수    darius 어그로·처형·직진
+ *  volibear 큰유닛·낙뢰  ahri 주문연계·매혹방해   leesin 킥콤보·이동·장인  leona 방어·탱커·봉쇄
+ *  jinx 폭딜한방·피니시  teemo 함정·견제·지속딜   garen 정직스탯·입문·쉬움  lux 빛주문·컨트롤·설명충
  */
 
 export type QuizOption = {
   label: string;
-  /** 덱 id(TIER_DECKS.id)별 가중치. 대표 성향만 2, 나머지 1. */
   weights: Record<string, number>;
 };
 
@@ -28,72 +27,63 @@ export type QuizQuestion = {
 
 export const QUIZ_QUESTIONS: QuizQuestion[] = [
   {
-    id: "vibe",
-    question: "친구들이랑 같이 게임할 때, 나는 보통…",
+    id: "start",
+    question: "게임 시작하자마자 나는…",
     options: [
-      { label: "검증된 세팅으로 안정적으로 간다", weights: { yi: 1, kaisa: 1, viktor: 1, garen: 1, sett: 1, volibear: 1 } },
-      { label: "남들 안 쓰는 특이한 걸 굴려본다", weights: { yasuo: 2, jinx: 1, teemo: 1, leesin: 1, ahri: 1 } },
-      { label: "느긋하게 판을 깔고 뒷심으로 이긴다", weights: { kaisa: 1, viktor: 1, leona: 2, lux: 1, teemo: 1, mf: 1 } },
-      { label: "일단 선빵, 기세로 몰아붙인다", weights: { darius: 2, yi: 1, annie: 1, sett: 1 } },
+      { label: "인사도 없이 바로 달려든다 🏃", weights: { darius: 2, yi: 1, yasuo: 2, annie: 2 } },
+      { label: "일단 상황 보고 간 좀 본다 👀", weights: { kaisa: 1, viktor: 1, sett: 1, mf: 1, garen: 1 } },
+      { label: "느긋하게 차 한 잔 하고 시작 ☕", weights: { leona: 2, lux: 2, teemo: 1, kaisa: 1 } },
+      { label: "남들 뭐 하나 구경부터 한다 🔭", weights: { ahri: 1, jinx: 1, teemo: 1, yasuo: 1, mf: 1 } },
     ],
   },
   {
-    id: "solve",
-    question: "게임 안에서 문제를 푸는 방식은?",
+    id: "why",
+    question: "친구가 \"그거 왜 그렇게 함?\" 하면?",
     options: [
-      { label: "힘으로 정면돌파", weights: { volibear: 2, garen: 1, sett: 2, darius: 1, leesin: 1 } },
-      { label: "머리 굴려서 콤보·수 싸움", weights: { viktor: 2, ahri: 2, lux: 2, yi: 1, yasuo: 1 } },
-      { label: "상대 실수를 기다렸다가 카운터", weights: { yasuo: 1, leona: 2, teemo: 2, mf: 2, jinx: 1 } },
+      { label: "\"이게 제일 세니까 (팩트)\"", weights: { yi: 2, kaisa: 1, viktor: 1 } },
+      { label: "\"재밌잖아? 🤪\"", weights: { yasuo: 2, jinx: 1, teemo: 2, ahri: 1 } },
+      { label: "\"이겼으니까 됐어\"", weights: { darius: 1, sett: 1, garen: 2, mf: 1, volibear: 1 } },
+      { label: "\"설명하려면 좀 긴데…\"", weights: { viktor: 2, ahri: 1, lux: 2, leesin: 2 } },
+    ],
+  },
+  {
+    id: "desk",
+    question: "내 방/책상 상태는?",
+    options: [
+      { label: "미니멀, 필요한 것만 💼", weights: { garen: 2, darius: 2, yi: 1, annie: 2 } },
+      { label: "난장판인데 다 이유가 있음", weights: { yasuo: 2, leesin: 2, ahri: 1, jinx: 2 } },
+      { label: "장비·수집품이 벽을 채운다 🗄️", weights: { kaisa: 2, viktor: 1, volibear: 2, sett: 2 } },
+      { label: "여기저기 함정처럼 물건이 놓여있음 🪤", weights: { teemo: 2, mf: 2, lux: 1 } },
     ],
   },
   {
     id: "losing",
-    question: "지고 있을 때 나는?",
+    question: "지고 있을 때 속마음은?",
     options: [
-      { label: "한 방 노리고 크게 던진다", weights: { jinx: 2, yasuo: 1, teemo: 1, ahri: 1, annie: 1, mf: 1 } },
-      { label: "실수 없이 버티면서 기회를 본다", weights: { leona: 2, mf: 1, lux: 1, teemo: 1 } },
-      { label: "그냥 더 세게 밀어붙인다", weights: { darius: 2, yi: 1, sett: 1, garen: 1, volibear: 2 } },
-      { label: "자원 모아서 후반에 뒤집는다", weights: { kaisa: 2, viktor: 1, lux: 1 } },
+      { label: "한 방이면 뒤집는다… 던진다 🎲", weights: { jinx: 2, yasuo: 1, teemo: 1, annie: 2 } },
+      { label: "침착. 상대가 실수할 때까지 존버 🧘", weights: { leona: 2, mf: 2, lux: 1, teemo: 1 } },
+      { label: "더 세게 밀면 되잖아 💪", weights: { darius: 2, yi: 1, sett: 2, volibear: 2, garen: 1 } },
+      { label: "후반 가면 내가 이겨 ⏳", weights: { kaisa: 2, viktor: 2, lux: 1 } },
     ],
   },
   {
     id: "wincon",
-    question: "가장 짜릿한 승리 방식은?",
+    question: "가장 짜릿한 승리 장면은?",
     options: [
-      { label: "커다란 유닛으로 짓밟기", weights: { volibear: 2, garen: 2, sett: 2, leesin: 1 } },
-      { label: "주문 연타로 순식간에 정리", weights: { viktor: 2, ahri: 1, annie: 2, lux: 2 } },
-      { label: "빠른 연계로 순삭 폭딜", weights: { yi: 2, kaisa: 1, jinx: 1 } },
-      { label: "상대가 아무것도 못 하게 봉쇄", weights: { leona: 2, mf: 2, teemo: 1 } },
+      { label: "거대한 놈으로 그냥 밟아버리기 🦣", weights: { volibear: 3, sett: 2, garen: 1, leesin: 1 } },
+      { label: "주문 콰콰콰 쏟아부어서 순삭 ✨", weights: { viktor: 1, ahri: 2, annie: 2, lux: 2 } },
+      { label: "연계 한 번에 상대 체력 증발 ⚡", weights: { yi: 2, kaisa: 1, jinx: 1, leesin: 1 } },
+      { label: "상대가 아무것도 못 하고 항복 🚫", weights: { leona: 2, mf: 1, teemo: 1, yasuo: 2 } },
     ],
   },
   {
     id: "pick",
-    question: "덱 고를 때 가장 끌리는 포인트는?",
+    question: "덱 고를 때 나는?",
     options: [
-      { label: "티어 높고 안정적인 정석", weights: { yi: 1, kaisa: 2, viktor: 1 } },
-      { label: "남들과 다른 개성", weights: { yasuo: 1, jinx: 2, teemo: 2 } },
-      { label: "다루기 쉽고 배우기 편함", weights: { garen: 2, darius: 1, annie: 1, sett: 1, volibear: 1 } },
-      { label: "파고들수록 강해지는 고난도", weights: { leesin: 2, ahri: 1, viktor: 1, lux: 1, kaisa: 1 } },
-    ],
-  },
-  {
-    id: "board",
-    question: "전투할 때 선호하는 그림은?",
-    options: [
-      { label: "큰 유닛 하나로 밀어붙인다", weights: { sett: 2, volibear: 2, garen: 1, darius: 1 } },
-      { label: "작은 유닛 여러 개로 넓게 압박", weights: { mf: 2, teemo: 1, annie: 1, yi: 1 } },
-      { label: "유닛보다 주문·능력으로 판을 흔든다", weights: { viktor: 1, ahri: 2, lux: 2, jinx: 1, annie: 1 } },
-      { label: "상대 유닛을 묶고 무력화한다", weights: { leona: 1, yasuo: 2, ahri: 1, teemo: 1 } },
-    ],
-  },
-  {
-    id: "effort",
-    question: "손이 많이 가는 플레이는?",
-    options: [
-      { label: "괜찮다, 콤보·연계 짜는 게 재밌다", weights: { leesin: 2, yasuo: 1, yi: 1, ahri: 1 } },
-      { label: "적당한 판단이 필요한 정도가 좋다", weights: { mf: 1, sett: 1, kaisa: 1, viktor: 1, jinx: 1 } },
-      { label: "최대한 단순하고 직관적인 게 좋다", weights: { garen: 2, darius: 2, annie: 1, volibear: 1 } },
-      { label: "수비적으로 실수 안 하는 게 중요하다", weights: { leona: 2, mf: 1, lux: 1, teemo: 1 } },
+      { label: "티어표 1위부터 본다 📊", weights: { yi: 1, kaisa: 2, viktor: 1 } },
+      { label: "남들 안 쓰는 거 골라서 유행시킨다 😎", weights: { yasuo: 1, jinx: 1, teemo: 1, ahri: 2 } },
+      { label: "튜토리얼 없이도 굴릴 수 있는 거 🎮", weights: { garen: 2, darius: 1, annie: 1, sett: 1, volibear: 1 } },
+      { label: "파면 팔수록 강해지는 장인용 🔧", weights: { leesin: 2, ahri: 1, viktor: 1, lux: 1, jinx: 1 } },
     ],
   },
 ];

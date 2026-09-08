@@ -49,44 +49,22 @@ const SOCIALS: Social[] = [
 ];
 
 export function LoginForm({ next }: { next?: string }) {
-  const [email, setEmail] = useState("");
-  const [status, setStatus] = useState<"idle" | "sending" | "sent" | "error">("idle");
-  const [message, setMessage] = useState("");
   const [busy, setBusy] = useState<string | null>(null);
-
-  const redirectTo = () => {
-    const base = typeof window !== "undefined" ? window.location.origin : "";
-    return `${base}/auth/callback${next ? `?next=${encodeURIComponent(next)}` : ""}`;
-  };
+  const [message, setMessage] = useState("");
 
   async function signInWith(provider: Social["provider"]) {
     setBusy(provider);
+    setMessage("");
     const supabase = createClient();
+    const base = typeof window !== "undefined" ? window.location.origin : "";
+    const redirectTo = `${base}/auth/callback${next ? `?next=${encodeURIComponent(next)}` : ""}`;
     const { error } = await supabase.auth.signInWithOAuth({
       provider,
-      options: { redirectTo: redirectTo() },
+      options: { redirectTo },
     });
     if (error) {
       setBusy(null);
-      setStatus("error");
       setMessage(error.message);
-    }
-  }
-
-  async function sendMagicLink(e: React.FormEvent) {
-    e.preventDefault();
-    setStatus("sending");
-    const supabase = createClient();
-    const { error } = await supabase.auth.signInWithOtp({
-      email,
-      options: { emailRedirectTo: redirectTo() },
-    });
-    if (error) {
-      setStatus("error");
-      setMessage(error.message);
-    } else {
-      setStatus("sent");
-      setMessage("메일함을 확인해 로그인 링크를 클릭하세요.");
     }
   }
 
@@ -113,32 +91,11 @@ export function LoginForm({ next }: { next?: string }) {
         </button>
       ))}
 
-      <div className="mt-1 flex items-center gap-3 text-body-sm text-ink-soft">
-        <span className="h-px flex-1 bg-line" />
-        이메일로 로그인
-        <span className="h-px flex-1 bg-line" />
-      </div>
+      {message && <p className="text-body-sm text-coral">{message}</p>}
 
-      <form onSubmit={sendMagicLink} className="flex flex-col gap-2">
-        <input
-          type="email"
-          required
-          autoComplete="email"
-          placeholder="you@example.com"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          className="field"
-        />
-        <button type="submit" disabled={status === "sending"} className="btn-ghost w-full !py-2.5">
-          {status === "sending" ? "전송 중…" : "매직 링크 받기"}
-        </button>
-      </form>
-
-      {message && (
-        <p className={status === "error" ? "text-body-sm text-coral" : "text-body-sm text-emerald"}>
-          {message}
-        </p>
-      )}
+      <p className="mt-1 text-center text-body-sm text-ink-soft">
+        소셜 계정으로 간편하게 시작하세요.
+      </p>
     </div>
   );
 }
