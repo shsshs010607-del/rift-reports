@@ -9,7 +9,9 @@ import { hasSupabaseEnv } from "@/lib/supabase/env";
 import { fmtKstDate, fmtKstListTime } from "@/lib/datetime";
 import { SignOutButton } from "@/components/auth/sign-out-button";
 import { ProfileEditor } from "@/components/me/profile-editor";
+import { CollectionEditor } from "@/components/me/collection-editor";
 import { getMyPosts, getMyListings } from "@/lib/me";
+import { getMyCollection } from "@/lib/collection";
 import { listMyDecks } from "@/lib/actions/decks";
 import { COMMUNITY_CATEGORIES, TRADING_CATEGORIES, TRADE_STATUS } from "@/lib/constants";
 
@@ -37,10 +39,11 @@ export default async function MePage() {
     .eq("id", data.user.id)
     .single();
 
-  const [posts, listings, decks] = await Promise.all([
+  const [posts, listings, decks, collection] = await Promise.all([
     getMyPosts(data.user.id),
     getMyListings(data.user.id),
     listMyDecks(),
+    getMyCollection(),
   ]);
 
   const username = profile?.username ?? "내 프로필";
@@ -114,6 +117,8 @@ export default async function MePage() {
           )}
         </div>
       </div>
+
+      <CollectionEditor initial={collection} />
 
       <ListSection
         title="내가 쓴 글"

@@ -222,6 +222,22 @@ export interface Database {
         Update: Partial<Database["public"]["Tables"]["notification_dismissals"]["Insert"]>;
         Relationships: [];
       };
+      collection_items: {
+        Row: {
+          user_id: string;
+          card_id: string;
+          quantity: number;
+          updated_at: string;
+        };
+        Insert: {
+          user_id: string;
+          card_id: string;
+          quantity?: number;
+          updated_at?: string;
+        };
+        Update: Partial<Database["public"]["Tables"]["collection_items"]["Insert"]>;
+        Relationships: [];
+      };
       notifications: {
         Row: {
           id: string;
