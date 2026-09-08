@@ -5,6 +5,7 @@ import { notFound } from "next/navigation";
 import { ChevronLeft } from "lucide-react";
 import { AdSenseUnit } from "@/components/ads/adsense-unit";
 import { BoardToolbar } from "@/components/community/board-toolbar";
+import { CategoryTabs } from "@/components/community/category-tabs";
 import { PostList } from "@/components/community/post-list";
 import { Pagination } from "@/components/community/pagination";
 import { RecentBoards } from "@/components/community/recent-boards";
@@ -66,7 +67,7 @@ export default async function BoardPage({
         커뮤니티
       </Link>
       <header
-        className={`mb-6 flex items-center gap-3.5 rounded-2xl bg-gradient-to-r ${m.band} to-transparent p-4`}
+        className={`mb-4 flex items-center gap-3.5 rounded-2xl bg-gradient-to-r ${m.band} to-transparent p-4`}
       >
         <span
           className={`grid h-12 w-12 shrink-0 place-items-center rounded-2xl ${m.soft} ${m.fg} shadow-sm`}
@@ -78,6 +79,7 @@ export default async function BoardPage({
           <p className="text-body-sm text-ink-soft">{category.desc}</p>
         </div>
       </header>
+      <CategoryTabs active={slug} />
       <Suspense fallback={<div className="mb-4 h-24" />}>
         <BoardToolbar writeHref={`/community/new?category=${slug}`} />
       </Suspense>
