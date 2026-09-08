@@ -46,15 +46,15 @@ export async function MetaSnapshot() {
             <li key={deck.id}>
               <Link
                 href={deck.guidePostId ? `/community/post/${deck.guidePostId}` : DECK_HREF}
-                className="note-card group flex h-full items-center gap-2 overflow-hidden p-1.5 pr-4 transition hover:-translate-y-0.5 hover:shadow-e2 sm:flex-col sm:items-stretch sm:gap-0 sm:p-0"
+                className="note-card group flex h-full flex-col overflow-hidden transition hover:-translate-y-0.5 hover:shadow-e2"
               >
-                <div className="relative h-11 w-11 shrink-0 overflow-hidden rounded-lg bg-subcanvas sm:h-auto sm:w-full sm:rounded-none sm:aspect-[16/10]">
+                <div className="relative aspect-[16/10] w-full overflow-hidden bg-subcanvas">
                   {art ? (
                     <Image
                       src={art}
                       alt={deck.keyCard}
                       fill
-                      sizes="(max-width:640px) 44px, 240px"
+                      sizes="(max-width:640px) 33vw, 240px"
                       className="object-cover object-top transition group-hover:scale-[1.04]"
                     />
                   ) : (
@@ -63,7 +63,7 @@ export async function MetaSnapshot() {
                     </div>
                   )}
                 </div>
-                <div className="min-w-0 flex-1 sm:px-2 sm:py-1.5">
+                <div className="min-w-0 flex-1 px-2 py-1.5">
                   <p className="truncate text-label-md font-bold leading-tight text-ink">
                     {deck.name}
                   </p>
