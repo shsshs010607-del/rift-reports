@@ -10,7 +10,6 @@ import {
   BookOpen,
 } from "lucide-react";
 
-import { AdSenseUnit } from "@/components/ads/adsense-unit";
 import { PatchBanner } from "@/components/home/patch-banner";
 import { SnsChannels } from "@/components/home/sns-channels";
 import { ChannelBanner } from "@/components/home/channel-banner";
@@ -35,13 +34,13 @@ const SECTIONS = [
   { href: "/tournaments", label: "다가오는 대회", icon: Trophy },
 ];
 
-/** 홈 = 커뮤니티 중심 랜딩. 추천덱 상단, 최신글 넓게, 인기글·시세는 우측 패널. */
+/** 홈 = 커뮤니티 중심. 추천덱(압축) + 최신글 좌측, 인기글·시세 우측. */
 export default function HomePage() {
   return (
-    <div className="flex flex-col gap-8">
+    <div className="flex flex-col gap-6">
       <PatchBanner />
 
-      <section className="grid gap-5 rounded-3xl border border-primary/20 bg-gradient-to-br from-primary-wash via-card to-card p-5 sm:p-7 lg:grid-cols-[minmax(0,1fr)_320px] lg:items-center">
+      <section className="grid gap-5 rounded-3xl border border-primary/20 bg-gradient-to-br from-primary-wash via-card to-card p-5 sm:p-6 lg:grid-cols-[minmax(0,1fr)_320px] lg:items-center">
         <div>
           <p className="text-label-md font-bold uppercase tracking-wide text-primary-strong">
             Riftbound 한국 팬 커뮤니티
@@ -57,16 +56,16 @@ export default function HomePage() {
         <HomeCardSearch />
       </section>
 
-      {/* 추천덱 — 상단 */}
-      <Suspense fallback={<div className="h-52 animate-pulse rounded-2xl bg-subcanvas/50" />}>
-        <MetaSnapshot />
-      </Suspense>
-
-      {/* 커뮤니티 최신(넓게) + 인기글·시세(우측 패널) */}
+      {/* 좌: 추천덱(압축) + 커뮤니티 최신글 / 우: 인기글 + 시세 */}
       <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_340px] xl:items-start">
-        <Suspense fallback={<div className="h-96 animate-pulse rounded-2xl bg-subcanvas/50" />}>
-          <HomeCommunity />
-        </Suspense>
+        <div className="flex flex-col gap-5">
+          <Suspense fallback={<div className="h-28 animate-pulse rounded-2xl bg-subcanvas/50" />}>
+            <MetaSnapshot />
+          </Suspense>
+          <Suspense fallback={<div className="h-96 animate-pulse rounded-2xl bg-subcanvas/50" />}>
+            <HomeCommunity />
+          </Suspense>
+        </div>
         <div className="flex flex-col gap-5">
           <Suspense fallback={<div className="h-64 animate-pulse rounded-2xl bg-subcanvas/50" />}>
             <HomePopular />
@@ -76,6 +75,8 @@ export default function HomePage() {
           </Suspense>
         </div>
       </div>
+
+      <OfficialLinks />
 
       <section>
         <h2 className="section-title mb-3">전체 메뉴</h2>
@@ -96,10 +97,6 @@ export default function HomePage() {
           ))}
         </div>
       </section>
-
-      <OfficialLinks />
-
-      <AdSenseUnit />
 
       <Suspense fallback={<div className="h-40 animate-pulse rounded-2xl bg-subcanvas/50" />}>
         <HomeExtras />
