@@ -10,6 +10,9 @@ export const SITE = {
   naverCafe: "https://cafe.naver.com/riftboundmarketplace" as string,
   /** 네이버 카페 거래 게시판(카드 판매) 바로가기 */
   naverCafeTrade: "https://cafe.naver.com/f-e/cafes/31788328/menus/14?viewType=L" as string,
+  /** 네이버 카페 카드 판매 게시판 글쓰기 (레거시 URL — 신형 에디터로 리다이렉트) */
+  naverCafeTradeWrite:
+    "https://cafe.naver.com/ArticleWrite.nhn?clubid=31788328&menuid=14" as string,
 } as const;
 
 /**

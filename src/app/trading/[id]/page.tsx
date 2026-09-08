@@ -1,12 +1,12 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import { formatDistanceToNow } from "date-fns";
-import { ko } from "date-fns/locale";
 import { ChevronLeft, MapPin } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { getListing } from "@/lib/trading";
-import { TRADING_CATEGORIES, TRADE_CONDITIONS, TRADE_STATUS } from "@/lib/constants";
+import { fmtKstRelative } from "@/lib/datetime";
+import { SITE, TRADING_CATEGORIES, TRADE_CONDITIONS, TRADE_STATUS } from "@/lib/constants";
 import { ListingOwnerControls } from "@/components/trading/listing-owner-controls";
+import { CafeCrossPost } from "@/components/trading/cafe-cross-post";
 
 export const dynamic = "force-dynamic";
 
@@ -44,9 +44,7 @@ export default async function TradeDetailPage({ params }: { params: { id: string
 
       <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1 text-body-sm text-ink-soft">
         <span className="font-semibold text-ink">{listing.seller?.username ?? "알 수 없음"}</span>
-        <time dateTime={listing.created_at}>
-          {formatDistanceToNow(new Date(listing.created_at), { addSuffix: true, locale: ko })}
-        </time>
+        <time dateTime={listing.created_at}>{fmtKstRelative(listing.created_at)}</time>
       </div>
 
       <dl className="mt-5 grid grid-cols-2 gap-x-6 gap-y-3 rounded-2xl border border-line/80 bg-card p-4">
@@ -97,6 +95,21 @@ export default async function TradeDetailPage({ params }: { params: { id: string
       {isOwner && (
         <div className="mt-6">
           <ListingOwnerControls id={listing.id} status={listing.status} />
+          <CafeCrossPost
+            title={listing.title}
+            categoryLabel={CAT.get(listing.category) ?? listing.category}
+            priceText={
+              listing.price != null
+                ? `₩${listing.price.toLocaleString("ko-KR")}${
+                    listing.is_negotiable ? " (협의 가능)" : ""
+                  }`
+                : "협의"
+            }
+            conditionLabel={listing.card_condition ? COND.get(listing.card_condition) : null}
+            region={listing.region}
+            description={isLoggedIn ? listing.description : null}
+            permalink={`${SITE.url}/trading/${listing.id}`}
+          />
         </div>
       )}
     </div>
