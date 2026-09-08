@@ -1,41 +1,21 @@
 import Link from "next/link";
-import { FileText, Trophy, ArrowLeftRight } from "lucide-react";
+import { Trophy, ArrowLeftRight } from "lucide-react";
 
-import { getLatestReports, getUpcomingTournaments, getRecentTrades } from "@/lib/queries";
+import { getUpcomingTournaments, getRecentTrades } from "@/lib/queries";
 import { TRADING_CATEGORIES } from "@/lib/constants";
 import { fmtKstShort, fmtKstRelative } from "@/lib/datetime";
 
 const TCAT = new Map<string, string>(TRADING_CATEGORIES.map((c) => [c.slug, c.label]));
 
-/** 홈 하단 — 리포트 · 대회 · 거래글 3칸 압축. */
+/** 홈 하단 — 대회 · 거래글. */
 export async function HomeExtras() {
-  const [reports, tournaments, trades] = await Promise.all([
-    getLatestReports(4),
-    getUpcomingTournaments(3),
-    getRecentTrades(4),
+  const [tournaments, trades] = await Promise.all([
+    getUpcomingTournaments(4),
+    getRecentTrades(5),
   ]);
 
   return (
-    <div className="grid gap-3 lg:grid-cols-3">
-      <Panel title="메타 리포트" icon={<FileText className="h-4 w-4" />} href="/reports">
-        {reports.length === 0 ? (
-          <Empty>발행된 리포트가 없습니다.</Empty>
-        ) : (
-          <ul className="flex flex-col gap-1.5">
-            {reports.map((r) => (
-              <li key={r.id}>
-                <Link
-                  href={`/reports/${r.slug}`}
-                  className="block truncate text-body-sm text-ink hover:text-primary-strong"
-                >
-                  {r.title}
-                </Link>
-              </li>
-            ))}
-          </ul>
-        )}
-      </Panel>
-
+    <div className="grid gap-3 sm:grid-cols-2">
       <Panel title="다가오는 대회" icon={<Trophy className="h-4 w-4" />} href="/tournaments">
         {tournaments.length === 0 ? (
           <Empty>예정된 대회가 없습니다.</Empty>
