@@ -113,15 +113,15 @@ export default function CardsPage({ searchParams }: { searchParams: RawSearchPar
         </div>
       )}
 
-      <div className="mt-6 grid gap-6 xl:grid-cols-[300px_minmax(0,1fr)] xl:items-start">
-        {/* 필터 — 데스크톱에서 스크롤해도 고정 */}
-        <div className="xl:sticky xl:top-[128px] xl:max-h-[calc(100vh-144px)] xl:overflow-y-auto xl:pr-1">
+      <div className="mt-6 grid gap-6 xl:grid-cols-[minmax(0,1fr)_320px] xl:items-start">
+        {/* 필터 — 데스크톱 우측 고정, 모든 필터 한눈에 */}
+        <div className="xl:order-2 xl:sticky xl:top-[128px] xl:max-h-[calc(100vh-144px)] xl:overflow-y-auto xl:pr-1">
           <Suspense key={JSON.stringify(query)} fallback={<div className="h-28" />}>
             <CardFilterPanel query={query} />
           </Suspense>
         </div>
 
-        <div className="min-w-0">
+        <div className="min-w-0 xl:order-1">
           <Suspense key={resultsKey} fallback={<CardResultsSkeleton />}>
             <CardResults query={query} page={page} perPage={PER_PAGE} hrefForPage={hrefForPage} />
           </Suspense>

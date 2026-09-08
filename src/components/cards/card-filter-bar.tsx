@@ -31,7 +31,8 @@ const COSTS = ["0", "1", "2", "3", "4", "5", "6", "7"];
 export function CardFilterBar({ facets }: { facets?: CardFacets | null }) {
   const router = useRouter();
   const params = useSearchParams();
-  const [open, setOpen] = useState(true);
+  const advActive = Boolean(params.get("setCode") || params.get("rarity"));
+  const [adv, setAdv] = useState(false);
 
   const push = (next: URLSearchParams) => {
     next.delete("page");
@@ -69,11 +70,7 @@ export function CardFilterBar({ facets }: { facets?: CardFacets | null }) {
     <div className="note-card p-4 pr-6">
       {/* 헤더 */}
       <div className="flex items-center justify-between">
-        <button
-          type="button"
-          onClick={() => setOpen((v) => !v)}
-          className="flex items-center gap-2 text-label-lg font-bold text-ink"
-        >
+        <span className="flex items-center gap-2 text-label-lg font-bold text-ink">
           <SlidersHorizontal className="h-4 w-4 text-primary" />
           필터
           {activeKeys.length > 0 && (
@@ -81,8 +78,7 @@ export function CardFilterBar({ facets }: { facets?: CardFacets | null }) {
               {activeKeys.length}
             </span>
           )}
-          <ChevronDown className={cn("h-4 w-4 text-ink-soft transition", open && "rotate-180")} />
-        </button>
+        </span>
         <div className="flex items-center gap-2.5">
           {facets && (
             <span className="text-label-sm font-bold text-ink-soft">
@@ -122,8 +118,7 @@ export function CardFilterBar({ facets }: { facets?: CardFacets | null }) {
         </div>
       )}
 
-      {open && (
-        <div className="mt-4 flex flex-col gap-4">
+      <div className="mt-4 flex flex-col gap-4">
           {/* 도메인 — 색 스와치 + 개수 */}
           <section>
             <p className="mb-2 text-label-sm font-bold uppercase tracking-wide text-ink-soft">
@@ -236,22 +231,45 @@ export function CardFilterBar({ facets }: { facets?: CardFacets | null }) {
             onPick={(k) => toggle("type", k)}
             counts={facets?.type}
           />
-          <PillGroup
-            title="확장팩"
-            items={CARD_SETS.map((s) => ({ key: s.code, label: `${s.code} ${s.label}` }))}
-            isOn={(k) => active("setCode", k)}
-            onPick={(k) => toggle("setCode", k)}
-            counts={facets?.setCode}
-          />
-          <PillGroup
-            title="레어도"
-            items={CARD_RARITIES.map((r) => ({ key: r.slug, label: r.label }))}
-            isOn={(k) => active("rarity", k)}
-            onPick={(k) => toggle("rarity", k)}
-            counts={facets?.rarity}
-          />
+
+          {/* 상세 필터 — 확장팩 · 레어도 */}
+          <div className="border-t border-line/60 pt-3">
+            <button
+              type="button"
+              onClick={() => setAdv((v) => !v)}
+              className="flex w-full items-center gap-1.5 text-label-md font-bold text-ink-soft transition hover:text-ink"
+            >
+              <ChevronDown
+                className={cn("h-4 w-4 transition", (adv || advActive) && "rotate-180")}
+              />
+              상세 필터
+              {advActive && (
+                <span className="grid h-4 min-w-4 place-items-center rounded-full bg-primary px-1 text-[10px] font-black text-white">
+                  ●
+                </span>
+              )}
+            </button>
+
+            {(adv || advActive) && (
+              <div className="mt-3 flex flex-col gap-4">
+                <PillGroup
+                  title="확장팩"
+                  items={CARD_SETS.map((s) => ({ key: s.code, label: `${s.code} ${s.label}` }))}
+                  isOn={(k) => active("setCode", k)}
+                  onPick={(k) => toggle("setCode", k)}
+                  counts={facets?.setCode}
+                />
+                <PillGroup
+                  title="레어도"
+                  items={CARD_RARITIES.map((r) => ({ key: r.slug, label: r.label }))}
+                  isOn={(k) => active("rarity", k)}
+                  onPick={(k) => toggle("rarity", k)}
+                  counts={facets?.rarity}
+                />
+              </div>
+            )}
+          </div>
         </div>
-      )}
     </div>
   );
 }
