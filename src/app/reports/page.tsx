@@ -1,8 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import Image from "next/image";
-import { format } from "date-fns";
-import { ko } from "date-fns/locale";
+import { fmtKstDate } from "@/lib/datetime";
 import { PageHeading } from "@/components/ui/page-heading";
 import { getReports } from "@/lib/queries";
 
@@ -51,7 +50,7 @@ export default async function ReportsListPage() {
                     </span>
                     {r.published_at && (
                       <time dateTime={r.published_at}>
-                        {format(new Date(r.published_at), "yyyy.MM.dd", { locale: ko })}
+                        {fmtKstDate(r.published_at)}
                       </time>
                     )}
                     <span>· 조회 {r.view_count}</span>

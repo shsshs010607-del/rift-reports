@@ -1,4 +1,9 @@
-import { format as fmtDate } from "date-fns";
+import { kstYmd } from "@/lib/datetime";
+
+const fmtMd = (iso: string) => {
+  const { m, d } = kstYmd(iso);
+  return `${m}.${d}`;
+};
 
 /** 의존성 없는 인라인 SVG 시세 추이 그래프. */
 export function PriceSparkline({
@@ -69,10 +74,10 @@ export function PriceSparkline({
       </svg>
       <div className="mt-1 flex justify-between text-[12px] text-ink-soft">
         <span>
-          {fmtDate(new Date(first.t), "M.d")} · {format(first.v)}
+          {fmtMd(first.t)} · {format(first.v)}
         </span>
         <span className={up ? "font-bold text-emerald" : "font-bold text-coral"}>
-          {fmtDate(new Date(last.t), "M.d")} · {format(last.v)}
+          {fmtMd(last.t)} · {format(last.v)}
         </span>
       </div>
     </div>

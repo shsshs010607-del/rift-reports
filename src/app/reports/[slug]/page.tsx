@@ -2,9 +2,8 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
-import { format } from "date-fns";
-import { ko } from "date-fns/locale";
 import { ChevronLeft } from "lucide-react";
+import { fmtKstDate } from "@/lib/datetime";
 import { getReport } from "@/lib/queries";
 import { ViewCounter } from "@/components/community/view-counter";
 import { PostBody } from "@/components/community/post-body";
@@ -48,7 +47,7 @@ export default async function ReportDetailPage({ params }: { params: { slug: str
         <span className="font-semibold text-ink">{report.author?.username ?? "리바지지"}</span>
         {report.published_at && (
           <time dateTime={report.published_at}>
-            {format(new Date(report.published_at), "yyyy.MM.dd", { locale: ko })}
+            {fmtKstDate(report.published_at)}
           </time>
         )}
         <span>조회 {report.view_count}</span>

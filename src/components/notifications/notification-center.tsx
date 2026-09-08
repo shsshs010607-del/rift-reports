@@ -3,14 +3,12 @@
 import { useState, useTransition } from "react";
 import Link from "next/link";
 import { Megaphone, Sparkles, CalendarDays, Trash2, Check, BellOff } from "lucide-react";
-import { formatDistanceToNow } from "date-fns";
-import { ko } from "date-fns/locale";
 import {
   dismissNotification,
   clearAllNotifications,
   markNotificationsSeen,
 } from "@/app/notifications/actions";
-import { fmtKstShort } from "@/lib/datetime";
+import { fmtKstShort, fmtKstRelative } from "@/lib/datetime";
 import { cn } from "@/lib/utils";
 import type { Notification } from "@/lib/types/database";
 
@@ -113,7 +111,7 @@ export function NotificationCenter({
                       </span>
                     )}
                     <time className="ml-auto text-label-sm text-ink-soft" dateTime={n.created_at}>
-                      {formatDistanceToNow(new Date(n.created_at), { addSuffix: true, locale: ko })}
+                      {fmtKstRelative(n.created_at)}
                     </time>
                   </div>
                   <p className="mt-1 text-body-lg font-bold text-ink">{n.title}</p>

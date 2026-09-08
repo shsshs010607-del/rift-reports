@@ -1,9 +1,8 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
-import { formatDistanceToNow } from "date-fns";
-import { ko } from "date-fns/locale";
 import { ExternalLink, MessagesSquare, AlertTriangle } from "lucide-react";
+import { fmtKstRelative } from "@/lib/datetime";
 import { getPrintWithPrice, getPrintVariants, getPrintGroup, isStale } from "@/lib/prices";
 import { getUsdKrw } from "@/lib/fx";
 import { fmtKrw, fmtUsd } from "@/lib/money";
@@ -86,7 +85,7 @@ export default async function PrintPricePage({ params }: { params: { printId: st
           {stale && price && (
             <p className="mt-2 flex items-center gap-1.5 text-body-sm text-[#B45309]">
               <AlertTriangle className="h-3.5 w-3.5" />
-              {formatDistanceToNow(new Date(price.captured_at), { addSuffix: true, locale: ko })} 갱신
+              {fmtKstRelative(price.captured_at)} 갱신
             </p>
           )}
           <p className="mt-1 text-body-sm text-ink-soft">

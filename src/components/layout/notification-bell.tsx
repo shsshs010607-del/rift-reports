@@ -3,8 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { Bell, Megaphone, Sparkles, CalendarDays, Check } from "lucide-react";
-import { formatDistanceToNow } from "date-fns";
-import { ko } from "date-fns/locale";
+import { fmtKstRelative } from "@/lib/datetime";
 import { createClient } from "@/lib/supabase/client";
 import { hasSupabaseEnv } from "@/lib/supabase/env";
 import { cn } from "@/lib/utils";
@@ -130,7 +129,7 @@ export function NotificationBell() {
                           </span>
                         )}
                         <span className="mt-1.5 block text-body-sm text-on-surface-variant">
-                          {formatDistanceToNow(new Date(n.created_at), { addSuffix: true, locale: ko })}
+                          {fmtKstRelative(n.created_at)}
                         </span>
                       </span>
                     </>
