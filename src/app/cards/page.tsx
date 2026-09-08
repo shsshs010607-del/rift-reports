@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { BookMarked } from "lucide-react";
 import { PageHeading } from "@/components/ui/page-heading";
+import { AdSenseUnit } from "@/components/ads/adsense-unit";
 import { CardSearchBox } from "@/components/cards/card-search-box";
 import { CardResults } from "@/components/cards/card-results";
 import { CardFilterBar } from "@/components/cards/card-filter-bar";
@@ -124,6 +125,7 @@ export default function CardsPage({ searchParams }: { searchParams: RawSearchPar
           <Suspense key={resultsKey} fallback={<CardResultsSkeleton />}>
             <CardResults query={query} page={page} perPage={PER_PAGE} hrefForPage={hrefForPage} />
           </Suspense>
+          <AdSenseUnit className="mt-8" />
         </div>
       </div>
     </div>

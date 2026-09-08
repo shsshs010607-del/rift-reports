@@ -11,6 +11,7 @@ import {
   ArrowRight,
 } from "lucide-react";
 
+import { AdSenseUnit } from "@/components/ads/adsense-unit";
 import { PatchBanner } from "@/components/home/patch-banner";
 import { HomeSidebar } from "@/components/home/home-sidebar";
 import { SnsChannels } from "@/components/home/sns-channels";
@@ -97,6 +98,8 @@ export default function HomePage() {
       </div>
 
       <OfficialLinks />
+
+      <AdSenseUnit />
 
       <Suspense fallback={null}>
         <RecentTrades />

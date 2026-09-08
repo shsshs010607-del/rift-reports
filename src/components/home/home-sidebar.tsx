@@ -13,9 +13,9 @@ import { deltaUsd, fmtKrw, fmtKrwSigned } from "@/lib/money";
  */
 export async function HomeSidebar() {
   const [reports, popular, gainers, tournaments, fx] = await Promise.all([
-    getLatestReports(3),
+    getLatestReports(5),
     getPopularPosts({}),
-    getTopGainers(3),
+    getTopGainers(5),
     getUpcomingTournaments(1),
     getUsdKrw(),
   ]);
@@ -42,7 +42,7 @@ export async function HomeSidebar() {
           <Empty>인기글이 아직 없습니다.</Empty>
         ) : (
           <ol className="flex flex-col">
-            {popular.posts.slice(0, 3).map((p, i) => (
+            {popular.posts.slice(0, 5).map((p, i) => (
               <Row key={p.id} href={`/community/post/${p.id}`} rank={i + 1}>
                 <span className="truncate">{p.title}</span>
                 <span className="shrink-0 text-label-sm text-ink-soft">♥ {p.like_count}</span>
@@ -117,7 +117,7 @@ function Panel({
 }) {
   return (
     <div className="note-card p-4">
-      <div className="mb-2 flex items-center justify-between pr-3">
+      <div className="mb-2.5 flex items-center justify-between pr-3">
         <h3 className="flex items-center gap-1.5 text-label-lg font-bold text-ink">
           {icon}
           {title}
@@ -126,7 +126,7 @@ function Panel({
           더보기
         </Link>
       </div>
-      {children}
+      <div className="min-h-[7.5rem]">{children}</div>
     </div>
   );
 }

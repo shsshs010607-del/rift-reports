@@ -1,60 +1,64 @@
-import { Play, Youtube, ExternalLink } from "lucide-react";
-import { SITE } from "@/lib/constants";
+import Image from "next/image";
+import { Play, Youtube } from "lucide-react";
+import { SITE, RIFTBOUND_VIDEOS } from "@/lib/constants";
 import { cn } from "@/lib/utils";
 
-/** 리프트바운드 공식 채널·영상 바로가기 (홈 중단). */
+/** 리프트바운드 영상 미리보기 (홈 중단). */
 export function OfficialLinks({ className }: { className?: string }) {
   return (
     <section className={cn("", className)}>
-      <h2 className="section-title mb-3">리프트바운드 공식</h2>
-      <div className="grid gap-3 md:grid-cols-3">
-        <a
-          href={SITE.officialHowToPlay}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="group flex items-center gap-4 rounded-2xl bg-gradient-to-br from-[#FF0033] to-[#c40027] p-5 text-white shadow-[0_10px_30px_-10px_rgba(255,0,51,0.5)] transition hover:brightness-105 md:col-span-1"
-        >
-          <span className="grid h-12 w-12 shrink-0 place-items-center rounded-full bg-white/20">
-            <Play className="h-5 w-5 fill-current" />
-          </span>
-          <span className="min-w-0 flex-1">
-            <span className="block text-title-md font-black leading-tight">11분 룰 설명</span>
-            <span className="block text-body-sm text-white/85">How to Play Riftbound</span>
-          </span>
-        </a>
-
+      <div className="mb-3 flex items-end justify-between">
+        <h2 className="section-title">리프트바운드 영상</h2>
         <a
           href={SITE.officialYoutube}
           target="_blank"
           rel="noopener noreferrer"
-          className="group flex items-center gap-4 rounded-2xl border border-line/70 bg-card p-5 transition hover:border-[#FF0033]/40"
+          className="inline-flex items-center gap-1 text-label-md font-bold text-[#FF0033] hover:underline"
         >
-          <span className="grid h-12 w-12 shrink-0 place-items-center rounded-xl bg-[#FF0033]/10 text-[#FF0033]">
-            <Youtube className="h-6 w-6" />
-          </span>
-          <span className="min-w-0 flex-1">
-            <span className="block text-body-lg font-bold text-ink group-hover:text-[#FF0033]">
-              공식 유튜브
-            </span>
-            <span className="block text-body-sm text-ink-soft">@riftbound · 최신 영상</span>
-          </span>
+          <Youtube className="h-4 w-4" />
+          공식 채널
         </a>
+      </div>
+
+      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        {RIFTBOUND_VIDEOS.map((v) => (
+          <a
+            key={v.id}
+            href={`https://www.youtube.com/watch?v=${v.id}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="group overflow-hidden rounded-2xl border border-line/70 bg-card transition hover:-translate-y-0.5 hover:border-[#FF0033]/40 hover:shadow-e2"
+          >
+            <div className="relative aspect-video overflow-hidden bg-subcanvas">
+              <Image
+                src={`https://i.ytimg.com/vi/${v.id}/hqdefault.jpg`}
+                alt={v.titleKo}
+                fill
+                sizes="(max-width:640px) 100vw, 320px"
+                className="object-cover transition group-hover:scale-[1.03]"
+              />
+              <span className="absolute inset-0 grid place-items-center">
+                <span className="grid h-12 w-12 place-items-center rounded-full bg-black/60 text-white backdrop-blur-sm transition group-hover:bg-[#FF0033]">
+                  <Play className="h-5 w-5 fill-current" />
+                </span>
+              </span>
+            </div>
+            <div className="p-3">
+              <p className="line-clamp-2 text-body-md font-bold leading-snug text-ink group-hover:text-[#FF0033]">
+                {v.titleKo}
+              </p>
+              <p className="mt-0.5 text-label-sm text-ink-soft">{v.channel}</p>
+            </div>
+          </a>
+        ))}
 
         <a
           href={SITE.officialSite}
           target="_blank"
           rel="noopener noreferrer"
-          className="group flex items-center gap-4 rounded-2xl border border-line/70 bg-card p-5 transition hover:border-primary/40"
+          className="group flex items-center justify-center gap-2 rounded-2xl border border-dashed border-line bg-subcanvas/40 p-4 text-body-md font-bold text-ink-soft transition hover:border-primary/40 hover:text-primary-strong sm:col-span-2 lg:col-span-1"
         >
-          <span className="grid h-12 w-12 shrink-0 place-items-center rounded-xl bg-primary/10 text-primary-strong">
-            <ExternalLink className="h-5 w-5" />
-          </span>
-          <span className="min-w-0 flex-1">
-            <span className="block text-body-lg font-bold text-ink group-hover:text-primary-strong">
-              공식 홈페이지
-            </span>
-            <span className="block text-body-sm text-ink-soft">규칙 · 카드 · 뉴스</span>
-          </span>
+          공식 홈페이지 →
         </a>
       </div>
     </section>

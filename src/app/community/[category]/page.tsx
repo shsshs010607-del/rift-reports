@@ -3,6 +3,7 @@ import { Suspense } from "react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ChevronLeft } from "lucide-react";
+import { AdSenseUnit } from "@/components/ads/adsense-unit";
 import { BoardToolbar } from "@/components/community/board-toolbar";
 import { PostList } from "@/components/community/post-list";
 import { Pagination } from "@/components/community/pagination";
@@ -85,6 +86,7 @@ export default async function BoardPage({
         emptyText={q ? "검색 결과가 없습니다." : "아직 글이 없습니다. 첫 글을 남겨보세요!"}
       />
       <Pagination page={list.page} total={list.total} perPage={POSTS_PER_PAGE} hrefFor={hrefFor} />
+      <AdSenseUnit className="mt-8" />
       <RecentBoards data={recent} exclude={slug} />
     </div>
   );

@@ -20,6 +20,23 @@ export const SITE = {
 } as const;
 
 /**
+ * 홈에 노출할 리프트바운드 영상 (수동 큐레이션).
+ * id = YouTube videoId. titleKo = 한글 번역 제목. 새 영상은 여기 맨 위에 추가.
+ */
+export const RIFTBOUND_VIDEOS = [
+  {
+    id: "2koNsAKsipc",
+    titleKo: "11분 만에 배우는 리프트바운드 룰",
+    channel: "Good Time Society",
+  },
+  {
+    id: "BSr32eiUeyU",
+    titleKo: "리프트바운드 공개 트레일러",
+    channel: "Riftbound (공식)",
+  },
+] as const;
+
+/**
  * Google AdSense. 두 값이 모두 있어야 광고가 렌더된다 (없으면 아무것도 안 나옴).
  *   NEXT_PUBLIC_ADSENSE_CLIENT      = "ca-pub-0000000000000000"
  *   NEXT_PUBLIC_ADSENSE_FOOTER_SLOT = "0000000000"  (푸터 광고 단위 슬롯 ID)

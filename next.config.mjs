@@ -21,6 +21,8 @@ const nextConfig = {
       { protocol: "https", hostname: "product-images.tcgplayer.com" },
       // Riftcodex 카드 이미지 = Riot 공식 CDN
       { protocol: "https", hostname: "cmsassets.rgpub.io" },
+      // YouTube 썸네일
+      { protocol: "https", hostname: "i.ytimg.com" },
     ],
   },
 };
