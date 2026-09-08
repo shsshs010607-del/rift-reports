@@ -1,9 +1,11 @@
 import { Fragment } from "react";
 import { DeckShowcase } from "@/components/community/deck-showcase";
+import { CardInline } from "@/components/community/card-inline";
 
 /**
  * 의존성 없는 마크다운-라이트 렌더러.
- * 지원: # ## ### 제목 · > 인용 · ``` 코드블록 · ```deck 덱 미리보기 · - / 1. 목록 · **굵게** · [텍스트](url) · 빈 줄 문단
+ * 지원: # ## ### 제목 · > 인용 · ``` 코드블록 · ```deck 덱 미리보기 · - / 1. 목록
+ *       · **굵게** · [텍스트](url) · [[카드명]] 카드 이미지 · 빈 줄 문단
  */
 export function PostBody({ text }: { text: string }) {
   const lines = text.replace(/\r\n/g, "\n").split("\n");
@@ -145,10 +147,12 @@ export function PostBody({ text }: { text: string }) {
   return <div className="text-ink">{blocks}</div>;
 }
 
-/** **굵게** 와 [텍스트](url) 인라인 처리 */
+/** **굵게** · [텍스트](url) · [[카드명]] 인라인 처리 */
 function inline(s: string): React.ReactNode {
-  const parts = s.split(/(\*\*[^*]+\*\*|\[[^\]]+\]\([^)]+\))/g);
+  const parts = s.split(/(\[\[[^\]]+\]\]|\*\*[^*]+\*\*|\[[^\]]+\]\([^)]+\))/g);
   return parts.map((part, i) => {
+    const cardRef = part.match(/^\[\[([^\]]+)\]\]$/);
+    if (cardRef) return <CardInline key={i} name={cardRef[1].trim()} />;
     if (part.startsWith("**") && part.endsWith("**")) {
       return (
         <strong key={i} className="font-bold text-ink">

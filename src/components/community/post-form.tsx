@@ -10,6 +10,7 @@ import {
   Link2,
   Code,
   Layers,
+  ImagePlus,
   Eye,
   Pencil,
   Check,
@@ -193,6 +194,7 @@ export function PostForm({
     { icon: Quote, label: "인용", run: () => applyLinePrefix("> ") },
     { icon: List, label: "목록", run: () => applyLinePrefix("- ") },
     { icon: Link2, label: "링크", run: () => applyWrap("[", "](https://)", "링크 텍스트") },
+    { icon: ImagePlus, label: "카드 이미지", run: () => applyWrap("[[", "]]", "카드명") },
     { icon: Code, label: "코드", run: () => insertBlock("```\n\n```\n") },
     { icon: Layers, label: "덱 코드", run: () => insertBlock("```deck\n\n```\n") },
   ];
@@ -350,7 +352,9 @@ export function PostForm({
 
         <div className="mt-1 flex items-center justify-between text-body-sm">
           <span className={cn("text-ink-soft", tooShort && "text-coral")}>
-            {tooShort ? `${BODY_MIN}자 이상 권장` : "서식: **굵게** · ## 제목 · > 인용 · - 목록 · ```deck 덱코드"}
+            {tooShort
+              ? `${BODY_MIN}자 이상 권장`
+              : "서식: **굵게** · ## 제목 · - 목록 · [[카드명]] 카드 이미지 · ```deck 덱코드"}
           </span>
           <span className={cn("tabular-nums text-ink-soft/70", bodyLen > BODY_MAX && "text-coral")}>
             {bodyLen.toLocaleString()} / {BODY_MAX.toLocaleString()}
