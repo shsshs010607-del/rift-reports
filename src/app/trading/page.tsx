@@ -5,6 +5,7 @@ import { PriceMovers } from "@/components/trading/price-movers";
 import { PriceBoard } from "@/components/trading/price-board";
 import { FxNote } from "@/components/trading/fx-note";
 import { TradeBoard } from "@/components/trading/trade-board";
+import { NaverCafeCta } from "@/components/trading/naver-cafe-cta";
 import { getTopGainers, getTopLosers, getPriceBoard } from "@/lib/prices";
 import { getUsdKrw } from "@/lib/fx";
 import { getListings } from "@/lib/trading";
@@ -59,6 +60,7 @@ export default async function TradingPage({
       {/* 거래글 */}
       <section id="listings" className="scroll-mt-24">
         <h2 className="mb-3 text-title-md font-bold text-ink">거래글</h2>
+        <NaverCafeCta className="mb-4" />
         <TradeBoard listings={listings} initialQuery={searchParams.q ?? ""} />
       </section>
     </div>

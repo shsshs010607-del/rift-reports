@@ -20,8 +20,8 @@ const CHANNELS = [
   {
     icon: Users,
     name: "네이버 카페",
-    handle: "리프트바운드 유저 모임",
-    note: "한국 커뮤니티 & 거래",
+    handle: "리프트바운드 마켓플레이스",
+    note: "한국 유저 커뮤니티 & 카드 거래",
     href: SITE.naverCafe,
   },
   {

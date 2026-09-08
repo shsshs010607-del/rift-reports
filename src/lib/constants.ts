@@ -4,10 +4,10 @@ export const SITE = {
   description: "리프트바운드(Riftbound) TCG 공략 · 티어리스트 · 카드 DB · 커뮤니티",
   url: process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000",
   /** 커뮤니티 채널 — 실제 URL 확정 전 "#" (그 사이엔 "준비 중" 표시) */
-  discord: "#",
-  youtube: "#",
-  instagram: "#",
-  naverCafe: "#",
+  discord: "#" as string,
+  youtube: "#" as string,
+  instagram: "#" as string,
+  naverCafe: "https://cafe.naver.com/riftboundmarketplace" as string,
 } as const;
 
 /**

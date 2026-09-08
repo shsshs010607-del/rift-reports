@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { MessageSquare, Youtube, Mail } from "lucide-react";
+import { MessageSquare, Youtube, Mail, Users } from "lucide-react";
 import { SITE } from "@/lib/constants";
 import { LogoMark } from "@/components/ui/logo";
 import { AdSenseUnit } from "@/components/ads/adsense-unit";
@@ -86,6 +86,16 @@ export function Footer() {
                 <span className="inline-flex items-center gap-space-xs">
                   <Youtube className="h-[18px] w-[18px]" /> 유튜브 채널 (준비 중)
                 </span>
+              )}
+              {SITE.naverCafe && SITE.naverCafe !== "#" && (
+                <a
+                  href={SITE.naverCafe}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-space-xs transition-colors hover:text-primary"
+                >
+                  <Users className="h-[18px] w-[18px]" /> 네이버 카페
+                </a>
               )}
               <Link href="/community/recruit" className="inline-flex items-center gap-space-xs transition-colors hover:text-primary">
                 <Mail className="h-[18px] w-[18px]" /> 문의 및 제보
