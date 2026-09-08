@@ -5,6 +5,7 @@ import Link from "next/link";
 import { ChevronLeft, ChevronRight, MapPin, Globe, CalendarDays } from "lucide-react";
 import type { Tournament } from "@/lib/types/database";
 import { fmtKstMonthDayTime, kstYmd } from "@/lib/datetime";
+import { CATEGORY_LABEL, CATEGORY_STYLE, categoryOf } from "@/components/tournaments/tournament-card";
 import { cn } from "@/lib/utils";
 
 const WEEKDAYS = ["일", "월", "화", "수", "목", "금", "토"];
@@ -159,7 +160,17 @@ export function TournamentCalendar({ tournaments }: { tournaments: Tournament[] 
                 </span>
               </div>
               <div className="min-w-0 flex-1">
-                <p className="truncate text-body-md font-bold text-ink">{t.name}</p>
+                <p className="flex items-center gap-1.5">
+                  <span
+                    className={cn(
+                      "shrink-0 rounded px-1.5 py-0.5 text-[11px] font-bold",
+                      CATEGORY_STYLE[categoryOf(t)],
+                    )}
+                  >
+                    {CATEGORY_LABEL[categoryOf(t)]}
+                  </span>
+                  <span className="truncate text-body-md font-bold text-ink">{t.name}</span>
+                </p>
                 <p className="mt-0.5 text-body-sm text-ink-soft">{fmtRange(t)}</p>
                 <p className="mt-0.5 flex items-center gap-1 text-body-sm text-ink-soft">
                   {t.is_online ? (

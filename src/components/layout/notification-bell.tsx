@@ -155,8 +155,16 @@ export function NotificationBell() {
             )}
           </div>
 
-          {!feed.signedIn && (
-            <div className="border-t border-outline-variant/60 px-4 py-2.5 text-center">
+          <div className="border-t border-outline-variant/60 px-4 py-2.5 text-center">
+            {feed.signedIn ? (
+              <Link
+                href="/notifications"
+                onClick={() => setOpen(false)}
+                className="text-label-md font-bold text-primary"
+              >
+                전체 보기 · 알림 관리 →
+              </Link>
+            ) : (
               <Link
                 href="/login"
                 onClick={() => setOpen(false)}
@@ -164,8 +172,8 @@ export function NotificationBell() {
               >
                 로그인하고 알림 받기
               </Link>
-            </div>
-          )}
+            )}
+          </div>
         </div>
       )}
     </div>

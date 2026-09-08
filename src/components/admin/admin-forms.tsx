@@ -158,6 +158,14 @@ export function TournamentForm() {
     <form action={action} className="flex flex-col gap-3">
       <Text name="name" label="대회명" required />
       <Text name="slug" label="슬러그 (비우면 자동)" />
+      <label className="flex flex-col gap-1">
+        <span className="text-label-sm font-bold text-ink">분류</span>
+        <select name="category" className="field" defaultValue="community">
+          <option value="official">공식 (라이엇 주최)</option>
+          <option value="shop">매장 대회 (카드샵 이벤트)</option>
+          <option value="community">커뮤니티 대회</option>
+        </select>
+      </label>
       <div className="grid gap-3 sm:grid-cols-2">
         <Text name="starts_at" label="시작 일시" type="datetime-local" required />
         <Text name="ends_at" label="종료 일시" type="datetime-local" />

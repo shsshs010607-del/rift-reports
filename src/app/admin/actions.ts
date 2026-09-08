@@ -88,6 +88,7 @@ const tournamentSchema = z.object({
   prize_pool: z.string().trim().max(120).optional(),
   banner_url: z.string().trim().url().optional().or(z.literal("")),
   status: z.enum(["upcoming", "ongoing", "finished"]),
+  category: z.enum(["official", "shop", "community"]).optional(),
 });
 
 export async function createTournament(_prev: AdminState, formData: FormData): Promise<AdminState> {
@@ -106,6 +107,7 @@ export async function createTournament(_prev: AdminState, formData: FormData): P
     prize_pool: formData.get("prize_pool") || undefined,
     banner_url: formData.get("banner_url") || undefined,
     status: formData.get("status") || "upcoming",
+    category: formData.get("category") || "community",
   });
   if (!parsed.success) return { error: "입력을 확인하세요 (이름·시작일시 필수, URL 형식 확인)" };
   const d = parsed.data;
@@ -124,6 +126,7 @@ export async function createTournament(_prev: AdminState, formData: FormData): P
     prize_pool: d.prize_pool ?? null,
     banner_url: d.banner_url || null,
     status: d.status,
+    category: d.category ?? "community",
   });
   if (error) return { error: error.message };
 

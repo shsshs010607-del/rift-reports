@@ -5,7 +5,13 @@ import Image from "next/image";
 import { ChevronLeft, CalendarDays, MapPin, Globe, Trophy, Users, ExternalLink } from "lucide-react";
 import { getTournament } from "@/lib/queries";
 import { fmtKstFull, fmtKstMonthDayTime } from "@/lib/datetime";
-import { STATUS_LABEL } from "@/components/tournaments/tournament-card";
+import {
+  STATUS_LABEL,
+  CATEGORY_LABEL,
+  CATEGORY_STYLE,
+  categoryOf,
+} from "@/components/tournaments/tournament-card";
+import { cn } from "@/lib/utils";
 
 export const revalidate = 120;
 
@@ -47,7 +53,17 @@ export default async function TournamentDetailPage({ params }: { params: { slug:
         </div>
       )}
 
-      <span className="chip">{STATUS_LABEL[t.status]}</span>
+      <div className="flex flex-wrap gap-1.5">
+        <span className="chip">{STATUS_LABEL[t.status]}</span>
+        <span
+          className={cn(
+            "inline-flex items-center rounded-full px-2.5 py-1 text-body-sm font-bold",
+            CATEGORY_STYLE[categoryOf(t)],
+          )}
+        >
+          {CATEGORY_LABEL[categoryOf(t)]} 대회
+        </span>
+      </div>
       <h1 className="mt-2 font-display text-headline-lg text-ink">{t.name}</h1>
 
       <div className="mt-5 flex flex-col gap-2 rounded-2xl border border-line/80 bg-card p-4">

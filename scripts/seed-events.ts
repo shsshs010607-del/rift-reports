@@ -27,6 +27,7 @@ type EventSeed = {
   location: string;
   organizer: string;
   status: "upcoming" | "ongoing" | "finished";
+  category: "official" | "shop" | "community";
 };
 
 const EVENTS: EventSeed[] = [
@@ -45,6 +46,7 @@ const EVENTS: EventSeed[] = [
     location: "GGX (서울 중구 을지로 264 던던 B3층 · 동대문역사문화공원역 12번 출구 연결)",
     organizer: "라이엇 게임즈 · 젠지 GGX",
     status: "upcoming",
+    category: "official",
   },
   {
     name: "리프트바운드 '오리진' 출시 팝업 @ 도파민 스테이션",
@@ -61,6 +63,7 @@ const EVENTS: EventSeed[] = [
     location: "도파민 스테이션 (서울 용산구 한강대로23길 55 아이파크몰 리빙파크 3층 · 용산역)",
     organizer: "라이엇 게임즈",
     status: "upcoming",
+    category: "official",
   },
   {
     name: "넥서스 나이트 (Nexus Nights) — 주간 매장 대회",
@@ -75,8 +78,9 @@ const EVENTS: EventSeed[] = [
     starts_at: "2026-09-18T19:00:00+09:00",
     ends_at: "2026-12-31T22:00:00+09:00",
     location: "전국 참여 카드샵 (매장별 공지)",
-    organizer: "라이엇 게임즈",
+    organizer: "라이엇 게임즈 (매장 운영)",
     status: "upcoming",
+    category: "shop",
   },
 ];
 
@@ -96,6 +100,7 @@ async function main() {
       description: e.description,
       format: e.format,
       status: e.status,
+      category: e.category,
       starts_at: new Date(e.starts_at).toISOString(),
       ends_at: new Date(e.ends_at).toISOString(),
       location: e.location,

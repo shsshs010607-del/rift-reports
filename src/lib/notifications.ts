@@ -11,8 +11,11 @@ export type NotificationFeed = {
 
 const EMPTY: NotificationFeed = { items: [], unread: 0, signedIn: false };
 
-/** 최근 알림 + 현재 사용자의 안 읽음 개수. */
-export async function getNotificationFeed(limit = 15): Promise<NotificationFeed> {
+/**
+ * 최근 알림 + 현재 사용자의 안 읽음 개수.
+ * 사용자가 개인적으로 숨긴(dismiss) 알림은 제외한다.
+ */
+export async function getNotificationFeed(limit = 30): Promise<NotificationFeed> {
   if (!hasSupabaseEnv) return EMPTY;
   try {
     const supabase = createClient();
@@ -20,20 +23,22 @@ export async function getNotificationFeed(limit = 15): Promise<NotificationFeed>
       data: { user },
     } = await supabase.auth.getUser();
 
-    const { data: items } = await supabase
+    const { data: rows } = await supabase
       .from("notifications")
       .select("*")
       .order("created_at", { ascending: false })
       .limit(limit);
+    let list = (rows as Notification[]) ?? [];
 
-    const list = (items as Notification[]) ?? [];
-    if (!user) return { items: list, unread: 0, signedIn: false };
+    if (!user) return { items: list.slice(0, 15), unread: 0, signedIn: false };
 
-    const { data: profile } = await supabase
-      .from("profiles")
-      .select("notifications_seen_at")
-      .eq("id", user.id)
-      .maybeSingle();
+    const [{ data: profile }, { data: dismissed }] = await Promise.all([
+      supabase.from("profiles").select("notifications_seen_at").eq("id", user.id).maybeSingle(),
+      supabase.from("notification_dismissals").select("notification_id").eq("user_id", user.id),
+    ]);
+
+    const hidden = new Set((dismissed ?? []).map((d) => d.notification_id));
+    list = list.filter((n) => !hidden.has(n.id));
 
     const seen = profile?.notifications_seen_at
       ? new Date(profile.notifications_seen_at).getTime()

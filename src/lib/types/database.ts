@@ -11,6 +11,7 @@ export type CommunityCategory = "riftbound" | "report" | "deck-guide" | "tournam
 export type TradingCategory = "sell" | "buy" | "trade";
 export type TradeStatus = "open" | "reserved" | "closed";
 export type TournamentStatus = "upcoming" | "ongoing" | "finished";
+export type TournamentCategory = "official" | "shop" | "community";
 export type ReportStatus = "draft" | "published";
 
 export interface Database {
@@ -207,6 +208,20 @@ export interface Database {
         Update: Partial<Database["public"]["Tables"]["saved_decks"]["Insert"]>;
         Relationships: [];
       };
+      notification_dismissals: {
+        Row: {
+          notification_id: string;
+          user_id: string;
+          created_at: string;
+        };
+        Insert: {
+          notification_id: string;
+          user_id: string;
+          created_at?: string;
+        };
+        Update: Partial<Database["public"]["Tables"]["notification_dismissals"]["Insert"]>;
+        Relationships: [];
+      };
       notifications: {
         Row: {
           id: string;
@@ -301,6 +316,7 @@ export interface Database {
           description: string | null;
           format: string | null;
           status: TournamentStatus;
+          category: TournamentCategory;
           starts_at: string;
           ends_at: string | null;
           location: string | null;
@@ -311,9 +327,13 @@ export interface Database {
           banner_url: string | null;
           created_at: string;
         };
-        Insert: Omit<Database["public"]["Tables"]["tournaments"]["Row"], "id" | "created_at"> & {
+        Insert: Omit<
+          Database["public"]["Tables"]["tournaments"]["Row"],
+          "id" | "created_at" | "category"
+        > & {
           id?: string;
           created_at?: string;
+          category?: TournamentCategory;
         };
         Update: Partial<Database["public"]["Tables"]["tournaments"]["Insert"]>;
         Relationships: [];
