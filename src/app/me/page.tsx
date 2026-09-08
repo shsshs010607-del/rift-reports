@@ -7,9 +7,12 @@ import { FileText, Store, Layers } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { hasSupabaseEnv } from "@/lib/supabase/env";
 import { fmtKstDate, fmtKstListTime } from "@/lib/datetime";
+import { Children } from "react";
+
 import { SignOutButton } from "@/components/auth/sign-out-button";
 import { ProfileEditor } from "@/components/me/profile-editor";
 import { CollectionEditor } from "@/components/me/collection-editor";
+import { PagedRows } from "@/components/me/paged-rows";
 import { getMyPosts, getMyListings } from "@/lib/me";
 import { getMyCollection } from "@/lib/collection";
 import { listMyDecks } from "@/lib/actions/decks";
@@ -215,9 +218,7 @@ function ListSection({
       {count === 0 ? (
         <p className="note-card p-6 text-center text-body-sm text-ink-soft">{empty}</p>
       ) : (
-        <ul className="divide-y divide-line/60 overflow-hidden rounded-2xl border border-line/70 bg-card">
-          {children}
-        </ul>
+        <PagedRows items={Children.toArray(children)} perPage={5} />
       )}
     </section>
   );
