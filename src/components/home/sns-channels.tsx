@@ -21,8 +21,10 @@ const CHANNELS = [
 
 const ready = (href: string) => Boolean(href) && href !== "#";
 
-/** 리바지지 자체 채널. (네이버 카페·디스코드는 상단 배너에 있음) */
+/** 리바지지 자체 채널. 준비된 채널이 하나도 없으면 렌더하지 않는다. */
 export function SnsChannels() {
+  if (!CHANNELS.some((c) => ready(c.href))) return null;
+
   return (
     <section>
       <h2 className="mb-1 font-display text-title-md font-bold text-ink">리바지지 채널</h2>
