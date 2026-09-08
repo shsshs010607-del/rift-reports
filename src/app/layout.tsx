@@ -77,6 +77,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="ko" className={`${display.variable} ${body.variable}`}>
       <body className="flex min-h-screen flex-col bg-background">
+        {/* 테마 — 페인트 전 적용해 깜빡임 방지 */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `(function(){try{var t=localStorage.getItem('rr:theme');if(t==='dark'||t==='light')document.documentElement.setAttribute('data-theme',t);}catch(e){}})();`,
+          }}
+        />
         {/* 한글 글리프 — Pretendard 폴백 (App Router 가 <head> 로 호이스팅) */}
         <link
           rel="stylesheet"

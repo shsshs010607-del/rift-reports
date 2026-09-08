@@ -93,7 +93,7 @@ export function ProfileEditor({
             (username[0] ?? "U").toUpperCase()
           )}
           {uploading && (
-            <span className="absolute inset-0 grid place-items-center bg-ink/50">
+            <span className="absolute inset-0 grid place-items-center bg-scrim/50">
               <Loader2 className="h-5 w-5 animate-spin text-white" />
             </span>
           )}

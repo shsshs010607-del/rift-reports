@@ -108,7 +108,7 @@ export function SampleHand({
                   <div className="relative">
                     <LocalizedCard card={card} sizes="150px" className="!rounded-none" />
                     {typeof card.cost === "number" && (
-                      <span className="absolute left-1 top-1 grid h-5 w-5 place-items-center rounded-full bg-ink/80 text-label-sm font-bold text-card">
+                      <span className="absolute left-1 top-1 grid h-5 w-5 place-items-center rounded-full bg-black/70 text-label-sm font-bold text-white">
                         {card.cost}
                       </span>
                     )}

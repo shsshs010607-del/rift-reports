@@ -96,6 +96,7 @@ const config: Config = {
         amber: rgb("--secondary"),
         emerald: rgb("--tertiary"),
         coral: rgb("--error"),
+        scrim: rgb("--scrim"),
         tier: {
           s: rgb("--secondary-container"),
           a: rgb("--primary"),

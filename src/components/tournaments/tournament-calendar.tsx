@@ -121,7 +121,7 @@ export function TournamentCalendar({ tournaments }: { tournaments: Tournament[] 
               <span
                 className={cn(
                   "grid h-6 w-6 place-items-center rounded-full text-[13px]",
-                  isToday && "bg-ink font-bold text-white",
+                  isToday && "bg-primary font-bold text-white",
                 )}
               >
                 {d.getDate()}

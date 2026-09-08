@@ -141,7 +141,7 @@ export function ImportDialog({
   }
 
   return (
-    <div className="fixed inset-0 z-[60] flex items-center justify-center bg-ink/40 p-4 backdrop-blur-sm" onClick={onClose}>
+    <div className="fixed inset-0 z-[60] flex items-center justify-center bg-scrim/55 p-4 backdrop-blur-sm" onClick={onClose}>
       <div
         className="flex w-full max-w-lg flex-col gap-3 rounded-2xl border border-line bg-card p-5 shadow-xl"
         onClick={(e) => e.stopPropagation()}

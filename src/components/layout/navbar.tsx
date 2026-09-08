@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 import { Menu, X, Search, PenSquare, Home, ChevronDown } from "lucide-react";
 import { NAV_PRIMARY, NAV_SECONDARY, SITE } from "@/lib/constants";
 import { NotificationBell } from "@/components/layout/notification-bell";
+import { ThemeToggle } from "@/components/layout/theme-toggle";
 import { LogoMark } from "@/components/ui/logo";
 import { cn } from "@/lib/utils";
 import { createClient } from "@/lib/supabase/client";
@@ -63,6 +64,7 @@ export function Navbar() {
 
         <div className="flex flex-1 items-center justify-end gap-2.5 xl:flex-none">
           <NotificationBell />
+          <ThemeToggle />
 
           <Link
             href="/community/new"

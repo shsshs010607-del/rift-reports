@@ -162,7 +162,7 @@ export function DeckShowcase({ code }: { code: string }) {
                           className="object-cover object-top"
                         />
                       )}
-                      <span className="absolute right-1 top-1 rounded bg-ink/85 px-1 text-[11px] font-black text-white">
+                      <span className="absolute right-1 top-1 rounded bg-black/70 px-1 text-[11px] font-black text-white">
                         {qty}
                       </span>
                     </div>

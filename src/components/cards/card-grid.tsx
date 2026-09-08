@@ -66,12 +66,12 @@ function CardTile({ card, onOpen }: { card: Card; onOpen: () => void }) {
           className="pointer-events-none absolute inset-0 translate-x-[-120%] bg-gradient-to-r from-transparent via-white/25 to-transparent transition-transform duration-500 group-hover:translate-x-[120%]"
         />
         {typeof card.cost === "number" && (
-          <span className="absolute left-1.5 top-1.5 grid h-6 w-6 place-items-center rounded-full bg-ink/85 text-label-sm font-bold text-card ring-1 ring-white/30">
+          <span className="absolute left-1.5 top-1.5 grid h-6 w-6 place-items-center rounded-full bg-black/70 text-label-sm font-bold text-white ring-1 ring-white/30">
             {card.cost}
           </span>
         )}
         {variants > 0 && (
-          <span className="absolute right-1.5 top-1.5 rounded-full bg-ink/75 px-1.5 py-0.5 text-label-sm font-bold text-card">
+          <span className="absolute right-1.5 top-1.5 rounded-full bg-black/65 px-1.5 py-0.5 text-label-sm font-bold text-white">
             +{variants} 종
           </span>
         )}

@@ -63,7 +63,7 @@ export function DeckQuiz({ images = {} }: { images?: Record<string, string> }) {
 
       {open && (
         <div
-          className="fixed inset-0 z-[70] flex items-center justify-center bg-ink/50 p-4 backdrop-blur-sm"
+          className="fixed inset-0 z-[70] flex items-center justify-center bg-scrim/60 p-4 backdrop-blur-sm"
           onClick={() => setOpen(false)}
         >
           <div

@@ -56,7 +56,61 @@
   --error-container: 255 218 214;
   --on-error-container: 147 0 10;
 
+  /* 스크림(모달 배경) — 모드 무관 항상 어둡게 */
+  --scrim: 10 9 20;
+
   color-scheme: light;
+}
+
+/*
+ * 다크 모드 — <html data-theme="dark"> 로 토글. (라이트가 기본, 자동 감지는 하지 않음)
+ */
+:root[data-theme="dark"] {
+  --background: 18 17 27;                 /* #12111b */
+  --surface: 18 17 27;
+  --surface-container-lowest: 28 27 40;   /* 카드 */
+  --surface-container-low: 34 33 48;
+  --surface-container: 41 39 58;
+  --surface-container-high: 51 48 70;
+  --surface-container-highest: 61 58 84;
+  --surface-variant: 55 52 76;
+  --surface-dim: 13 12 20;
+  --inverse-surface: 230 226 250;
+  --inverse-on-surface: 40 37 62;
+
+  --on-surface: 233 229 250;              /* 본문 */
+  --on-surface-variant: 181 177 200;      /* 보조 텍스트 */
+  --outline: 138 135 160;
+  --outline-variant: 64 61 86;            /* 테두리 */
+
+  --primary: 124 126 240;                /* #7c7ef0 — 어두운 배경에서 흰 글씨와 대비 */
+  --primary-container: 100 102 230;
+  --on-primary: 255 255 255;
+  --primary-fixed: 49 47 92;             /* 다크 인디고 컨테이너 */
+  --primary-fixed-dim: 74 72 128;
+  --on-primary-fixed: 225 224 255;
+  --on-primary-fixed-variant: 197 198 255;
+  --inverse-primary: 70 72 212;
+
+  --secondary: 255 199 122;
+  --secondary-container: 254 176 60;
+  --secondary-fixed: 92 60 12;
+  --secondary-fixed-dim: 150 100 30;
+  --on-secondary-fixed: 255 232 205;
+  --on-secondary-fixed-variant: 255 214 165;
+  --on-secondary-container: 255 224 190;
+
+  --tertiary: 90 230 172;
+  --tertiary-container: 40 170 120;
+  --tertiary-fixed: 22 74 52;
+  --tertiary-fixed-dim: 46 130 96;
+  --on-tertiary-fixed: 168 255 216;
+
+  --error: 255 138 128;
+  --error-container: 104 32 28;
+  --on-error-container: 255 205 200;
+
+  color-scheme: dark;
 }
 
 html {

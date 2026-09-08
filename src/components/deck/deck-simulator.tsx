@@ -346,7 +346,7 @@ export function DeckSimulator({
 
       {flash && (
         <div className="pointer-events-none fixed inset-x-0 bottom-6 z-50 flex justify-center px-4">
-          <p className="rounded-full bg-ink/90 px-4 py-2 text-label-md font-bold text-white shadow-lg">
+          <p className="rounded-full bg-scrim/95 px-4 py-2 text-label-md font-bold text-white shadow-lg">
             {flash}
           </p>
         </div>
