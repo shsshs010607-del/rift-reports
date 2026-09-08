@@ -15,7 +15,7 @@ import {
   Pencil,
   Check,
 } from "lucide-react";
-import { createPost, type ActionState } from "@/lib/actions/community";
+import { createPost, updatePost, type ActionState } from "@/lib/actions/community";
 import { COMMUNITY_CATEGORIES } from "@/lib/constants";
 import { PostBody } from "@/components/community/post-body";
 import { cn } from "@/lib/utils";
@@ -31,7 +31,7 @@ const BODY_MAX = 20000;
 
 type Draft = { category: string; title: string; body: string; deckCode: string; ts: number };
 
-function SubmitBtn({ disabled }: { disabled?: boolean }) {
+function SubmitBtn({ disabled, editing }: { disabled?: boolean; editing?: boolean }) {
   const { pending } = useFormStatus();
   return (
     <button
@@ -39,7 +39,7 @@ function SubmitBtn({ disabled }: { disabled?: boolean }) {
       disabled={pending || disabled}
       className="rounded-full bg-primary px-7 py-2.5 text-label-md font-bold text-white transition hover:bg-primary-container disabled:opacity-50"
     >
-      {pending ? "등록 중…" : "등록"}
+      {pending ? (editing ? "수정 중…" : "등록 중…") : editing ? "수정 완료" : "등록"}
     </button>
   );
 }
@@ -58,14 +58,21 @@ const PLACEHOLDERS: Record<string, string> = {
 export function PostForm({
   defaultCategory,
   canWriteNotice,
+  edit,
 }: {
   defaultCategory?: string;
   canWriteNotice: boolean;
+  /** 있으면 수정 모드 — 기존 값을 채우고 임시저장을 사용하지 않는다. */
+  edit?: { postId: string; title: string; body: string; category: string };
 }) {
-  const [state, formAction] = useFormState(createPost, initial);
-  const [category, setCategory] = useState(defaultCategory ?? COMMUNITY_CATEGORIES[0].slug);
-  const [title, setTitle] = useState("");
-  const [body, setBody] = useState("");
+  const editing = Boolean(edit);
+  const boundAction = edit ? updatePost.bind(null, edit.postId) : createPost;
+  const [state, formAction] = useFormState(boundAction, initial);
+  const [category, setCategory] = useState(
+    edit?.category ?? defaultCategory ?? COMMUNITY_CATEGORIES[0].slug,
+  );
+  const [title, setTitle] = useState(edit?.title ?? "");
+  const [body, setBody] = useState(edit?.body ?? "");
   const [deckCode, setDeckCode] = useState("");
   const [tab, setTab] = useState<"write" | "preview">("write");
   const [saved, setSaved] = useState<"idle" | "saving" | "saved">("idle");
@@ -77,6 +84,10 @@ export function PostForm({
 
   // ── 임시 저장 복구 ──────────────────────────────────────
   useEffect(() => {
+    if (editing) {
+      hydratedRef.current = true;
+      return;
+    }
     try {
       const raw = localStorage.getItem(DRAFT_KEY);
       if (!raw) return;
@@ -92,11 +103,11 @@ export function PostForm({
       /* noop */
     }
     hydratedRef.current = true;
-  }, [defaultCategory]);
+  }, [defaultCategory, editing]);
 
   // ── 임시 저장 (디바운스) ────────────────────────────────
   useEffect(() => {
-    if (!hydratedRef.current || submittedRef.current) return;
+    if (editing || !hydratedRef.current || submittedRef.current) return;
     if (!title.trim() && !body.trim()) return;
     setSaved("saving");
     const t = setTimeout(() => {
@@ -109,7 +120,7 @@ export function PostForm({
       }
     }, 600);
     return () => clearTimeout(t);
-  }, [category, title, body, deckCode]);
+  }, [category, title, body, deckCode, editing]);
 
   // 서버가 에러를 돌려줬으면(리다이렉트 실패) 다시 저장 재개
   useEffect(() => {
@@ -202,7 +213,7 @@ export function PostForm({
   return (
     <form
       action={formAction}
-      onSubmit={clearDraft}
+      onSubmit={editing ? undefined : clearDraft}
       className="flex flex-col gap-4"
     >
       {restored && (
@@ -315,8 +326,8 @@ export function PostForm({
             </button>
           ))}
           <span className="ml-auto pr-1 text-[11px] text-ink-soft/70">
-            {saved === "saving" && "저장 중…"}
-            {saved === "saved" && (
+            {!editing && saved === "saving" && "저장 중…"}
+            {!editing && saved === "saved" && (
               <span className="inline-flex items-center gap-0.5">
                 <Check className="h-3 w-3" /> 임시 저장됨
               </span>
@@ -365,7 +376,7 @@ export function PostForm({
         )}
       </div>
 
-      {canWriteNotice && (
+      {canWriteNotice && !editing && (
         <label className="inline-flex items-center gap-2 text-body-md text-ink">
           <input type="checkbox" name="is_notice" className="h-4 w-4 rounded border border-line" />
           공지로 등록 (관리자)
@@ -377,7 +388,7 @@ export function PostForm({
       )}
 
       <div className="flex items-center justify-end gap-2">
-        <SubmitBtn disabled={bodyLen > BODY_MAX} />
+        <SubmitBtn disabled={bodyLen > BODY_MAX} editing={editing} />
       </div>
     </form>
   );

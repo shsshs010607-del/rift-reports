@@ -86,6 +86,51 @@ export async function createPost(_prev: ActionState, formData: FormData): Promis
   redirect(`/community/post/${data.id}`);
 }
 
+export async function updatePost(
+  postId: string,
+  _prev: ActionState,
+  formData: FormData,
+): Promise<ActionState> {
+  const { supabase } = await requireUser();
+
+  const parsed = postSchema.omit({ is_notice: true }).safeParse({
+    category: formData.get("category"),
+    title: formData.get("title"),
+    body: formData.get("body"),
+  });
+  if (!parsed.success) {
+    const f: Record<string, string> = {};
+    for (const issue of parsed.error.issues) f[String(issue.path[0])] = issue.message;
+    return { error: "입력을 확인하세요", fieldErrors: f };
+  }
+
+  let body = parsed.data.body;
+  const deckCode = normalizeDeckCode(formData.get("deck_code"));
+  if (parsed.data.category === "deck-guide" && deckCode && !/```deck/.test(body)) {
+    body = `\`\`\`deck\n${deckCode}\n\`\`\`\n\n${body}`;
+  }
+
+  const { data, error } = await supabase
+    .from("posts")
+    .update({
+      category: parsed.data.category as CommunityCategory,
+      title: parsed.data.title,
+      body,
+      updated_at: new Date().toISOString(),
+    })
+    .eq("id", postId) // RLS: 본인/스태프만
+    .select("id, category")
+    .maybeSingle();
+
+  if (error) return { error: error.message };
+  if (!data) return { error: "수정 권한이 없거나 글을 찾을 수 없습니다" };
+
+  revalidatePath("/community");
+  revalidatePath(`/community/${data.category}`);
+  revalidatePath(`/community/post/${postId}`);
+  redirect(`/community/post/${postId}`);
+}
+
 export async function deletePost(postId: string) {
   const { supabase } = await requireUser();
   const { data: post } = await supabase.from("posts").select("category").eq("id", postId).maybeSingle();
