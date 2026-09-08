@@ -106,8 +106,9 @@ export default function HomePage() {
 
       <p className="rounded-2xl border border-line bg-subcanvas/40 p-4 text-body-sm leading-relaxed text-ink-soft">
         <strong className="text-ink">[비공식 팬 사이트]</strong> 리바지지(RIBA.GG)는 TCG
-        &lsquo;리프트바운드(Riftbound)&rsquo; 팬과 플레이어를 위한 비공식 커뮤니티입니다. Riftbound /
-        League of Legends 관련 자산의 저작권은 Riot Games 에 있습니다.
+        &lsquo;리프트바운드(Riftbound)&rsquo; 팬과 플레이어를 위한 비공식 커뮤니티입니다. 티어리스트·덱
+        공략·시세 등 모든 콘텐츠는 <strong className="text-ink">한국 스탠다드(Standard) 포맷 메타</strong>를
+        기준으로 작성합니다. Riftbound / League of Legends 관련 자산의 저작권은 Riot Games 에 있습니다.
       </p>
     </div>
   );
