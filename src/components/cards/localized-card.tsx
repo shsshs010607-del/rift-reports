@@ -78,6 +78,16 @@ export function LocalizedCard({
         </div>
       )}
 
+      {/* 가로(전장) 카드는 한글 인쇄 이미지가 없어 이름만 캡션으로 얹는다 (이미지 하단 가장자리) */}
+      {isLandscape && locale === "ko" && ko && img && (
+        <span
+          className="absolute inset-x-[7%] bottom-[25.5%] truncate rounded bg-black/72 px-2 py-1 text-center font-extrabold text-white"
+          style={{ fontSize: "clamp(7px, 3.4cqw, 15px)" }}
+        >
+          {ko.name}
+        </span>
+      )}
+
       {showOverlay && ko && (
         <>
           <div
