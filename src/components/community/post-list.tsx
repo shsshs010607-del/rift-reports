@@ -48,14 +48,14 @@ export function PostList({
             <Link
               href={`/community/post/${p.id}`}
               className={cn(
-                "flex gap-3 px-3 py-3 transition-colors hover:bg-primary/[0.045]",
+                "flex items-center gap-2.5 px-3 py-2.5 transition-colors hover:bg-primary/[0.045]",
                 p.is_notice && "bg-primary/[0.055]",
               )}
             >
               {/* 썸네일 슬롯 — 이미지 있으면 이미지, 없으면 게시판 색 아이콘 */}
               <span
                 className={cn(
-                  "relative grid h-[52px] w-[52px] shrink-0 place-items-center overflow-hidden rounded-lg",
+                  "relative grid h-11 w-11 shrink-0 place-items-center overflow-hidden rounded-lg",
                   thumb ? "bg-subcanvas" : cn(m.soft, m.fg),
                 )}
               >
