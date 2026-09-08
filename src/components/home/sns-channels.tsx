@@ -6,14 +6,14 @@ const CHANNELS = [
   {
     icon: Youtube,
     name: "유튜브 채널",
-    handle: "리프트 리포트 공식 영상",
+    handle: "리바지지 공식 영상",
     note: "메타 해설 & 덱 가이드",
     href: SITE.youtube,
   },
   {
     icon: Instagram,
     name: "인스타그램",
-    handle: "@riftreport",
+    handle: "@riba.gg",
     note: "카드 일러스트 & 신규 소식",
     href: SITE.instagram,
   },
@@ -27,7 +27,7 @@ const CHANNELS = [
   {
     icon: MessageCircle,
     name: "디스코드",
-    handle: "RiftReport Community",
+    handle: "RIBA.GG Community",
     note: "실시간 덱 토론 & 친선전",
     href: SITE.discord,
   },

@@ -51,7 +51,7 @@ export function CafeCrossPost({
     lines.push(
       "",
       "────────",
-      `※ 리프트 리포트 트레이딩에 올린 글입니다`,
+      `※ 리바지지(riba.gg) 트레이딩에 올린 글입니다`,
       permalink,
     );
     return lines.join("\n");

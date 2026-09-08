@@ -1,8 +1,9 @@
 export const SITE = {
-  name: "리프트 리포트",
-  nameEn: "Rift Report",
-  description: "리프트바운드(Riftbound) TCG 공략 · 티어리스트 · 카드 DB · 커뮤니티",
-  url: process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000",
+  name: "리바지지",
+  nameEn: "RIBA.GG",
+  description:
+    "리프트바운드(Riftbound) TCG 정보 허브 — 덱 티어리스트 · 카드 DB · 덱 시뮬레이터 · 시세 · 매장 대회 · 커뮤니티",
+  url: process.env.NEXT_PUBLIC_SITE_URL ?? "https://riba.gg",
   /** 커뮤니티 채널 — 실제 URL 확정 전 "#" (그 사이엔 "준비 중" 표시) */
   discord: "#" as string,
   youtube: "#" as string,
@@ -98,7 +99,7 @@ export const TIER_STYLES: Record<
 };
 
 export const COMMUNITY_CATEGORIES = [
-  { slug: "report", label: "리프트 리포트", desc: "메타 분석 · 뉴스 · 번역" },
+  { slug: "report", label: "메타 리포트", desc: "메타 분석 · 뉴스 · 번역" },
   { slug: "riftbound", label: "리프트바운드 게시판", desc: "자유 주제 · 잡담 · 질문" },
   { slug: "deck-guide", label: "덱 공략 게시판", desc: "덱 리스트 · 운영법 · 매치업" },
   { slug: "tournament", label: "대회 정보", desc: "대회 소식 · 후기 · 참가 모집" },

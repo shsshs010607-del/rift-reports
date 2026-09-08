@@ -45,7 +45,7 @@ export default async function ReportDetailPage({ params }: { params: { slug: str
       <h1 className="mt-2 font-display text-headline-lg text-ink">{report.title}</h1>
 
       <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1 text-body-sm text-ink-soft">
-        <span className="font-semibold text-ink">{report.author?.username ?? "리프트 리포트"}</span>
+        <span className="font-semibold text-ink">{report.author?.username ?? "리바지지"}</span>
         {report.published_at && (
           <time dateTime={report.published_at}>
             {format(new Date(report.published_at), "yyyy.MM.dd", { locale: ko })}

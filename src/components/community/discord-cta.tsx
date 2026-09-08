@@ -29,7 +29,7 @@ export function DiscordCta({ className }: { className?: string }) {
         <DiscordIcon className="h-5 w-5" />
       </span>
       <div className="min-w-0 flex-1">
-        <p className="text-body-md font-bold text-ink">리프트 리포트 디스코드</p>
+        <p className="text-body-md font-bold text-ink">리바지지 디스코드</p>
         <p className="text-body-sm text-ink-soft">
           {ready ? "실시간 잡담 · 매칭 · 대회 공지 — 지금 참여하기" : "채널 준비 중 — 곧 공개됩니다"}
         </p>

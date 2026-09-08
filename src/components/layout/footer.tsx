@@ -27,10 +27,10 @@ export function Footer() {
             <div className="flex items-center gap-2.5">
               <LogoMark className="h-8 w-auto rounded-md" />
               <span className="font-display text-headline-sm font-extrabold text-primary">
-                리프트 리포트
+                리바지지
               </span>
               <span className="rounded-full bg-surface-container-high px-space-xs py-0.5 text-label-sm text-on-surface-variant">
-                커뮤니티
+                RIBA.GG
               </span>
             </div>
             <p className="max-w-md text-body-sm text-on-surface-variant">
@@ -109,7 +109,7 @@ export function Footer() {
 
         <div className="flex flex-col items-center justify-between gap-space-sm border-t border-outline-variant/60 pt-space-lg text-body-sm text-on-surface-variant sm:flex-row">
           <p>
-            © {new Date().getFullYear()} {SITE.nameEn} Hub. Riftbound is a registered trademark of Riot Games.
+            © {new Date().getFullYear()} {SITE.nameEn}. Riftbound is a registered trademark of Riot Games.
           </p>
           <div className="flex items-center gap-space-md">
             <Link href="/privacy" className="transition-colors hover:text-on-surface">

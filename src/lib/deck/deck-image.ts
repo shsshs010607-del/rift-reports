@@ -197,7 +197,7 @@ export async function renderDeckImage(
   ctx.textAlign = "right";
   ctx.fillStyle = "#4648d4";
   ctx.font = `800 16px ${FONT}`;
-  ctx.fillText(`리프트 리포트 · ${opts.siteUrl ?? "rift-reports.vercel.app"}`, W - PAD, H - PAD - 8);
+  ctx.fillText(`리바지지 · ${opts.siteUrl ?? "riba.gg"}`, W - PAD, H - PAD - 8);
   ctx.textAlign = "left";
 
   return await new Promise<Blob>((resolve, reject) => {

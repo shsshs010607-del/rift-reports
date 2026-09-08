@@ -45,7 +45,7 @@ export function Navbar() {
         <Link href="/" className="flex shrink-0 items-center gap-2.5">
           <LogoMark className="h-10 w-auto rounded-lg shadow-e1" />
           <span className="font-display text-headline-sm font-extrabold tracking-tight text-on-surface sm:text-headline-md">
-            리프트 리포트
+            리바지지
           </span>
         </Link>
 

@@ -3,7 +3,7 @@
 @tailwind utilities;
 
 /*
- * Rift Report — "RIFTREPORT Hub" 디자인 시스템 (Material 3 · Neo-Arcade).
+ * RIBA.GG (리바지지) 디자인 시스템 (Material 3 · Neo-Arcade).
  * 값은 "R G B" (공백 구분). Tailwind <alpha-value> 호환. 라이트 전용.
  */
 :root {
@@ -87,7 +87,7 @@ h1, h2, h3, h4 {
   }
 
   /*
-   * 메모지 카드 — 오른쪽 위가 접힌 종이 느낌 ("리프트 리포트" 모티프).
+   * 메모지 카드 — 오른쪽 위가 접힌 종이 느낌 (리포트 모티프).
    * 주요 콘텐츠 패널에만 쓴다. overflow-hidden 요소에는 쓰지 말 것(접힘이 잘림).
    */
   .note-card {

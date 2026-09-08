@@ -1,11 +1,10 @@
 import { cn } from "@/lib/utils";
 
 /**
- * 리프트 리포트 로고 마크.
+ * 리바지지(RIBA.GG) 로고 마크.
  *
  * ─ 파일 ─
- *   public/brand/logo.png   첨부 원본(1024²·흰 배경)을 흰 배경 투명화 + 콘텐츠 크롭한 637×465 RGBA.
- *   교체 시 같은 경로에 덮어쓰고 아래 width/height 만 실제 비율에 맞춘다.
+ *   public/brand/logo.png   637×465 RGBA. 교체 시 같은 경로에 덮어쓰고 width/height 만 맞춘다.
  */
 const LOGO_SRC = "/brand/logo.png";
 
@@ -14,7 +13,7 @@ export function LogoMark({ className }: { className?: string }) {
     // eslint-disable-next-line @next/next/no-img-element
     <img
       src={LOGO_SRC}
-      alt="리프트 리포트 로고"
+      alt="리바지지 로고"
       width={637}
       height={465}
       className={cn("h-8 w-auto select-none object-contain", className)}
@@ -28,7 +27,7 @@ export function Logo({ className }: { className?: string }) {
     <span className={cn("flex shrink-0 items-center gap-2.5", className)}>
       <LogoMark className="h-9 w-auto" />
       <span className="font-display text-headline-sm font-extrabold tracking-tight text-on-surface">
-        리프트 리포트
+        리바지지
       </span>
     </span>
   );

@@ -43,7 +43,7 @@ export default function HomePage() {
           Riftbound 한국 팬 허브
         </p>
         <h1 className="mt-2 font-display text-display-hero-mobile text-ink sm:text-display-hero">
-          리프트 리포트
+          리바지지
         </h1>
         <p className="mt-3 max-w-xl text-body-lg text-ink-soft">
           리프트바운드(Riftbound) TCG 티어리스트 · 카드 DB · 덱 시뮬레이터 · 시세 · 매장 대회 ·
@@ -108,7 +108,7 @@ export default function HomePage() {
       <SnsChannels />
 
       <p className="rounded-2xl border border-line bg-subcanvas/40 p-4 text-body-sm leading-relaxed text-ink-soft">
-        <strong className="text-ink">[비공식 팬 사이트]</strong> 리프트 리포트는 TCG
+        <strong className="text-ink">[비공식 팬 사이트]</strong> 리바지지(RIBA.GG)는 TCG
         &lsquo;리프트바운드(Riftbound)&rsquo; 팬과 플레이어를 위한 비공식 커뮤니티입니다. Riftbound /
         League of Legends 관련 자산의 저작권은 Riot Games 에 있습니다.
       </p>

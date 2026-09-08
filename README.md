@@ -1,6 +1,6 @@
-# 리프트 리포트 (Rift Report)
+# 리바지지 (RIBA.GG)
 
-리프트바운드(Riftbound) TCG 커뮤니티 · 메타 정보 사이트.
+리프트바운드(Riftbound) TCG 정보 허브 — 티어리스트 · 카드 DB · 덱 시뮬레이터 · 시세 · 커뮤니티. (`riba.gg`)
 
 - **Framework**: Next.js 14 (App Router) + TypeScript
 - **Styling**: Tailwind CSS — "Tactile Neo-Arcade" 디자인 시스템 (`DESIGN.md`)

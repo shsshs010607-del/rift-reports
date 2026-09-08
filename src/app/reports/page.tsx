@@ -47,7 +47,7 @@ export default async function ReportsListPage() {
                   )}
                   <div className="mt-auto flex flex-wrap items-center gap-x-2 gap-y-1 pt-1 text-body-sm text-ink-soft">
                     <span className="font-semibold text-ink">
-                      {r.author?.username ?? "리프트 리포트"}
+                      {r.author?.username ?? "리바지지"}
                     </span>
                     {r.published_at && (
                       <time dateTime={r.published_at}>
