@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { Tag, X, Printer } from "lucide-react";
+import { Tag, X, Printer, ChevronLeft, ChevronRight } from "lucide-react";
 
 import type { Card } from "@/lib/types/card";
 import { resolveCardText, cardNumber } from "@/lib/types/card";
@@ -22,7 +22,19 @@ const SET_LABEL = new Map<string, string>(CARD_SETS.map((s) => [s.code, s.label]
  * 카드 비교 모달 — 페이지 이동 없이 그 자리에서 카드를 크게 보고,
  * 변형 인쇄판(얼터아트·시그니처·오버넘버드·프로모)을 눌러 비교한다.
  */
-export function CardModal({ card, onClose }: { card: Card; onClose: () => void }) {
+export function CardModal({
+  card,
+  onClose,
+  onPrev,
+  onNext,
+  position,
+}: {
+  card: Card;
+  onClose: () => void;
+  onPrev?: () => void;
+  onNext?: () => void;
+  position?: string;
+}) {
   const [printingId, setPrintingId] = useState(
     () => (card.printings.find((p) => p.isBase) ?? card.printings[0])?.id,
   );
@@ -55,15 +67,24 @@ export function CardModal({ card, onClose }: { card: Card; onClose: () => void }
     }
   }
 
+  // prev/next 로 card 가 바뀌면 인쇄판 선택 초기화
   useEffect(() => {
-    const onKey = (e: KeyboardEvent) => e.key === "Escape" && onClose();
+    setPrintingId((card.printings.find((p) => p.isBase) ?? card.printings[0])?.id);
+  }, [card]);
+
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+      else if (e.key === "ArrowLeft") onPrev?.();
+      else if (e.key === "ArrowRight") onNext?.();
+    };
     window.addEventListener("keydown", onKey);
     document.body.style.overflow = "hidden";
     return () => {
       window.removeEventListener("keydown", onKey);
       document.body.style.overflow = "";
     };
-  }, [onClose]);
+  }, [onClose, onPrev, onNext]);
 
   return (
     <div
@@ -79,6 +100,34 @@ export function CardModal({ card, onClose }: { card: Card; onClose: () => void }
           className="absolute inset-x-0 top-0 z-10 h-1"
           style={{ background: domainGradient(card.domains) }}
         />
+
+        {/* 이전/다음 (← → 키도 가능) */}
+        {onPrev && (
+          <button
+            type="button"
+            onClick={onPrev}
+            aria-label="이전 카드"
+            className="absolute left-1.5 top-1/2 z-20 grid h-9 w-9 -translate-y-1/2 place-items-center rounded-full bg-scrim/55 text-white backdrop-blur-sm transition hover:bg-scrim/75"
+          >
+            <ChevronLeft className="h-5 w-5" />
+          </button>
+        )}
+        {onNext && (
+          <button
+            type="button"
+            onClick={onNext}
+            aria-label="다음 카드"
+            className="absolute right-1.5 top-1/2 z-20 grid h-9 w-9 -translate-y-1/2 place-items-center rounded-full bg-scrim/55 text-white backdrop-blur-sm transition hover:bg-scrim/75"
+          >
+            <ChevronRight className="h-5 w-5" />
+          </button>
+        )}
+        {position && (
+          <span className="absolute bottom-2 left-4 z-20 rounded-full bg-scrim/60 px-2 py-0.5 text-[11px] font-bold text-white">
+            {position}
+          </span>
+        )}
+
         {/* 카드 이미지 */}
         <div className="shrink-0 p-4 sm:w-[300px]" style={{ backgroundImage: wash }}>
           <LocalizedCard

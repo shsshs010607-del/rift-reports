@@ -18,18 +18,27 @@ const TYPE_LABEL = new Map(CARD_TYPES.map((t) => [t.slug, t.label]));
  * 변형 인쇄판(얼터아트·프로모 등)은 별도 타일이 아니라 기본 카드 모달 안에서 비교한다.
  */
 export function CardGrid({ cards }: { cards: Card[] }) {
-  const [selected, setSelected] = useState<Card | null>(null);
+  const [index, setIndex] = useState<number | null>(null);
+  const selected = index != null ? cards[index] : null;
 
   return (
     <>
       <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
-        {cards.map((card) => (
+        {cards.map((card, i) => (
           <li key={card.id}>
-            <CardTile card={card} onOpen={() => setSelected(card)} />
+            <CardTile card={card} onOpen={() => setIndex(i)} />
           </li>
         ))}
       </ul>
-      {selected && <CardModal card={selected} onClose={() => setSelected(null)} />}
+      {selected && index != null && (
+        <CardModal
+          card={selected}
+          onClose={() => setIndex(null)}
+          onPrev={index > 0 ? () => setIndex(index - 1) : undefined}
+          onNext={index < cards.length - 1 ? () => setIndex(index + 1) : undefined}
+          position={`${index + 1} / ${cards.length}`}
+        />
+      )}
     </>
   );
 }
