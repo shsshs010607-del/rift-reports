@@ -25,16 +25,38 @@ const DOMAIN_TRAITS: Record<string, string> = {
   order: "규율·군단. 토큰 소환, 광역 버프, 진형. 수로 밀어붙이는 물량.",
 };
 
-const ZONES: { name: string; desc: string }[] = [
-  { name: "레전드 존", desc: "챔피언 레전드를 놓는 자리. 게임 내내 고정, 이동하지 않는다." },
+/** 판 위(The Board) 구역 */
+const BOARD_ZONES: { name: string; desc: string }[] = [
+  {
+    name: "베이스 (Base)",
+    desc: "내 유닛·도구를 소환해 대기시키는 안전 구역. 전투가 없고, 상대는 여기 아무것도 둘 수 없다. 충전한 룬(룬 풀)도 여기 모인다.",
+  },
+  {
+    name: "전장 존 (Battlefield Zone)",
+    desc: "양쪽 플레이어가 공유하는 중앙. 여기 놓인 전장을 점령·유지해 점수를 얻는다. 1v1은 전장 2개(각자 덱의 전장 3장 중 1장씩 제공).",
+  },
+  {
+    name: "전장 (Battlefield)",
+    desc: "각각이 하나의 '위치'. 유닛을 베이스↔전장으로 이동시켜 지배권을 다툰다.",
+  },
+  {
+    name: "페이스다운 존",
+    desc: "각 전장에 딸린 숨김 칸. 그 전장을 지배하는 쪽만 카드 1장을 뒷면으로 숨길 수 있고, 지배권을 잃으면 사라진다.",
+  },
+  {
+    name: "레전드 존",
+    desc: "챔피언 레전드를 놓는 자리. 게임 내내 고정 — 이동·제거되지 않는다.",
+  },
+];
+
+/** 판 밖(Non-Board) 구역 */
+const OFF_BOARD_ZONES: { name: string; desc: string }[] = [
   { name: "챔피언 존", desc: "지정 챔피언이 시작하는 자리. 여기서 일반 카드처럼 플레이한다." },
-  { name: "본대 (Base)", desc: "내 유닛이 소환되어 대기하는 안전 구역. 전투가 없다." },
-  { name: "전장 (Battlefield) ×3", desc: "점령·전투가 벌어지는 곳. 유닛을 이동시켜 점수를 얻는다." },
-  { name: "메인 덱 / 룬 덱", desc: "따로 셔플해서 놓는다. 카드는 메인 덱, 자원(룬)은 룬 덱에서." },
-  { name: "룬 풀 (Rune Pool)", desc: "룬으로 만든 에너지·파워가 모이는 곳. 매 라운드 끝에 비워진다." },
-  { name: "페이스다운 존", desc: "각 전장 옆의 숨김 칸. 그 전장 지배자가 카드 1장을 뒷면으로 숨긴다." },
+  { name: "메인 덱 / 룬 덱", desc: "따로 셔플해 각자 자리에 뒷면으로 놓는다. 카드는 메인 덱, 자원(룬)은 룬 덱에서." },
+  { name: "손패 (Hand)", desc: "드로우한 카드가 들어오는 곳. 나만 본다(비공개)." },
+  { name: "트래시", desc: "처치·버림·사용된 카드가 가는 곳. 플레이어별로 따로 둔다." },
+  { name: "추방 (Banishment)", desc: "추방 효과로 게임에서 빠진 카드. 트래시보다 되돌리기 어렵다." },
   { name: "체인 (Chain)", desc: "플레이한 카드·능력이 해결을 기다리며 쌓이는 곳. 나중 것부터 해결." },
-  { name: "트래시 / 추방", desc: "처치·사용된 카드는 트래시로, 게임에서 완전히 빠지면 추방으로." },
 ];
 
 function StepList({ section }: { section: GuideSection }) {
@@ -68,56 +90,85 @@ function Block({ id, title, children }: { id: string; title: string; children: R
   );
 }
 
-/** 게임판 배치 도해 */
+/** 게임판 배치 도해 — 두 플레이어가 마주 앉고, 전장 존을 가운데 공유한다. */
 function BoardDiagram() {
-  const cell =
+  const sub = "mt-0.5 block text-[10px] font-normal leading-tight text-ink-soft";
+  const slot =
     "rounded-lg border border-line/70 bg-card px-2 py-2 text-center text-label-sm font-bold text-ink";
-  const sub = "mt-0.5 block text-[10px] font-normal text-ink-soft";
   return (
     <div className="surface p-5">
+      <p className="mb-3 text-body-sm text-ink-soft">
+        두 사람이 마주 앉고, <b className="text-ink">전장 존</b>을 가운데에 함께 놓습니다. 그 위아래로 각자
+        자기 구역을 펼칩니다. (아래는 내 시점)
+      </p>
+
       <div className="mx-auto max-w-md space-y-2">
-        <div className="rounded-lg border border-dashed border-line/70 bg-subcanvas/40 px-2 py-1.5 text-center text-label-sm text-ink-soft">
-          상대 본대 · 상대 레전드/챔피언 존
+        {/* 상대 진영 */}
+        <div className="rounded-lg border border-dashed border-line/70 bg-subcanvas/40 px-3 py-2 text-center text-label-sm text-ink-soft">
+          상대 진영
+          <span className={sub}>상대 레전드 존 · 챔피언 존 · 베이스 · 메인/룬 덱 · 트래시</span>
         </div>
 
-        <div className="grid grid-cols-3 gap-2">
-          {["전장 1", "전장 2", "전장 3"].map((b) => (
-            <div key={b} className="rounded-lg border-2 border-primary/40 bg-primary/[0.06] px-2 py-3 text-center">
-              <span className="text-label-sm font-bold text-primary-strong">{b}</span>
-              <span className={sub}>점령·전투 / 페이스다운 1장</span>
-            </div>
-          ))}
-        </div>
-
-        <div className="rounded-lg border-2 border-emerald/40 bg-emerald/[0.06] px-2 py-2.5 text-center">
-          <span className="text-label-sm font-bold text-emerald">내 본대 (Base)</span>
-          <span className={sub}>유닛 소환·대기 (안전, 전투 없음)</span>
-        </div>
-
-        <div className="grid grid-cols-2 gap-2 pt-1 sm:grid-cols-4">
-          <div className={cell}>
-            레전드 존<span className={sub}>챔피언 레전드 고정</span>
+        {/* 전장 존 (공유) */}
+        <div className="rounded-xl border-2 border-primary/40 bg-primary/[0.06] p-2.5">
+          <p className="mb-2 text-center text-label-sm font-bold text-primary-strong">
+            ⚔ 전장 존 · 양쪽 공유 (1v1 = 2개)
+          </p>
+          <div className="grid grid-cols-2 gap-2">
+            {["전장 A", "전장 B"].map((b) => (
+              <div
+                key={b}
+                className="rounded-lg border border-primary/30 bg-card px-2 py-3 text-center"
+              >
+                <span className="text-label-sm font-bold text-ink">{b}</span>
+                <span className={sub}>점령·전투 · 페이스다운 칸 1</span>
+              </div>
+            ))}
           </div>
-          <div className={cell}>
+        </div>
+
+        {/* 내 베이스 */}
+        <div className="rounded-xl border-2 border-emerald/40 bg-emerald/[0.06] px-3 py-2.5 text-center">
+          <span className="text-label-sm font-bold text-emerald">🟢 내 베이스 (Base)</span>
+          <span className={sub}>
+            유닛·도구 소환·대기 (안전, 전투 없음) · 룬 풀 — 충전한 룬 에너지·파워가 여기 모임
+          </span>
+        </div>
+
+        {/* 내 판 밖 구역 */}
+        <div className="grid grid-cols-3 gap-2 pt-1">
+          <div className={slot}>
+            레전드 존<span className={sub}>레전드 고정</span>
+          </div>
+          <div className={slot}>
             챔피언 존<span className={sub}>지정 챔피언 시작</span>
           </div>
-          <div className={cell}>
-            메인 덱 · 룬 덱<span className={sub}>따로 셔플</span>
-          </div>
-          <div className={cell}>
-            룬 풀<span className={sub}>에너지·파워, 라운드마다 소멸</span>
+          <div className={slot}>
+            덱 · 트래시<span className={sub}>메인/룬 덱 · 추방 · 손패</span>
           </div>
         </div>
       </div>
 
-      <ul className="mt-5 grid gap-2 border-t border-line/60 pt-4 sm:grid-cols-2">
-        {ZONES.map((z) => (
-          <li key={z.name} className="text-body-sm">
-            <span className="font-bold text-ink">{z.name}</span>
-            <span className="text-ink-soft"> — {z.desc}</span>
-          </li>
-        ))}
-      </ul>
+      <div className="mt-5 border-t border-line/60 pt-4">
+        <p className="mb-2 text-label-md font-bold text-ink">판 위 (The Board)</p>
+        <ul className="grid gap-1.5 sm:grid-cols-2">
+          {BOARD_ZONES.map((z) => (
+            <li key={z.name} className="text-body-sm">
+              <span className="font-bold text-ink">{z.name}</span>
+              <span className="text-ink-soft"> — {z.desc}</span>
+            </li>
+          ))}
+        </ul>
+        <p className="mb-2 mt-4 text-label-md font-bold text-ink">판 밖 (Non-Board)</p>
+        <ul className="grid gap-1.5 sm:grid-cols-2">
+          {OFF_BOARD_ZONES.map((z) => (
+            <li key={z.name} className="text-body-sm">
+              <span className="font-bold text-ink">{z.name}</span>
+              <span className="text-ink-soft"> — {z.desc}</span>
+            </li>
+          ))}
+        </ul>
+      </div>
     </div>
   );
 }

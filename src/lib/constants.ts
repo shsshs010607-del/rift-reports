@@ -8,6 +8,9 @@ export const SITE = {
   youtube: "#" as string,
   instagram: "#" as string,
   naverCafe: "https://cafe.naver.com/riftboundmarketplace" as string,
+  /** 네이버 카페 거래 게시판(카드 판매) 바로가기 */
+  naverCafeTrade:
+    "https://cafe.naver.com/ArticleList.nhn?search.clubid=31788328&search.menuid=14&search.boardtype=L" as string,
 } as const;
 
 /**
