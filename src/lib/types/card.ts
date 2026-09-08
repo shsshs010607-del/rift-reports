@@ -166,6 +166,15 @@ export function resolveCardText(card: Card, locale: Locale = "ko"): CardLocalize
   return card.localization.en;
 }
 
+/** "OGN-001" 형식 카드 번호. 세트·수집번호가 없으면 null. */
+export function cardNumber(
+  card: Pick<Card, "setCode" | "collectorNumber">,
+): string | null {
+  if (!card.setCode || !card.collectorNumber) return null;
+  const n = card.collectorNumber.replace(/\D+/g, "");
+  return n ? `${card.setCode}-${n.padStart(3, "0")}` : null;
+}
+
 /** constants 슬러그 화이트리스트 (런타임 검증용). */
 export const CARD_DOMAIN_SLUGS = CARD_DOMAINS.map((d) => d.slug) as readonly CardDomain[];
 export const CARD_TYPE_SLUGS = CARD_TYPES.map((t) => t.slug) as readonly CardType[];

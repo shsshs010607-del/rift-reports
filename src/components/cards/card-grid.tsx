@@ -3,15 +3,14 @@
 import { useState } from "react";
 
 import type { Card } from "@/lib/types/card";
-import { resolveCardText } from "@/lib/types/card";
-import { CARD_DOMAINS, CARD_RARITIES, CARD_SETS, CARD_TYPES } from "@/lib/constants";
+import { resolveCardText, cardNumber } from "@/lib/types/card";
+import { CARD_DOMAINS, CARD_RARITIES, CARD_TYPES } from "@/lib/constants";
 import { CardModal } from "@/components/cards/card-modal";
 import { LocalizedCard } from "@/components/cards/localized-card";
 
-const DOMAIN_BY_SLUG = new Map(CARD_DOMAINS.map((d) => [d.slug, d]));
+const DOMAIN_LABEL = new Map(CARD_DOMAINS.map((d) => [d.slug, d.label]));
 const TYPE_LABEL = new Map(CARD_TYPES.map((t) => [t.slug, t.label]));
 const RARITY_LABEL = new Map<string, string>(CARD_RARITIES.map((r) => [r.slug, r.label]));
-const SET_LABEL = new Map<string, string>(CARD_SETS.map((s) => [s.code, s.label]));
 
 /**
  * 카드 그리드 (클라이언트). 카드를 누르면 페이지 이동 없이 비교 모달을 연다.
@@ -64,19 +63,28 @@ function CardTile({ card, onOpen }: { card: Card; onOpen: () => void }) {
 
       <div className="flex items-center gap-2 p-2">
         <span className="flex shrink-0 gap-0.5">
-          {card.domains.length === 0 && <span className="h-3.5 w-1 rounded-full bg-line" />}
+          {card.domains.length === 0 && (
+            <span className="grid h-5 w-5 place-items-center rounded-full bg-line text-[9px] font-bold text-white">
+              무
+            </span>
+          )}
           {card.domains.map((slug) => (
-            <span
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
               key={slug}
-              className="h-3.5 w-1 rounded-full"
-              style={{ backgroundColor: DOMAIN_BY_SLUG.get(slug)?.color ?? "#999" }}
+              src={`/domains/${slug}.svg`}
+              alt={DOMAIN_LABEL.get(slug) ?? slug}
+              title={DOMAIN_LABEL.get(slug) ?? slug}
+              width={20}
+              height={20}
+              className="h-5 w-5"
             />
           ))}
         </span>
         <span className="min-w-0 flex-1">
           <span className="block truncate text-label-md font-bold text-ink">{ko.name}</span>
           <span className="block truncate text-label-sm text-ink-soft">
-            {SET_LABEL.get(card.setCode) ?? card.setCode}
+            {cardNumber(card) ?? card.setCode}
             {" · "}
             {TYPE_LABEL.get(card.type) ?? card.type}
             {" · "}

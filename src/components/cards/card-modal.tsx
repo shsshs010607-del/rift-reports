@@ -5,7 +5,7 @@ import Link from "next/link";
 import { ExternalLink, X } from "lucide-react";
 
 import type { Card } from "@/lib/types/card";
-import { resolveCardText } from "@/lib/types/card";
+import { resolveCardText, cardNumber } from "@/lib/types/card";
 import { CARD_DOMAINS, CARD_RARITIES, CARD_SETS, CARD_TREATMENTS, CARD_TYPES } from "@/lib/constants";
 import { LocalizedCard } from "@/components/cards/localized-card";
 import { CardText } from "@/components/cards/card-text";
@@ -86,8 +86,8 @@ export function CardModal({ card, onClose }: { card: Card; onClose: () => void }
             <div className="min-w-0">
               <h2 className="font-display text-title-md font-bold text-ink">{t.name}</h2>
               <p className="truncate text-body-sm text-ink-soft">
-                {card.localization.en.name} · {card.setCode}
-                {card.collectorNumber ? ` #${card.collectorNumber}` : ""}
+                {card.localization.en.name}
+                {cardNumber(card) ? ` · ${cardNumber(card)}` : ""}
               </p>
             </div>
             <button
@@ -121,8 +121,12 @@ export function CardModal({ card, onClose }: { card: Card; onClose: () => void }
           <dl className="grid grid-cols-[4.5rem_1fr] gap-x-3 gap-y-2 text-body-sm">
             <Row label="확장팩">
               {SET_LABEL.get(card.setCode) ?? card.setCode}
-              {card.collectorNumber ? ` · ${card.collectorNumber}번` : ""}
             </Row>
+            {cardNumber(card) && (
+              <Row label="카드 번호">
+                <span className="font-mono">{cardNumber(card)}</span>
+              </Row>
+            )}
             <Row label="타입">{TYPE_LABEL.get(card.type) ?? card.type}</Row>
             <Row label="레어도">{RARITY_LABEL.get(card.rarity) ?? card.rarity}</Row>
             <Row label="코스트">{card.cost ?? "—"}</Row>
@@ -134,10 +138,8 @@ export function CardModal({ card, onClose }: { card: Card; onClose: () => void }
                   const d = DOMAIN_BY_SLUG.get(slug);
                   return (
                     <span key={slug} className="inline-flex items-center gap-1">
-                      <span
-                        className="h-2.5 w-2.5 rounded-full"
-                        style={{ backgroundColor: d?.color ?? "#999" }}
-                      />
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img src={`/domains/${slug}.svg`} alt="" width={16} height={16} className="h-4 w-4" />
                       {d?.label ?? slug}
                     </span>
                   );

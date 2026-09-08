@@ -128,17 +128,19 @@ export function CardFilterBar() {
                     aria-pressed={on}
                     className={cn(
                       "group flex flex-col items-center gap-1 rounded-xl px-2 py-1.5 transition",
-                      on ? "bg-primary/10" : "hover:bg-subcanvas",
+                      on ? "bg-primary/10 ring-1 ring-primary/40" : "hover:bg-subcanvas",
                     )}
                   >
-                    <span
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={`/domains/${d.slug}.svg`}
+                      alt=""
+                      width={36}
+                      height={36}
                       className={cn(
-                        "grid h-9 w-9 place-items-center rounded-full ring-1 ring-black/10 transition",
-                        on
-                          ? "scale-110 ring-2 ring-primary ring-offset-2 ring-offset-card"
-                          : "opacity-75 group-hover:opacity-100",
+                        "h-9 w-9 transition",
+                        on ? "scale-110" : "opacity-55 grayscale group-hover:opacity-100 group-hover:grayscale-0",
                       )}
-                      style={{ backgroundColor: d.color }}
                     />
                     <span
                       className={cn(
