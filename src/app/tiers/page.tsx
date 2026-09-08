@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 
 import { PageHeading } from "@/components/ui/page-heading";
 import { TierBoard } from "@/components/tiers/tier-board";
+import { DeckQuiz } from "@/components/tiers/deck-quiz";
 
 export const metadata: Metadata = {
   title: "덱 티어리스트",
@@ -13,10 +14,13 @@ export const revalidate = 60;
 export default function TiersPage() {
   return (
     <div>
-      <PageHeading
-        title="덱 티어리스트"
-        description="현재 메타 예상 기준 · 덱을 누르면 공략으로 이동"
-      />
+      <div className="mb-4 flex flex-wrap items-end justify-between gap-3">
+        <PageHeading
+          title="덱 티어리스트"
+          description="현재 메타 예상 기준 · 덱을 누르면 공략으로 이동"
+        />
+        <DeckQuiz />
+      </div>
       <Suspense fallback={<BoardSkeleton />}>
         <TierBoard />
       </Suspense>
