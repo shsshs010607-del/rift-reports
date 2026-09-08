@@ -45,13 +45,17 @@ export default function HomePage() {
           <p className="text-label-md font-bold uppercase tracking-wide text-primary-strong">
             Riftbound 한국 팬 커뮤니티
           </p>
-          <h1 className="mt-1.5 font-display text-headline-lg text-ink sm:text-display-hero-mobile">
-            리바지지 · RIBA.GG
+          <h1 className="mt-1.5 font-display text-headline-lg leading-none text-ink sm:text-display-hero-mobile">
+            리바지지
           </h1>
-          <p className="mt-2 max-w-xl text-body-md text-ink-soft">
-            리프트바운드(Riftbound) TCG 커뮤니티 · 덱 티어리스트 · 카드 DB · 시세 · 매장 대회.
+          <p className="mt-1 font-display text-body-sm font-bold uppercase tracking-[0.2em] text-ink-soft/70">
+            RIBA.GG
+          </p>
+          <p className="mt-3 max-w-xl text-body-md leading-relaxed text-ink-soft">
+            리프트바운드(Riftbound) TCG 국내 유저를 위한 정보·커뮤니티 허브. 메타 덱 티어리스트, 전체
+            카드 DB, 덱 시뮬레이터, 실시간 시세, 매장 대회 일정을 한곳에 모았습니다.
             <span className="mt-1 block text-body-sm text-ink-soft/80">
-              모든 콘텐츠는 <strong className="text-ink-soft">한국 스탠다드 포맷 메타</strong> 기준.
+              모든 콘텐츠는 <strong className="text-ink-soft">한국 스탠다드 포맷 메타</strong> 기준입니다.
             </span>
           </p>
           <ChannelBanner className="mt-4" />

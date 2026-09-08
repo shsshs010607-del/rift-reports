@@ -1,4 +1,5 @@
-import { ArrowUpRight } from "lucide-react";
+import Link from "next/link";
+import { ArrowUpRight, Mail } from "lucide-react";
 import { SITE } from "@/lib/constants";
 import { DiscordIcon } from "@/components/community/discord-cta";
 import { cn } from "@/lib/utils";
@@ -49,6 +50,14 @@ export function ChannelBanner({ className }: { className?: string }) {
           <span className="rounded-full bg-subcanvas px-1.5 py-0.5 text-[10px]">준비 중</span>
         </span>
       )}
+
+      <Link
+        href="/community/recruit"
+        className="inline-flex items-center gap-2 rounded-full border border-line bg-card px-4 py-2 text-label-md font-bold text-ink-soft transition hover:border-primary/40 hover:text-ink"
+      >
+        <Mail className="h-3.5 w-3.5" />
+        문의하기
+      </Link>
     </div>
   );
 }

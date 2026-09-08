@@ -14,7 +14,7 @@ import { cn } from "@/lib/utils";
 const DOMAIN_COLOR = new Map(CARD_DOMAINS.map((d) => [d.slug, d.color]));
 
 /**
- * 섹션별 덱 목록: 레전드 → 챔피언 → 전장 → 룬 → 메인덱.
+ * 섹션별 덱 목록: 레전드 → 챔피언 → 메인덱 → 전장 → 룬.
  */
 export function DeckList({
   rd,
@@ -53,6 +53,19 @@ export function DeckList({
         )}
       </Section>
 
+      {/* 메인덱 */}
+      <EntrySection
+        title={ZONE_META.main.label}
+        subtitle="유닛 · 도구 · 주문"
+        n={c.main}
+        target={ZONE_META.main.targetLabel}
+        ok={c.main >= ZONE_META.main.target}
+        entries={rd.sections.main}
+        emptyLabel="카드 추가"
+        onEmpty={() => onFocusPool("main")}
+        onChange={onChangeEntry}
+      />
+
       {/* 전장 */}
       <EntrySection
         title={ZONE_META.battlefield.label}
@@ -74,19 +87,6 @@ export function DeckList({
         entries={rd.sections.rune}
         emptyLabel="룬 추가"
         onEmpty={() => onFocusPool("rune")}
-        onChange={onChangeEntry}
-      />
-
-      {/* 메인덱 */}
-      <EntrySection
-        title={ZONE_META.main.label}
-        subtitle="유닛 · 도구 · 주문"
-        n={c.main}
-        target={ZONE_META.main.targetLabel}
-        ok={c.main >= ZONE_META.main.target}
-        entries={rd.sections.main}
-        emptyLabel="카드 추가"
-        onEmpty={() => onFocusPool("main")}
         onChange={onChangeEntry}
       />
 
