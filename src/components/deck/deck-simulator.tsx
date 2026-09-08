@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Check, Copy, Download, Eraser, Layers, Sparkles, Upload } from "lucide-react";
+import { Check, Copy, Download, Eraser, ImageDown, Layers, Sparkles, Upload } from "lucide-react";
 
 import type { Card } from "@/lib/types/card";
 import type { Deck } from "@/lib/types/deck";
@@ -26,6 +26,7 @@ import {
   zoneCounts,
   totalCards,
 } from "@/lib/deck/deck-model";
+import { renderDeckImage } from "@/lib/deck/deck-image";
 import { CardPool, type PoolTab } from "@/components/deck/card-pool";
 import { DeckList } from "@/components/deck/deck-list";
 import { DeckSteps } from "@/components/deck/deck-steps";
@@ -253,6 +254,31 @@ export function DeckSimulator({
     }
   }
 
+  const [imgBusy, setImgBusy] = useState(false);
+  async function saveImage() {
+    if (imgBusy || total === 0) return;
+    setImgBusy(true);
+    try {
+      const blob = await renderDeckImage(rd, {
+        deckName: deck.name,
+        code: isDeckCode(shareCode) ? shareCode : null,
+      });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `${(deck.name || "deck").replace(/[^\w가-힣 -]/g, "").trim() || "deck"}.png`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+      flashMsg("덱 이미지를 저장했어요 · 카페 글에 첨부하세요");
+    } catch {
+      flashMsg("이미지 생성에 실패했어요. 다시 시도해 주세요");
+    } finally {
+      setImgBusy(false);
+    }
+  }
+
   function applyImport(next: Deck) {
     // 가져온 덱의 카드는 ImportDialog 가 이미 캐시에 등록함
     setDeck(next);
@@ -355,6 +381,16 @@ export function DeckSimulator({
                 empty={total === 0}
                 onLoad={(loadCode) => router.push(`/deck-simulator?d=${loadCode}`)}
               />
+
+              <button
+                type="button"
+                onClick={saveImage}
+                disabled={imgBusy || total === 0}
+                className="mt-1 inline-flex w-full items-center justify-center gap-2 rounded-xl border-2 border-primary/40 bg-primary/5 px-4 py-2.5 text-label-lg font-bold text-primary-strong transition hover:bg-primary/10 disabled:opacity-40"
+              >
+                <ImageDown className="h-4 w-4" />
+                {imgBusy ? "이미지 만드는 중…" : "덱 이미지 저장 (카페 첨부용)"}
+              </button>
 
               <div className="mt-1 grid grid-cols-2 gap-1.5 border-t border-line pt-3 sm:grid-cols-4">
                 <ActionButton onClick={() => setImportOpen(true)} icon={<Upload className="h-4 w-4" />}>
