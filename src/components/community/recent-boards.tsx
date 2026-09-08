@@ -1,7 +1,6 @@
 import Link from "next/link";
-import { formatDistanceToNow } from "date-fns";
-import { ko } from "date-fns/locale";
 import { ArrowRight } from "lucide-react";
+import { fmtKstRelative } from "@/lib/datetime";
 import { COMMUNITY_CATEGORIES } from "@/lib/constants";
 import type { PostListItem } from "@/lib/community";
 import type { CommunityCategory } from "@/lib/types/database";
@@ -54,7 +53,7 @@ export function RecentBoards({
                           {p.title}
                         </span>
                         <time className="ml-auto shrink-0 text-[12px] text-ink-soft/70">
-                          {formatDistanceToNow(new Date(p.created_at), { locale: ko })}
+                          {fmtKstRelative(p.created_at)}
                         </time>
                       </Link>
                     </li>
