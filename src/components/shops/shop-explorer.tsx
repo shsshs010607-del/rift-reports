@@ -13,9 +13,10 @@ import {
   ArrowRight,
   X,
 } from "lucide-react";
-import { KR_SIDO } from "@/lib/constants";
+import { KR_SIDO, KAKAO_MAP_KEY } from "@/lib/constants";
 import type { Shop } from "@/lib/types/database";
 import { cn } from "@/lib/utils";
+import { ShopMap } from "@/components/shops/shop-map";
 
 const kakaoMapUrl = (s: Shop) =>
   `https://map.kakao.com/?q=${encodeURIComponent(`${s.name} ${s.sido} ${s.sigungu ?? ""}`.trim())}`;
@@ -25,6 +26,8 @@ export function ShopExplorer({ shops }: { shops: Shop[] }) {
   const [officialOnly, setOfficialOnly] = useState(false);
   const [q, setQ] = useState("");
   const [showAll, setShowAll] = useState(false);
+  const [tab, setTab] = useState<"list" | "map">("list");
+  const mapEnabled = Boolean(KAKAO_MAP_KEY) && shops.length > 0;
 
   const needle = q.trim().toLowerCase();
   const searching = needle.length > 0;
@@ -68,6 +71,36 @@ export function ShopExplorer({ shops }: { shops: Shop[] }) {
 
   return (
     <div className="flex flex-col gap-4">
+      {mapEnabled && (
+        <div className="flex w-fit rounded-full bg-subcanvas p-0.5 text-label-md font-bold">
+          {(["list", "map"] as const).map((t) => (
+            <button
+              key={t}
+              type="button"
+              onClick={() => setTab(t)}
+              className={cn(
+                "inline-flex items-center gap-1.5 rounded-full px-4 py-1.5 transition",
+                tab === t ? "bg-card text-ink shadow-sm" : "text-ink-soft hover:text-ink",
+              )}
+            >
+              {t === "list" ? <Store className="h-4 w-4" /> : <MapIcon className="h-4 w-4" />}
+              {t === "list" ? "목록" : "지도"}
+            </button>
+          ))}
+        </div>
+      )}
+
+      {tab === "map" && mapEnabled && (
+        <div className="flex flex-col gap-2">
+          <ShopMap shops={shops} />
+          <p className="px-1 text-body-sm text-ink-soft">
+            마커를 누르면 매장명과 카카오맵 링크가 나옵니다. 위치는 대략적이며 방문 전 확인하세요.
+          </p>
+        </div>
+      )}
+
+      {tab === "list" && (
+      <>
       {/* 검색 + 공인샵 토글 */}
       <div className="flex flex-wrap items-center gap-2">
         <div className="relative min-w-[200px] flex-1">
@@ -209,6 +242,10 @@ export function ShopExplorer({ shops }: { shops: Shop[] }) {
 
         {shops.length > 0 && <SubmitCallout />}
       </div>
+      </>
+      )}
+
+      {tab === "map" && mapEnabled && shops.length > 0 && <SubmitCallout />}
     </div>
   );
 }
