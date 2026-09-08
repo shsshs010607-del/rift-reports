@@ -134,15 +134,15 @@ export function DeckQuiz({ images = {} }: { images?: Record<string, string> }) {
                   </p>
 
                   {deck ? (
-                    <div className="mt-3 overflow-hidden rounded-2xl border border-line/70 bg-card">
-                      <div className="relative aspect-[16/9] w-full bg-subcanvas">
+                    <div className="mt-3">
+                      <div className="relative mx-auto aspect-[744/1039] w-full max-w-[260px] overflow-hidden rounded-xl bg-subcanvas">
                         {images[deck.id] ? (
                           <Image
                             src={images[deck.id]}
                             alt={deck.name}
                             fill
-                            sizes="420px"
-                            className="object-cover object-top"
+                            sizes="260px"
+                            className="object-contain"
                           />
                         ) : (
                           <div className="grid h-full place-items-center text-body-sm text-ink-soft">
@@ -150,19 +150,16 @@ export function DeckQuiz({ images = {} }: { images?: Record<string, string> }) {
                           </div>
                         )}
                       </div>
-                      <div className="p-4">
-                        <p className="font-display text-headline-sm font-bold text-ink">
-                          {deck.name}
-                        </p>
-                        <p className="mt-0.5 text-body-sm text-ink-soft">{deck.subtitle}</p>
-                        <Link
-                          href={listHref(deck)}
-                          onClick={() => setOpen(false)}
-                          className="mt-3 inline-flex items-center gap-1 rounded-full bg-primary px-4 py-2 text-label-md font-bold text-white transition hover:bg-primary-container"
-                        >
-                          덱리스트 보기 <ArrowRight className="h-4 w-4" />
-                        </Link>
-                      </div>
+                      <p className="mt-3 font-display text-headline-sm font-bold text-ink">
+                        {deck.name}
+                      </p>
+                      <Link
+                        href={listHref(deck)}
+                        onClick={() => setOpen(false)}
+                        className="mt-3 inline-flex items-center gap-1 rounded-full bg-primary px-4 py-2 text-label-md font-bold text-white transition hover:bg-primary-container"
+                      >
+                        덱리스트 보기 <ArrowRight className="h-4 w-4" />
+                      </Link>
                     </div>
                   ) : (
                     <p className="mt-4 text-body-sm text-ink-soft">추천 덱을 찾지 못했어요.</p>
