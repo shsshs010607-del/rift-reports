@@ -1,8 +1,9 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { usePathname } from "next/navigation";
 import { ADSENSE } from "@/lib/constants";
+import { adsAllowedHere } from "@/lib/ads";
 
 declare global {
   interface Window {
@@ -21,13 +22,16 @@ export function AdSenseUnit({ slot, className }: { slot?: string; className?: st
   const pathname = usePathname();
   const insRef = useRef<HTMLModElement>(null);
   const pushedRef = useRef(false);
+  const [allowed, setAllowed] = useState(false);
+
+  useEffect(() => setAllowed(adsAllowedHere()), []);
 
   useEffect(() => {
     pushedRef.current = false;
   }, [pathname]);
 
   useEffect(() => {
-    if (!client || !adSlot) return;
+    if (!allowed || !client || !adSlot) return;
     const el = insRef.current;
     if (!el) return;
 
@@ -59,9 +63,9 @@ export function AdSenseUnit({ slot, className }: { slot?: string; className?: st
       ro.disconnect();
       window.clearTimeout(t);
     };
-  }, [client, adSlot, pathname]);
+  }, [allowed, client, adSlot, pathname]);
 
-  if (!client || !adSlot) return null;
+  if (!allowed || !client || !adSlot) return null;
 
   return (
     <aside className={className} aria-label="광고">

@@ -49,6 +49,15 @@ export const ADSENSE = {
   // 퍼블리셔 ID·슬롯 ID 는 공개 값이라 기본값으로 박아둔다. (env 로 덮어쓰기 가능)
   client: process.env.NEXT_PUBLIC_ADSENSE_CLIENT ?? "ca-pub-5310171214105326",
   footerSlot: process.env.NEXT_PUBLIC_ADSENSE_FOOTER_SLOT ?? "2066782718",
+  /**
+   * 광고를 실제로 띄울 호스트 화이트리스트. 프리뷰(*.vercel.app)·localhost 에선
+   * 로더 스크립트도, 광고 칸도 렌더하지 않는다 (AdSense 정책 + 콘솔 오류 방지).
+   * 쉼표로 구분. 미설정 시 riba.gg 만 허용.
+   */
+  hosts: (process.env.NEXT_PUBLIC_ADSENSE_HOSTS ?? "riba.gg,www.riba.gg")
+    .split(",")
+    .map((h) => h.trim().toLowerCase())
+    .filter(Boolean),
 } as const;
 
 /** Kakao Map JavaScript 키. 없으면 지도 대신 목록만. (콘솔에서 웹 도메인 등록 필수) */
