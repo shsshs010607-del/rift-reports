@@ -11,6 +11,7 @@ import {
   type CardRarity,
   type CardSearchQuery,
   type CardType,
+  CARD_DOMAIN_SLUGS,
   CARD_RARITY_SLUGS,
   CARD_SET_CODES,
   CARD_TYPE_SLUGS,
@@ -117,6 +118,72 @@ export function applyCardQuery(cards: Card[], query: CardSearchQuery): Card[] {
   if (offset > 0 || end !== undefined) result = result.slice(offset, end);
 
   return result;
+}
+
+// ════════════════════════════════════════════════════════════════════
+//  패싯(분포) 집계 — 필터 UI 의 그래프/개수 배지용
+// ════════════════════════════════════════════════════════════════════
+
+/** 코스트 히스토그램 상한(필터 칩과 동일: 0~7 정확히 일치). */
+export const FACET_COST_MAX = 7;
+
+export interface CardFacets {
+  /** 현재 질의(모든 필터 적용)에 맞는 카드 수. */
+  total: number;
+  /** 각 차원은 "그 차원의 필터만 뺀" 결과 기준 개수 — 누르면 몇 장이 남는지. */
+  domain: Record<string, number>;
+  type: Record<string, number>;
+  rarity: Record<string, number>;
+  setCode: Record<string, number>;
+  /** "0"~"7" (필터 칩과 동일하게 정확히 일치하는 카드 수). */
+  cost: Record<string, number>;
+}
+
+/**
+ * 필터 패널의 분포 그래프/개수용 집계.
+ * 각 차원은 자기 필터를 제외한 질의 결과에서 센다(스마트 패싯).
+ */
+export async function getCardFacets(query: CardSearchQuery): Promise<CardFacets> {
+  const all = await getCardService().getAllCards();
+  const base: CardSearchQuery = { ...query, limit: undefined, offset: undefined };
+  const poolWithout = (k: keyof CardSearchQuery) =>
+    applyCardQuery(all, { ...base, [k]: undefined });
+
+  const domainPool = poolWithout("domain");
+  const domain: Record<string, number> = {};
+  for (const d of CARD_DOMAIN_SLUGS) {
+    domain[d] = domainPool.reduce((n, c) => n + (c.domains.includes(d) ? 1 : 0), 0);
+  }
+
+  const typePool = poolWithout("type");
+  const type: Record<string, number> = {};
+  for (const t of CARD_TYPE_SLUGS) {
+    type[t] = typePool.reduce((n, c) => n + (c.type === t ? 1 : 0), 0);
+  }
+
+  const rarityPool = poolWithout("rarity");
+  const rarity: Record<string, number> = {};
+  for (const r of CARD_RARITY_SLUGS) {
+    rarity[r] = rarityPool.reduce((n, c) => n + (c.rarity === r ? 1 : 0), 0);
+  }
+
+  const setPool = poolWithout("setCode");
+  const setCode: Record<string, number> = {};
+  for (const s of CARD_SET_CODES) {
+    setCode[s] = setPool.reduce(
+      (n, c) => n + (c.setCode.toUpperCase() === s ? 1 : 0),
+      0,
+    );
+  }
+
+  const costPool = poolWithout("cost");
+  const cost: Record<string, number> = {};
+  for (let i = 0; i <= FACET_COST_MAX; i++) cost[String(i)] = 0;
+  for (const c of costPool) {
+    if (c.cost != null && c.cost >= 0 && c.cost <= FACET_COST_MAX) cost[String(c.cost)] += 1;
+  }
+
+  return { total: applyCardQuery(all, base).length, domain, type, rarity, setCode, cost };
 }
 
 // ════════════════════════════════════════════════════════════════════

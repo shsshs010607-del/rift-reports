@@ -6,6 +6,7 @@ import { PageHeading } from "@/components/ui/page-heading";
 import { CardSearchBox } from "@/components/cards/card-search-box";
 import { CardResults } from "@/components/cards/card-results";
 import { CardFilterBar } from "@/components/cards/card-filter-bar";
+import { getCardFacets } from "@/lib/services/cardService";
 import { findGlossaryMatches } from "@/content/glossary";
 import {
   CARD_DOMAIN_SLUGS,
@@ -112,8 +113,8 @@ export default function CardsPage({ searchParams }: { searchParams: RawSearchPar
       )}
 
       <div className="mt-5">
-        <Suspense fallback={<div className="h-28" />}>
-          <CardFilterBar />
+        <Suspense key={JSON.stringify(query)} fallback={<div className="h-28" />}>
+          <CardFilterPanel query={query} />
         </Suspense>
       </div>
 
@@ -124,6 +125,12 @@ export default function CardsPage({ searchParams }: { searchParams: RawSearchPar
       </div>
     </div>
   );
+}
+
+/** 필터 패널 — 카드 분포(패싯) 집계를 곁들여 렌더. */
+async function CardFilterPanel({ query }: { query: CardSearchQuery }) {
+  const facets = await getCardFacets(query).catch(() => null);
+  return <CardFilterBar facets={facets} />;
 }
 
 /** 로딩 상태 — 카드 그리드 자리를 잡아 레이아웃 시프트를 막는다. */
