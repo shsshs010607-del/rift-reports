@@ -23,6 +23,8 @@ const argv = process.argv.slice(2);
 const PAGES = Number(argv.find((a) => a.startsWith("--pages="))?.split("=")[1] ?? 25);
 const MAX = Number(argv.find((a) => a.startsWith("--max="))?.split("=")[1] ?? 60);
 const INCLUDE_ALL = argv.includes("--all");
+/** 밴 카드가 든 덱도 포함 (기본: 현행 legal 덱만). */
+const INCLUDE_BANNED = argv.includes("--include-banned");
 
 const TOURNEY_RE =
   /\b(1st|2nd|3rd|first place|top\s?\d|winner|won|champion|championship|regional|qualifier|\bRQ\b|nationals?|national open|city challenge|skirmish|worlds?|invitational|undefeated|best of|placed?)\b/i;
@@ -103,8 +105,18 @@ async function main() {
   console.log(`  PA OGN/OGS 카드: ${byCard.size}개`);
 
   // 1) 덱 목록에서 sets ⊆ {OGN,OGS} 후보 수집
-  type Cand = { id: string; name: string; likes: number; views: number; created: string; tourney: boolean };
+  type Cand = {
+    id: string;
+    name: string;
+    likes: number;
+    views: number;
+    created: string;
+    tourney: boolean;
+    legal: boolean;
+    banned: string[];
+  };
   const cands: Cand[] = [];
+  let bannedOut = 0;
   for (let page = 1; page <= PAGES; page++) {
     const j = await getJson(`${API}/decks?limit=100&sort=likes&page=${page}`);
     const rows: any[] = j.data ?? [];
@@ -112,6 +124,12 @@ async function main() {
     for (const d of rows) {
       const sets: string[] = (d.sets ?? []).map((s: any) => s.prefix);
       if (!sets.length || !sets.every((s) => KR_SETS.has(s))) continue;
+      const legal = d.isLegal !== false;
+      const banned: string[] = d.bannedCardNames ?? [];
+      if (!legal && !INCLUDE_BANNED) {
+        bannedOut++;
+        continue;
+      }
       cands.push({
         id: d.id,
         name: d.name ?? "이름 없음",
@@ -119,11 +137,16 @@ async function main() {
         views: d.views ?? 0,
         created: d.createdAt ?? d.editedAt ?? null,
         tourney: TOURNEY_RE.test(d.name ?? ""),
+        legal,
+        banned,
       });
     }
     await sleep(250);
   }
-  console.log(`OGN/OGS 전용 후보 덱: ${cands.length}개 (대회 ${cands.filter((c) => c.tourney).length})`);
+  console.log(
+    `OGN/OGS 전용 후보 덱: ${cands.length}개 (대회 ${cands.filter((c) => c.tourney).length})` +
+      (bannedOut ? ` · 밴 카드로 제외: ${bannedOut}개` : ""),
+  );
 
   // 대회 덱 우선, 그다음 인기순
   cands.sort((a, b) => Number(b.tourney) - Number(a.tourney) || b.likes - a.likes);
@@ -134,6 +157,7 @@ async function main() {
 
   let stored = 0;
   const skipped: string[] = [];
+  const syncedIds: string[] = [];
 
   for (const cand of pick) {
     if (stored >= MAX) break;
@@ -236,7 +260,23 @@ async function main() {
       continue;
     }
     stored++;
+    syncedIds.push(cand.id);
     console.log(`  + ${cand.tourney ? "🏆" : "  "} ${cand.name.slice(0, 60)}  (${total}장)`);
+  }
+
+  // 이번에 안 담긴 예전 행 정리 (밴 규칙 바뀌면 사라진 덱 제거)
+  if (syncedIds.length > 0 && !INCLUDE_BANNED) {
+    const { data: existing } = await db
+      .from("meta_decks")
+      .select("source_id")
+      .eq("source", "piltoverarchive");
+    const stale = (existing ?? [])
+      .map((r) => r.source_id)
+      .filter((id) => !syncedIds.includes(id));
+    if (stale.length) {
+      await db.from("meta_decks").delete().eq("source", "piltoverarchive").in("source_id", stale);
+      console.log(`정리: 오래된 덱 ${stale.length}개 삭제`);
+    }
   }
 
   console.log(`\n저장: ${stored}개 / 건너뜀: ${skipped.length}개`);
