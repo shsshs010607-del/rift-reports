@@ -1,12 +1,13 @@
 import Link from "next/link";
 import Image from "next/image";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, Trophy } from "lucide-react";
 
 import { getCardService } from "@/lib/services/cardService";
 import type { Card } from "@/lib/types/card";
 import { TIERS, TIER_STYLES } from "@/lib/constants";
 import type { Tier } from "@/lib/types/database";
 import { TIER_DECKS, TIER_META } from "@/lib/data/tier-list";
+import { getBestMetaDeckByLegend } from "@/lib/meta-decks";
 import { cn } from "@/lib/utils";
 
 const DECK_HREF = "/community/deck-guide";
@@ -22,6 +23,8 @@ export async function TierBoard() {
   } catch {
     /* 카드 못 불러와도 텍스트만 */
   }
+
+  const bestDeck = await getBestMetaDeckByLegend(TIER_DECKS.map((d) => d.legendEn));
 
   return (
     <div className="flex flex-col gap-3">
@@ -51,10 +54,16 @@ export async function TierBoard() {
               {decks.map((deck) => {
                 const legend = legendByName.get(deck.legendEn);
                 const art = legend?.localization.en.imageUrl ?? legend?.imageUrl;
+                const meta = bestDeck[deck.legendEn];
+                const href = meta
+                  ? `/decks?legend=${encodeURIComponent(deck.legendEn)}`
+                  : deck.guidePostId
+                    ? `/community/post/${deck.guidePostId}`
+                    : DECK_HREF;
                 return (
                   <li key={deck.id}>
                     <Link
-                      href={deck.guidePostId ? `/community/post/${deck.guidePostId}` : DECK_HREF}
+                      href={href}
                       className="group flex h-full flex-col overflow-hidden rounded-xl border border-line/70 bg-card transition hover:-translate-y-0.5 hover:border-primary/40"
                     >
                       {/* 카드 상단 절반만 (아트 + 이름) */}
@@ -79,7 +88,15 @@ export async function TierBoard() {
                         </p>
                         <p className="line-clamp-1 text-label-sm text-ink-soft">{deck.subtitle}</p>
                         <span className="mt-1 inline-flex items-center gap-0.5 self-end text-label-sm font-semibold text-primary-strong">
-                          공략 <ArrowRight className="h-3 w-3" />
+                          {meta ? (
+                            <>
+                              {meta.is_tournament && <Trophy className="h-3 w-3" />}
+                              메타 덱
+                            </>
+                          ) : (
+                            "공략"
+                          )}
+                          <ArrowRight className="h-3 w-3" />
                         </span>
                       </div>
                     </Link>

@@ -5,6 +5,7 @@ import Link from "next/link";
 import { ArrowRight, Check, Copy, ExternalLink, Heart, Layers, Trophy } from "lucide-react";
 
 import { CARD_DOMAINS } from "@/lib/constants";
+import { normLegend } from "@/lib/legend-name";
 import type { MetaDeck } from "@/lib/meta-decks";
 import { cn } from "@/lib/utils";
 
@@ -14,18 +15,28 @@ const shortLegend = (name: string | null) => (name ?? "").split(/[,–-]/)[0].tr
 export function MetaDeckBrowser({
   decks,
   images,
+  initialLegend,
 }: {
   decks: MetaDeck[];
   images: Record<string, string>;
+  initialLegend?: string;
 }) {
-  const [legend, setLegend] = useState<string | null>(null);
-  const [tourneyOnly, setTourneyOnly] = useState(false);
-
   const legends = useMemo(() => {
     const m = new Map<string, number>();
     for (const d of decks) if (d.legend_name) m.set(d.legend_name, (m.get(d.legend_name) ?? 0) + 1);
     return [...m.entries()].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]));
   }, [decks]);
+
+  // initialLegend(영문명 등)를 정규화 매칭으로 실제 legend_name 에 대응
+  const matchedInitial = useMemo(() => {
+    if (!initialLegend) return null;
+    const k = normLegend(initialLegend);
+    const first2 = k.split(" ").slice(0, 2).join(" ");
+    return legends.find(([n]) => normLegend(n) === k || normLegend(n).startsWith(first2))?.[0] ?? null;
+  }, [initialLegend, legends]);
+
+  const [legend, setLegend] = useState<string | null>(matchedInitial);
+  const [tourneyOnly, setTourneyOnly] = useState(false);
 
   const shown = decks.filter(
     (d) => (!legend || d.legend_name === legend) && (!tourneyOnly || d.is_tournament),

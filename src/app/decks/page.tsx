@@ -30,7 +30,11 @@ async function legendImagesByRef(): Promise<Record<string, string>> {
   }
 }
 
-export default async function DecksPage() {
+export default async function DecksPage({
+  searchParams,
+}: {
+  searchParams: { legend?: string };
+}) {
   const [decks, images] = await Promise.all([getMetaDecks(), legendImagesByRef()]);
 
   return (
@@ -47,7 +51,7 @@ export default async function DecksPage() {
           </p>
         </div>
       ) : (
-        <MetaDeckBrowser decks={decks} images={images} />
+        <MetaDeckBrowser decks={decks} images={images} initialLegend={searchParams.legend} />
       )}
 
       <p className="mt-8 flex items-center gap-1.5 text-body-sm text-ink-soft">
