@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 
 import type { Card } from "@/lib/types/card";
+import { LocalizedCard } from "@/components/cards/localized-card";
 
 const cache = new Map<string, Promise<Card | null>>();
 
@@ -60,23 +61,17 @@ export function CardInline({ name }: { name: string }) {
     );
   }
 
-  const img =
-    card.localization.ko?.imageUrl ?? card.localization.en.imageUrl ?? card.imageUrl ?? null;
+  const wide = card.orientation === "landscape";
 
   return (
     <Link
       href={`/cards?q=${encodeURIComponent(card.name)}`}
       title={card.name}
-      className="my-1 mr-2 inline-block w-36 max-w-[45%] overflow-hidden rounded-lg border border-line bg-card align-top shadow-xs transition hover:-translate-y-0.5 hover:shadow-e2"
+      className={`my-1 mr-2 inline-block max-w-[45%] overflow-hidden rounded-lg border border-line bg-card align-top shadow-xs transition hover:-translate-y-0.5 hover:shadow-e2 ${
+        wide ? "w-52" : "w-36"
+      }`}
     >
-      {img ? (
-        // eslint-disable-next-line @next/next/no-img-element
-        <img src={img} alt={card.name} loading="lazy" className="block w-full" />
-      ) : (
-        <span className="block bg-subcanvas px-2 py-6 text-center text-label-sm text-ink-soft">
-          {card.name}
-        </span>
-      )}
+      <LocalizedCard card={card} sizes="200px" className="!rounded-none" />
       <span className="block truncate px-1.5 py-1 text-label-sm font-bold text-ink">
         {card.name}
       </span>
