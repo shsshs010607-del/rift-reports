@@ -46,17 +46,27 @@ async function main() {
   for (const deck of TIER_DECKS) {
     if (!deck.guidePostId) continue;
     const best = findBest(deck.legendEn);
-    if (!best) {
-      missing.push(deck.name);
-      continue;
-    }
-
     const { data: post } = await db
       .from("posts")
       .select("id, body")
       .eq("id", deck.guidePostId)
       .maybeSingle();
     if (!post) continue;
+
+    const stripRe = new RegExp(`${MARK_START}[\\s\\S]*?${MARK_END}\\n*`);
+
+    if (!best) {
+      missing.push(deck.name);
+      // 이전에 넣었던 섹션이 있으면 제거
+      if (stripRe.test(post.body)) {
+        await db
+          .from("posts")
+          .update({ body: post.body.replace(stripRe, ""), updated_at: new Date().toISOString() })
+          .eq("id", post.id);
+        console.log(`  - ${deck.name} → 메타 덱 없음, 섹션 제거`);
+      }
+      continue;
+    }
 
     const block =
       `${MARK_START}\n` +

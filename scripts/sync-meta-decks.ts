@@ -25,9 +25,17 @@ const MAX = Number(argv.find((a) => a.startsWith("--max="))?.split("=")[1] ?? 60
 const INCLUDE_ALL = argv.includes("--all");
 /** 밴 카드가 든 덱도 포함 (기본: 현행 legal 덱만). */
 const INCLUDE_BANNED = argv.includes("--include-banned");
+/** 대회 아닌 덱의 최소 추천 수 (--all 이면 무시). */
+const MIN_COMMUNITY_LIKES = Number(
+  argv.find((a) => a.startsWith("--min-likes="))?.split("=")[1] ?? 3,
+);
 
 const TOURNEY_RE =
   /\b(1st|2nd|3rd|first place|top\s?\d|winner|won|champion|championship|regional|qualifier|\bRQ\b|nationals?|national open|city challenge|skirmish|worlds?|invitational|undefeated|best of|placed?)\b/i;
+
+/** 스타터·프리콘 덱 — 기본 제외 (사용자가 별도 큐레이션). */
+const STARTER_RE =
+  /starter deck|starter\b|proving grounds|\bprecon\b|origins starter|precon modified/i;
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
@@ -130,13 +138,18 @@ async function main() {
         bannedOut++;
         continue;
       }
+      const tourney = TOURNEY_RE.test(d.name ?? "");
+      if (!INCLUDE_ALL) {
+        if (STARTER_RE.test(d.name ?? "")) continue; // 스타터/프리콘 제외
+        if (!tourney && (d.likes ?? 0) < MIN_COMMUNITY_LIKES) continue; // 저품질 커뮤니티 덱 제외
+      }
       cands.push({
         id: d.id,
         name: d.name ?? "이름 없음",
         likes: d.likes ?? 0,
         views: d.views ?? 0,
         created: d.createdAt ?? d.editedAt ?? null,
-        tourney: TOURNEY_RE.test(d.name ?? ""),
+        tourney,
         legal,
         banned,
       });
