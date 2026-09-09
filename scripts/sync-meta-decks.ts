@@ -25,6 +25,8 @@ const MAX = Number(argv.find((a) => a.startsWith("--max="))?.split("=")[1] ?? 60
 const INCLUDE_ALL = argv.includes("--all");
 /** 밴 카드가 든 덱도 포함 (기본: 현행 legal 덱만). */
 const INCLUDE_BANNED = argv.includes("--include-banned");
+/** 특정 PA 덱 id 만 추가 (URL /decks/view/<id> 의 <id>). 필터 무시, 기존 행 유지. */
+const ONLY_DECK = argv.find((a) => a.startsWith("--deck="))?.split("=")[1];
 /** 대회 아닌 덱의 최소 추천 수 (--all 이면 무시). */
 const MIN_COMMUNITY_LIKES = Number(
   argv.find((a) => a.startsWith("--min-likes="))?.split("=")[1] ?? 3,
@@ -125,7 +127,24 @@ async function main() {
   };
   const cands: Cand[] = [];
   let bannedOut = 0;
-  for (let page = 1; page <= PAGES; page++) {
+
+  // 단일 덱 모드 — 목록 스캔 건너뛰고 그 덱만
+  if (ONLY_DECK) {
+    const d = await getJson(`${API}/decks/${ONLY_DECK}`);
+    cands.push({
+      id: ONLY_DECK,
+      name: d.name ?? "이름 없음",
+      likes: d.likes ?? 0,
+      views: d.views ?? 0,
+      created: d.createdAt ?? d.editedAt ?? null,
+      tourney: TOURNEY_RE.test(d.name ?? ""),
+      legal: true,
+      banned: [],
+    });
+    console.log(`단일 덱: ${d.name}`);
+  }
+
+  for (let page = 1; ONLY_DECK ? false : page <= PAGES; page++) {
     const j = await getJson(`${API}/decks?limit=100&sort=likes&page=${page}`);
     const rows: any[] = j.data ?? [];
     if (!rows.length) break;
@@ -163,10 +182,12 @@ async function main() {
 
   // 대회 덱 우선, 그다음 인기순
   cands.sort((a, b) => Number(b.tourney) - Number(a.tourney) || b.likes - a.likes);
-  const pick = (INCLUDE_ALL ? cands : cands.filter((c) => c.tourney).concat(cands.filter((c) => !c.tourney))).slice(
-    0,
-    MAX * 2,
-  );
+  const pick = ONLY_DECK
+    ? cands
+    : (INCLUDE_ALL ? cands : cands.filter((c) => c.tourney).concat(cands.filter((c) => !c.tourney))).slice(
+        0,
+        MAX * 2,
+      );
 
   let stored = 0;
   const skipped: string[] = [];
@@ -277,8 +298,8 @@ async function main() {
     console.log(`  + ${cand.tourney ? "🏆" : "  "} ${cand.name.slice(0, 60)}  (${total}장)`);
   }
 
-  // 이번에 안 담긴 예전 행 정리 (밴 규칙 바뀌면 사라진 덱 제거)
-  if (syncedIds.length > 0 && !INCLUDE_BANNED) {
+  // 이번에 안 담긴 예전 행 정리 (밴 규칙 바뀌면 사라진 덱 제거) — 단일 덱 모드에선 안 함
+  if (syncedIds.length > 0 && !INCLUDE_BANNED && !ONLY_DECK) {
     const { data: existing } = await db
       .from("meta_decks")
       .select("source_id")
