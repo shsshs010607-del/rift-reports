@@ -1,22 +1,33 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { Search, Plus, Minus, Trash2, Printer, X } from "lucide-react";
+import { Search, Plus, Minus, Trash2, Printer, X, SlidersHorizontal } from "lucide-react";
 
 import type { Card } from "@/lib/types/card";
 import { resolveCardText, cardNumber } from "@/lib/types/card";
+import { CARD_DOMAINS, CARD_TYPES } from "@/lib/constants";
 import { renderProxySheets, type ProxyEntry } from "@/lib/cards/proxy-sheet";
 import { LocalizedCard } from "@/components/cards/localized-card";
+import { cn } from "@/lib/utils";
+
+const COSTS = ["0", "1", "2", "3", "4", "5", "6", "7+"] as const;
+const SHOW_STEP = 60;
 
 export function ProxyBuilder() {
   const [all, setAll] = useState<Card[]>([]);
   const [q, setQ] = useState("");
+  const [domain, setDomain] = useState("");
+  const [type, setType] = useState("");
+  const [cost, setCost] = useState("");
+  const [setCode, setSetCode] = useState("");
+  const [openFilters, setOpenFilters] = useState(false);
+  const [limit, setLimit] = useState(SHOW_STEP);
   const [picks, setPicks] = useState<Record<string, number>>({});
   const [busy, setBusy] = useState(false);
   const [note, setNote] = useState("");
 
   useEffect(() => {
-    fetch("/api/cards?limit=1000")
+    fetch("/api/cards?limit=2000")
       .then((r) => (r.ok ? r.json() : { cards: [] }))
       .then((d: { cards: Card[] }) => setAll(d.cards ?? []))
       .catch(() => setAll([]));
@@ -24,21 +35,40 @@ export function ProxyBuilder() {
 
   const byId = useMemo(() => new Map(all.map((c) => [c.id, c])), [all]);
 
-  const results = useMemo(() => {
+  const filtersOn = Boolean(q.trim() || domain || type || cost || setCode);
+
+  const filtered = useMemo(() => {
     const term = q.trim().toLowerCase();
-    if (!term) return [];
     return all
       .filter((c) => {
-        const ko = resolveCardText(c, "ko");
-        return (
-          c.name.toLowerCase().includes(term) ||
-          c.localization.en.name.toLowerCase().includes(term) ||
-          ko.text.toLowerCase().includes(term) ||
-          (cardNumber(c) ?? "").toLowerCase().includes(term)
-        );
+        if (domain && !(c.domains as readonly string[]).includes(domain)) return false;
+        if (type && c.type !== type) return false;
+        if (setCode && c.setCode !== setCode) return false;
+        if (cost) {
+          const n = c.cost ?? -1;
+          if (cost === "7+" ? n < 7 : String(n) !== cost) return false;
+        }
+        if (term) {
+          const ko = resolveCardText(c, "ko");
+          return (
+            c.name.toLowerCase().includes(term) ||
+            c.localization.en.name.toLowerCase().includes(term) ||
+            ko.text.toLowerCase().includes(term) ||
+            (cardNumber(c) ?? "").toLowerCase().includes(term)
+          );
+        }
+        return true;
       })
-      .slice(0, 20);
-  }, [q, all]);
+      .sort(
+        (a, b) =>
+          a.setCode.localeCompare(b.setCode) ||
+          (Number(String(a.collectorNumber).replace(/\D+/g, "")) || 0) -
+            (Number(String(b.collectorNumber).replace(/\D+/g, "")) || 0),
+      );
+  }, [all, q, domain, type, cost, setCode]);
+
+  useEffect(() => setLimit(SHOW_STEP), [q, domain, type, cost, setCode]);
+  const shown = filtered.slice(0, limit);
 
   const entries: ProxyEntry[] = useMemo(
     () =>
@@ -58,6 +88,14 @@ export function ProxyBuilder() {
       else copy[id] = Math.min(99, next);
       return copy;
     });
+
+  const clearFilters = () => {
+    setQ("");
+    setDomain("");
+    setType("");
+    setCost("");
+    setSetCode("");
+  };
 
   async function download() {
     if (entries.length === 0) return;
@@ -84,89 +122,159 @@ export function ProxyBuilder() {
   }
 
   return (
-    <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_360px] lg:items-start">
-      {/* 검색 + 결과 */}
+    <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_340px] lg:items-start">
+      {/* 검색 + 필터 + 카드 그리드 */}
       <div>
-        <div className="relative">
-          <Search className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-soft" />
-          <input
-            type="search"
-            value={q}
-            onChange={(e) => setQ(e.target.value)}
-            placeholder="카드명 · 효과 · 번호로 검색"
-            className="w-full rounded-2xl border-2 border-primary-fixed bg-card py-3 pl-10 pr-10 text-body-md text-ink shadow-e1 placeholder:text-ink-soft/70 focus:border-primary focus:outline-none focus:ring-4 focus:ring-primary/15"
-          />
-          {q && (
+        <div className="flex gap-2">
+          <div className="relative flex-1">
+            <Search className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-soft" />
+            <input
+              type="search"
+              value={q}
+              onChange={(e) => setQ(e.target.value)}
+              placeholder="카드명 · 효과 · 번호로 검색"
+              className="w-full rounded-2xl border-2 border-primary-fixed bg-card py-3 pl-10 pr-10 text-body-md text-ink shadow-e1 placeholder:text-ink-soft/70 focus:border-primary focus:outline-none focus:ring-4 focus:ring-primary/15"
+            />
+            {q && (
+              <button
+                type="button"
+                onClick={() => setQ("")}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-ink-soft hover:text-ink"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            )}
+          </div>
+          <button
+            type="button"
+            onClick={() => setOpenFilters((v) => !v)}
+            className={cn(
+              "inline-flex shrink-0 items-center gap-1.5 rounded-2xl border-2 px-3.5 text-label-md font-bold transition",
+              openFilters || (domain || type || cost || setCode)
+                ? "border-primary bg-primary/10 text-primary-strong"
+                : "border-line bg-card text-ink-soft hover:text-ink",
+            )}
+          >
+            <SlidersHorizontal className="h-4 w-4" />
+            필터
+          </button>
+        </div>
+
+        {openFilters && (
+          <div className="mt-3 flex flex-col gap-3 rounded-2xl border border-line bg-card p-3.5">
+            <FilterRow label="도메인">
+              {CARD_DOMAINS.map((d) => (
+                <Swatch
+                  key={d.slug}
+                  on={domain === d.slug}
+                  color={d.color}
+                  label={d.label}
+                  onClick={() => setDomain(domain === d.slug ? "" : d.slug)}
+                />
+              ))}
+            </FilterRow>
+            <FilterRow label="유형">
+              {CARD_TYPES.filter((t) => t.slug !== "legend").map((t) => (
+                <Pill
+                  key={t.slug}
+                  on={type === t.slug}
+                  onClick={() => setType(type === t.slug ? "" : t.slug)}
+                >
+                  {t.label}
+                </Pill>
+              ))}
+            </FilterRow>
+            <FilterRow label="코스트">
+              {COSTS.map((c) => (
+                <Pill key={c} on={cost === c} onClick={() => setCost(cost === c ? "" : c)}>
+                  {c}
+                </Pill>
+              ))}
+            </FilterRow>
+            <FilterRow label="확장팩">
+              {["OGN", "OGS"].map((s) => (
+                <Pill key={s} on={setCode === s} onClick={() => setSetCode(setCode === s ? "" : s)}>
+                  {s}
+                </Pill>
+              ))}
+            </FilterRow>
+          </div>
+        )}
+
+        <div className="mt-3 flex items-center justify-between text-label-sm text-ink-soft">
+          <span>
+            {all.length === 0 ? "카드 불러오는 중…" : `${filtered.length.toLocaleString()}장`}
+          </span>
+          {filtersOn && (
             <button
               type="button"
-              onClick={() => setQ("")}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-ink-soft hover:text-ink"
+              onClick={clearFilters}
+              className="font-bold text-ink-soft hover:text-error"
             >
-              <X className="h-4 w-4" />
+              필터 해제
             </button>
           )}
         </div>
 
-        <div className="mt-4">
-          {all.length === 0 ? (
-            <p className="py-10 text-center text-body-sm text-ink-soft">카드 불러오는 중…</p>
-          ) : !q.trim() ? (
-            <p className="py-10 text-center text-body-sm text-ink-soft">
-              프록시로 뽑을 카드를 검색해서 담으세요.
-            </p>
-          ) : results.length === 0 ? (
-            <p className="py-10 text-center text-body-sm text-ink-soft">검색 결과가 없습니다.</p>
-          ) : (
-            <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3">
-              {results.map((c) => {
-                const ko = resolveCardText(c, "ko");
+        {all.length > 0 && filtered.length === 0 ? (
+          <p className="py-14 text-center text-body-sm text-ink-soft">조건에 맞는 카드가 없습니다.</p>
+        ) : (
+          <>
+            <ul className="mt-2 grid grid-cols-3 gap-2 sm:grid-cols-4">
+              {shown.map((c) => {
                 const qty = picks[c.id] ?? 0;
                 return (
-                  <li
-                    key={c.id}
-                    className="flex flex-col overflow-hidden rounded-xl border border-line bg-card"
-                  >
-                    <LocalizedCard card={c} sizes="180px" className="!rounded-none" />
-                    <div className="flex items-center gap-1 p-1.5">
-                      <span className="min-w-0 flex-1 truncate text-label-sm font-bold text-ink">
-                        {ko.name}
-                      </span>
-                      {qty > 0 ? (
-                        <span className="flex items-center gap-1">
-                          <button
-                            type="button"
-                            onClick={() => bump(c.id, -1)}
-                            className="grid h-6 w-6 place-items-center rounded-full bg-subcanvas text-ink-soft"
-                          >
-                            <Minus className="h-3.5 w-3.5" />
-                          </button>
-                          <span className="w-4 text-center text-label-md font-black text-primary-strong">
-                            {qty}
-                          </span>
-                          <button
-                            type="button"
-                            onClick={() => bump(c.id, 1)}
-                            className="grid h-6 w-6 place-items-center rounded-full bg-primary text-white"
-                          >
-                            <Plus className="h-3.5 w-3.5" />
-                          </button>
+                  <li key={c.id} className="overflow-hidden rounded-xl border border-line bg-card">
+                    <button
+                      type="button"
+                      onClick={() => bump(c.id, 1)}
+                      className="group relative block w-full"
+                      title={`${resolveCardText(c, "ko").name} 담기`}
+                    >
+                      <LocalizedCard card={c} sizes="150px" className="!rounded-none" />
+                      {qty > 0 && (
+                        <span className="absolute right-1 top-1 grid h-6 min-w-6 place-items-center rounded-full bg-primary px-1 text-label-sm font-black text-white shadow">
+                          {qty}
                         </span>
-                      ) : (
+                      )}
+                      <span className="absolute inset-x-0 bottom-0 flex items-center justify-center gap-1 bg-primary/90 py-1 text-label-sm font-bold text-white opacity-0 transition group-hover:opacity-100">
+                        <Plus className="h-3 w-3" /> 담기
+                      </span>
+                    </button>
+                    {qty > 0 && (
+                      <div className="flex items-center justify-between px-1.5 py-1">
+                        <button
+                          type="button"
+                          onClick={() => bump(c.id, -1)}
+                          className="grid h-6 w-6 place-items-center rounded-full bg-subcanvas text-ink-soft"
+                        >
+                          <Minus className="h-3.5 w-3.5" />
+                        </button>
+                        <span className="text-label-md font-black text-primary-strong">{qty}</span>
                         <button
                           type="button"
                           onClick={() => bump(c.id, 1)}
-                          className="grid h-6 w-6 shrink-0 place-items-center rounded-full bg-primary text-white"
+                          className="grid h-6 w-6 place-items-center rounded-full bg-primary text-white"
                         >
                           <Plus className="h-3.5 w-3.5" />
                         </button>
-                      )}
-                    </div>
+                      </div>
+                    )}
                   </li>
                 );
               })}
             </ul>
-          )}
-        </div>
+            {filtered.length > limit && (
+              <button
+                type="button"
+                onClick={() => setLimit((n) => n + SHOW_STEP)}
+                className="mt-4 w-full rounded-full border border-line py-2.5 text-label-md font-bold text-ink-soft transition hover:border-primary/40 hover:text-ink"
+              >
+                더 보기 ({filtered.length - limit}장 남음)
+              </button>
+            )}
+          </>
+        )}
       </div>
 
       {/* 담은 목록 */}
@@ -179,7 +287,9 @@ export function ProxyBuilder() {
         </div>
 
         {entries.length === 0 ? (
-          <p className="py-8 text-center text-body-sm text-ink-soft">담은 카드가 없습니다.</p>
+          <p className="py-8 text-center text-body-sm text-ink-soft">
+            카드를 눌러 담으세요.
+          </p>
         ) : (
           <ul className="flex max-h-[50vh] flex-col divide-y divide-line/40 overflow-y-auto">
             {entries.map((e) => (
@@ -231,5 +341,63 @@ export function ProxyBuilder() {
         </p>
       </div>
     </div>
+  );
+}
+
+function FilterRow({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <div className="flex flex-wrap items-center gap-1.5">
+      <span className="w-12 shrink-0 text-label-sm font-bold text-ink-soft">{label}</span>
+      {children}
+    </div>
+  );
+}
+
+function Pill({
+  on,
+  onClick,
+  children,
+}: {
+  on: boolean;
+  onClick: () => void;
+  children: React.ReactNode;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={cn(
+        "rounded-full px-3 py-1 text-label-sm font-bold transition",
+        on ? "bg-primary text-white" : "bg-subcanvas text-ink-soft hover:text-ink",
+      )}
+    >
+      {children}
+    </button>
+  );
+}
+
+function Swatch({
+  on,
+  color,
+  label,
+  onClick,
+}: {
+  on: boolean;
+  color: string;
+  label: string;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={cn(
+        "inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-label-sm font-bold transition",
+        on ? "bg-primary text-white" : "bg-subcanvas text-ink-soft hover:text-ink",
+      )}
+    >
+      <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: color }} />
+      {label}
+    </button>
   );
 }
