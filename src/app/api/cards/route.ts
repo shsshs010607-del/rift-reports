@@ -57,7 +57,11 @@ export async function GET(request: Request) {
 
   try {
     const service = getCardService();
-    const cards = await service.searchCards(parsed.data as CardSearchQuery);
+    // 덱 빌더 등 클라이언트에서 도메인으로 좁혀도 무색(전장 등) 카드는 항상 포함한다.
+    const cards = await service.searchCards({
+      ...parsed.data,
+      colorlessOk: true,
+    } as CardSearchQuery);
     return NextResponse.json(
       { count: cards.length, cards },
       { headers: { "Cache-Control": "public, s-maxage=3600, stale-while-revalidate=86400" } },

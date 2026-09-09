@@ -144,6 +144,8 @@ export interface CardSearchQuery {
   /** 자유 텍스트. 카드명 + 룰 텍스트를 대상으로 한/영 부분일치 검색. */
   q?: string;
   domain?: CardDomain;
+  /** true 면 도메인 필터가 걸려도 무색(중립) 카드는 통과시킨다 — 덱 빌더용. */
+  colorlessOk?: boolean;
   type?: CardType;
   rarity?: CardRarity;
   /** 정확히 일치하는 코스트. */

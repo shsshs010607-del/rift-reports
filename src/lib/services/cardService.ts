@@ -98,7 +98,12 @@ export function applyCardQuery(cards: Card[], query: CardSearchQuery): Card[] {
 
   let result = cards.filter((card) => {
     if (q && !matchesText(card, q)) return false;
-    if (query.domain && !card.domains.includes(query.domain)) return false;
+    if (
+      query.domain &&
+      !card.domains.includes(query.domain) &&
+      !(query.colorlessOk && card.domains.length === 0)
+    )
+      return false;
     if (query.type && card.type !== query.type) return false;
     if (query.rarity && card.rarity !== query.rarity) return false;
     if (typeof query.cost === "number" && card.cost !== query.cost) return false;
