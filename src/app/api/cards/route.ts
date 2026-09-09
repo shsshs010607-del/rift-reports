@@ -40,7 +40,7 @@ const QuerySchema = z.object({
     .toUpperCase()
     .pipe(z.enum(CARD_SET_CODES as unknown as [string, ...string[]]))
     .optional(),
-  limit: z.coerce.number().int().min(1).max(500).optional(),
+  limit: z.coerce.number().int().min(1).max(2000).optional(),
   offset: z.coerce.number().int().min(0).optional(),
 });
 
