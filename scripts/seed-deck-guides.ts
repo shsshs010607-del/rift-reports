@@ -36,57 +36,16 @@ function legendInfo() {
   return map;
 }
 
-function body(deck: (typeof TIER_DECKS)[number], domains: string[]) {
-  const doms = domains.map((d) => `${DOMAIN_KO[d] ?? d}(${d})`).join(" · ");
-  const traits = domains.map((d) => DOMAIN_TRAIT[d] ?? d).join(", ");
-  return `# ${deck.name} 덱 공략
+/**
+ * 최초 생성용 최소 본문. 실제 본문(대회 덱 ```deck 블록 포함)은
+ * scripts/rebuild-deck-guides.ts 가 채운다.
+ */
+function body(deck: (typeof TIER_DECKS)[number], _domains: string[]) {
+  return `[[${deck.keyCard}]]
 
-[[${deck.keyCard}]]
+${deck.subtitle}
 
-> ⚠️ 이 글은 **공략 템플릿**입니다. 실전 덱리스트와 세부 운영은 댓글 또는 수정으로 채워주세요.
-> 기준: OGN(오리진) + OGS(증명의 전장) · 현행 밴 리스트 적용
-> 본문에 \`[[카드명]]\` 을 쓰면 카드 이미지가 자동으로 들어갑니다.
-
-## 덱 개요
-- 레전드: ${deck.keyCard} (${deck.legendEn.replace(/\s*\(Starter\)\s*$/, "")})
-- 지정 챔피언: 레전드와 같은 이름의 챔피언 유닛
-- 도메인: ${doms} — ${traits}
-- 컨셉: ${deck.subtitle}
-- 승리 조건: (작성 필요)
-
-## 덱리스트
-\`\`\`
-레전드: ${deck.legendEn.replace(/\s*\(Starter\)\s*$/, "")}
-챔피언: (동일 이름 챔피언)
-룬:
-6 (레전드 색 룬)
-6 (레전드 색 룬)
-전장:
-1 (작성 필요)
-1 (작성 필요)
-1 (작성 필요)
-메인덱 (39~59):
-3 (핵심 유닛)
-...
-\`\`\`
-※ 덱 시뮬레이터에서 짠 뒤 "덱 코드" 또는 텍스트로 여기에 붙여넣기.
-
-## 멀리건 가이드
-- 킵: (작성 필요)
-- 버림: (작성 필요)
-
-## 턴별 운영
-- 1~3턴: (작성 필요)
-- 중반: (작성 필요)
-- 후반 / 피니시: (작성 필요)
-
-## 상대별 팁
-- vs 어그로: (작성 필요)
-- vs 컨트롤: (작성 필요)
-- vs 미러: (작성 필요)
-
----
-*리프트 리포트 · 덱 공략 템플릿 v1*`;
+> 공략 작성 중입니다. 대회 덱과 세부 운영은 곧 채워집니다.`;
 }
 
 async function main() {
