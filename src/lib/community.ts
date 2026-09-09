@@ -21,6 +21,10 @@ async function safe<T>(fn: () => Promise<T>, fallback: T): Promise<T> {
 /** 게시판 목록 조회 — 정렬은 항상 최신순. 공지·고정글이 상단. */
 export function getPosts(opts: {
   category?: CommunityCategory;
+  /** 이 카테고리는 제외 (홈 커뮤니티 피드에서 리프트 리포트 빼는 용도). */
+  excludeCategory?: CommunityCategory;
+  /** 고정글 제외 (전체 피드에서 게시판별 고정글이 상단 도배되는 것 방지). */
+  excludePinned?: boolean;
   q?: string;
   page?: number;
 }) {
@@ -35,6 +39,8 @@ export function getPosts(opts: {
         .select("*, author:profiles!posts_author_id_fkey(username, avatar_url)", { count: "exact" });
 
       if (opts.category) filter = filter.eq("category", opts.category);
+      if (opts.excludeCategory) filter = filter.neq("category", opts.excludeCategory);
+      if (opts.excludePinned) filter = filter.eq("is_pinned", false);
 
       const searching = Boolean(opts.q && opts.q.trim());
       if (searching) {

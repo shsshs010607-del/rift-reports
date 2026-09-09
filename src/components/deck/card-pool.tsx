@@ -5,7 +5,7 @@ import { Plus, Minus, Search, Layers } from "lucide-react";
 
 import type { Card, CardType } from "@/lib/types/card";
 import type { Deck, ResolvedDeck } from "@/lib/types/deck";
-import { matchesIdentity, planAdd } from "@/lib/deck/deck-model";
+import { matchesIdentity, matchesLegendChampion, planAdd } from "@/lib/deck/deck-model";
 import { CARD_DOMAINS, CARD_SETS } from "@/lib/constants";
 import { LocalizedCard } from "@/components/cards/localized-card";
 import { cn } from "@/lib/utils";
@@ -216,6 +216,9 @@ export function CardPool({
           .filter((card) => {
             if (ownedOnly && !((collection[card.id] ?? 0) > 0)) return false;
             if (tab === "all") return true;
+            // "리더 챔피언" 탭은 레전드와 이름이 같은 챔피언만 (지정 슬롯 전용).
+            // 다른 챔피언은 "메인덱" 탭에 나온다.
+            if (tab === "champion") return matchesLegendChampion(rd, card);
             if (tab === "rune") return matchesIdentity(rd, card); // 색 맞는 룬 (가득 차도 표시)
             if (planAdd(deck, rd, card).kind !== "blocked") return true;
             // 못 넣는 카드라도 이미 덱에 있으면(=최대 도달) 남겨서 빼기 클릭을 받는다

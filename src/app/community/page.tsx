@@ -26,7 +26,10 @@ export default async function CommunityHubPage({
   const plain = !q && !popular && page === 1;
 
   const [list, recent, hotRes] = await Promise.all([
-    popular ? getPopularPosts({ page }) : getPosts({ q, page }),
+    popular
+      ? getPopularPosts({ page })
+      : // 전체 최신글에서 게시판별 고정글(리프트 리포트 등)은 제외 — 각 게시판 탭에서 확인
+        getPosts({ q, page, excludePinned: !q }),
     getRecentByCategory(4),
     plain ? getPopularPosts({ page: 1 }) : Promise.resolve(null),
   ]);
