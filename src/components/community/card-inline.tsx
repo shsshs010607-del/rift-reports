@@ -4,7 +4,10 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 
 import type { Card } from "@/lib/types/card";
+import { CARD_DOMAINS } from "@/lib/constants";
 import { LocalizedCard } from "@/components/cards/localized-card";
+
+const DOMAIN_COLOR = Object.fromEntries(CARD_DOMAINS.map((d) => [d.slug, d.color]));
 
 const cache = new Map<string, Promise<Card | null>>();
 
@@ -72,8 +75,22 @@ export function CardInline({ name }: { name: string }) {
       }`}
     >
       <LocalizedCard card={card} sizes="200px" className="!rounded-none" />
-      <span className="block truncate px-1.5 py-1 text-label-sm font-bold text-ink">
-        {card.name}
+      <span className="flex items-center gap-1 px-1.5 py-1">
+        {typeof card.cost === "number" && (
+          <span className="grid h-4 w-4 shrink-0 place-items-center rounded-full bg-subcanvas text-[10px] font-black text-ink-soft">
+            {card.cost}
+          </span>
+        )}
+        <span className="flex shrink-0 gap-0.5">
+          {card.domains.map((d) => (
+            <span
+              key={d}
+              className="h-2 w-2 rounded-full"
+              style={{ backgroundColor: DOMAIN_COLOR[d] ?? "#999" }}
+            />
+          ))}
+        </span>
+        <span className="truncate text-label-sm font-bold text-ink">{card.name}</span>
       </span>
     </Link>
   );
