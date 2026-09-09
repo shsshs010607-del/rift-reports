@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Menu, X, Search, PenSquare, Home, ChevronDown } from "lucide-react";
 import { NAV_PRIMARY, NAV_SECONDARY, SITE } from "@/lib/constants";
 import { NotificationBell } from "@/components/layout/notification-bell";
@@ -256,6 +256,15 @@ function NavPill({
   sub?: readonly SubItem[];
 }) {
   const [open, setOpen] = useState(false);
+  const closeTimer = useRef<ReturnType<typeof setTimeout>>();
+  const openNow = () => {
+    clearTimeout(closeTimer.current);
+    setOpen(true);
+  };
+  const closeSoon = () => {
+    clearTimeout(closeTimer.current);
+    closeTimer.current = setTimeout(() => setOpen(false), 120);
+  };
 
   const pillCls = cn(
     "whitespace-nowrap rounded-full px-3.5 py-2 text-body-md transition-all",
@@ -273,19 +282,19 @@ function NavPill({
   }
 
   return (
-    <div
-      className="relative"
-      onMouseEnter={() => setOpen(true)}
-      onMouseLeave={() => setOpen(false)}
-    >
+    <div className="relative" onMouseEnter={openNow} onMouseLeave={closeSoon}>
       <div className={cn("flex items-center", pillCls, "gap-0.5 pr-2")}>
         <Link href={href} aria-current={active ? "page" : undefined} className="hover:underline">
           {label}
         </Link>
         <button
           type="button"
-          onClick={() => setOpen((v) => !v)}
+          onClick={() => {
+            clearTimeout(closeTimer.current);
+            setOpen((v) => !v);
+          }}
           aria-label={`${label} 하위 메뉴`}
+          aria-expanded={open}
           className="grid h-5 w-5 place-items-center rounded-full hover:bg-surface-container-high"
         >
           <ChevronDown className={cn("h-3.5 w-3.5 transition", open && "rotate-180")} />
@@ -293,7 +302,10 @@ function NavPill({
       </div>
 
       {open && (
-        <div className="absolute left-0 top-[calc(100%+4px)] z-50 min-w-[160px] overflow-hidden rounded-xl border border-outline-variant/60 bg-surface-container-lowest py-1 shadow-e2">
+        // top-full + pt-2 = 팁과 메뉴 사이 간격을 "hover 가능한 다리"로 만들어
+        // 마우스가 내려오다 메뉴가 닫히는 문제를 막는다.
+        <div className="absolute left-0 top-full z-50 pt-2">
+          <div className="min-w-[160px] overflow-hidden rounded-xl border border-outline-variant/60 bg-surface-container-lowest py-1 shadow-e2">
           {sub.map((s) => {
             const { url, external, disabled } = subHref(s.href);
             if (disabled) {
@@ -319,6 +331,7 @@ function NavPill({
               </Link>
             );
           })}
+          </div>
         </div>
       )}
     </div>
