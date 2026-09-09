@@ -123,6 +123,59 @@ export function PostBody({ text }: { text: string }) {
       continue;
     }
 
+    // 표 — | a | b | \n | --- | --- | \n | ... |
+    if (
+      /^\s*\|.*\|\s*$/.test(line) &&
+      i + 1 < lines.length &&
+      /^\s*\|[\s:|-]+\|\s*$/.test(lines[i + 1])
+    ) {
+      const cells = (row: string) =>
+        row.trim().replace(/^\||\|$/g, "").split("|").map((c) => c.trim());
+      const head = cells(line);
+      i += 2;
+      const rows: string[][] = [];
+      while (i < lines.length && /^\s*\|.*\|\s*$/.test(lines[i])) {
+        rows.push(cells(lines[i]));
+        i++;
+      }
+      const headEmpty = head.every((h) => h === "");
+      blocks.push(
+        <div key={key++} className="my-3 overflow-x-auto">
+          <table className="w-full border-collapse text-body-md">
+            {!headEmpty && (
+              <thead>
+                <tr>
+                  {head.map((h, n) => (
+                    <th
+                      key={n}
+                      className="border-b-2 border-line bg-subcanvas/50 px-3 py-1.5 text-left font-bold text-ink"
+                    >
+                      {inline(h)}
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+            )}
+            <tbody>
+              {rows.map((r, rn) => (
+                <tr key={rn} className="border-b border-line/40">
+                  {r.map((cell, cn) => (
+                    <td
+                      key={cn}
+                      className={cn === 0 ? "px-3 py-1.5 font-semibold text-ink" : "px-3 py-1.5 text-ink-soft"}
+                    >
+                      {inline(cell)}
+                    </td>
+                  ))}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>,
+      );
+      continue;
+    }
+
     // 빈 줄
     if (line.trim() === "") {
       i++;
@@ -134,7 +187,7 @@ export function PostBody({ text }: { text: string }) {
     while (
       i < lines.length &&
       lines[i].trim() !== "" &&
-      !/^(#{1,3}\s|>|\s*[-*]\s|\s*\d+\.\s|```)/.test(lines[i]) &&
+      !/^(#{1,3}\s|>|\s*[-*]\s|\s*\d+\.\s|```|\s*\|)/.test(lines[i]) &&
       !/^\s*(-{3,}|\*{3,})\s*$/.test(lines[i])
     ) {
       buf.push(lines[i]);
