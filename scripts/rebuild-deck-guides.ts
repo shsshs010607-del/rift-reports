@@ -50,7 +50,7 @@ const clean = (t: string) =>
     .replace(/\s+/g, " ")
     .trim();
 
-function legendLine(legendEn: string): { domains: string; effect: string } {
+function legendLine(legendEn: string): { koName: string; domains: string; effect: string } {
   const base = legendEn.replace(/\s*\(Starter\)\s*$/, "").toLowerCase();
   const card = CARDS.find(
     (c) => c.classification?.type === "Legend" && kkey(c.name) === base,
@@ -58,8 +58,9 @@ function legendLine(legendEn: string): { domains: string; effect: string } {
   const domains = (card?.classification?.domain ?? [])
     .map((d) => DOMAIN_KO[d] ?? d)
     .join(" · ");
+  const koName = KO[base]?.n ?? legendEn.replace(/\s*\(Starter\)\s*$/, "");
   const effect = clean(KO[base]?.t ?? "");
-  return { domains, effect: effect.length > 110 ? effect.slice(0, 108) + "…" : effect };
+  return { koName, domains, effect: effect.length > 110 ? effect.slice(0, 108) + "…" : effect };
 }
 
 const norm = (s: string) =>
@@ -91,7 +92,7 @@ async function main() {
 
   for (const deck of TIER_DECKS) {
     if (!deck.guidePostId) continue;
-    const { domains, effect } = legendLine(deck.legendEn);
+    const { koName, domains, effect } = legendLine(deck.legendEn);
     const best = findBest(deck.legendEn);
     if (!best) noMeta.push(deck.name);
 
@@ -111,7 +112,7 @@ ${best.deck_code}
 
 [덱 시뮬레이터에서 만들기 →](/deck-simulator)`;
 
-    const body = `[[${deck.keyCard}]]
+    const body = `[[${koName}]]
 
 **${domains}** · ${deck.subtitle}
 
@@ -122,7 +123,7 @@ ${metaBlock}
 
 ## 이 덱
 
-- **레전드** ${deck.keyCard}${effect ? ` — ${effect}` : ""}
+- **레전드** ${koName}${effect ? ` — ${effect}` : ""}
 - **지정 챔피언** — 덱 빌더 "리더 챔피언" 탭에서 ${deck.keyCard} 선택 (레전드와 같은 이름만 가능)
 - **성향** — ${deck.subtitle}
 
