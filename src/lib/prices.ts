@@ -14,6 +14,17 @@ function localizePrint<T extends { name: string; name_en?: string | null }>(p: T
   return { ...p, ko_name: koCardName(p.name_en ?? p.name) };
 }
 
+const SPECIAL_RE = /showcase|signature|promo|overnumbered/i;
+/** 쇼케이스·시그니처 등 특별판이면 true (일반 시세 목록에서 제외). */
+function isSpecialPrint(p: PrintWithKo | null): boolean {
+  if (!p) return false;
+  return (
+    SPECIAL_RE.test(p.rarity ?? "") ||
+    SPECIAL_RE.test(p.art_variant ?? "") ||
+    /[*]/.test(p.number ?? "")
+  );
+}
+
 async function safe<T>(fn: () => Promise<T>, fallback: T): Promise<T> {
   if (!hasSupabaseEnv) return fallback;
   try {
@@ -39,7 +50,8 @@ function moverQuery(dir: "asc" | "desc", limit: number) {
     // 퍼센트가 아니라 "절대 변동액(USD)" 기준으로 정렬한다.
     const rows = ((data as unknown as PriceRow[]) ?? [])
       .filter((r) => r.market_price != null && r.change_7d != null && r.change_7d !== 0)
-      .map((r) => (r.print ? { ...r, print: localizePrint(r.print) } : r));
+      .map((r) => (r.print ? { ...r, print: localizePrint(r.print) } : r))
+      .filter((r) => !isSpecialPrint(r.print)); // 급등·급락은 일반 카드만
     rows.sort((a, b) => {
       const da = deltaUsd(a.market_price!, a.change_7d!);
       const db = deltaUsd(b.market_price!, b.change_7d!);

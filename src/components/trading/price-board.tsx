@@ -30,11 +30,18 @@ const PER_PAGE = 10;
  * 카드 시세표 — 검색·세트·정렬 + 페이지네이션.
  * 행을 누르면 /trading/cards/[printId] 상세로 이동.
  */
+const SPECIAL_RE = /showcase|signature|promo|overnumbered|시그니처|쇼케이스/i;
+const isSpecial = (r: PriceRow) =>
+  SPECIAL_RE.test(r.print?.rarity ?? "") ||
+  SPECIAL_RE.test(r.print?.art_variant ?? "") ||
+  /[*]|\bs\b/i.test(r.print?.number ?? "");
+
 export function PriceBoard({ rows, fx }: { rows: PriceRow[]; fx: FxRate }) {
   const [q, setQ] = useState("");
   const [set, setSet] = useState("");
   const [sort, setSort] = useState<SortKey>("price");
   const [asc, setAsc] = useState(false);
+  const [showSpecial, setShowSpecial] = useState(false);
   const [page, setPage] = useState(1);
 
   const sets = useMemo(() => {
@@ -47,6 +54,7 @@ export function PriceBoard({ rows, fx }: { rows: PriceRow[]; fx: FxRate }) {
     const needle = q.trim().toLowerCase();
     const filtered = rows.filter((r) => {
       if (set && r.print?.set_code !== set) return false;
+      if (!showSpecial && !needle && isSpecial(r)) return false;
       if (!needle) return true;
       return (
         r.print?.ko_name?.toLowerCase().includes(needle) ||
@@ -63,10 +71,10 @@ export function PriceBoard({ rows, fx }: { rows: PriceRow[]; fx: FxRate }) {
       if (sort === "changePct") return dir * ((a.change_7d ?? 0) - (b.change_7d ?? 0));
       return dir * ((a.market_price ?? 0) - (b.market_price ?? 0));
     });
-  }, [rows, q, set, sort, asc]);
+  }, [rows, q, set, sort, asc, showSpecial]);
 
   // 조건이 바뀌면 1페이지로
-  useEffect(() => setPage(1), [q, set, sort, asc]);
+  useEffect(() => setPage(1), [q, set, sort, asc, showSpecial]);
 
   if (rows.length === 0) {
     return (
@@ -102,6 +110,9 @@ export function PriceBoard({ rows, fx }: { rows: PriceRow[]; fx: FxRate }) {
               {s}
             </FilterChip>
           ))}
+          <FilterChip on={showSpecial} onClick={() => setShowSpecial((v) => !v)}>
+            특별판 포함
+          </FilterChip>
         </div>
       </div>
 
