@@ -92,6 +92,34 @@ export function getPopularPosts(opts: { category?: CommunityCategory; page?: num
   );
 }
 
+/**
+ * 실시간 인기글 — 최근 2주 글 중 (조회수 + 댓글·추천 가중) 상위.
+ * 추천이 아직 없어도 "많이 읽힌 글" 로 채워진다.
+ */
+export function getTrendingPosts(limit = 6) {
+  const since = new Date(Date.now() - 14 * 86400_000).toISOString();
+  return safe<PostListItem[]>(async () => {
+    const supabase = createClient();
+    const { data, error } = await supabase
+      .from("posts")
+      .select("*, author:profiles!posts_author_id_fkey(username, avatar_url)")
+      .eq("is_pinned", false)
+      .gte("created_at", since)
+      .order("view_count", { ascending: false })
+      .limit(40);
+    if (error) throw error;
+    const rows = (data as unknown as PostListItem[]) ?? [];
+    return rows
+      .map((p) => ({
+        p,
+        score: (p.view_count ?? 0) + (p.comment_count ?? 0) * 8 + (p.like_count ?? 0) * 12,
+      }))
+      .sort((a, b) => b.score - a.score)
+      .slice(0, limit)
+      .map((x) => x.p);
+  }, []);
+}
+
 export function getPost(id: string) {
   return safe<PostListItem | null>(async () => {
     const supabase = createClient();
