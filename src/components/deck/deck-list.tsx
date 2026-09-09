@@ -1,17 +1,45 @@
 "use client";
 
+import { useState } from "react";
 import Image from "next/image";
 import { AlertTriangle, Minus, Plus, X } from "lucide-react";
 
 import type { Card } from "@/lib/types/card";
+import { resolveCardText } from "@/lib/types/card";
 import type { ResolvedDeck, ResolvedEntry } from "@/lib/types/deck";
 import { ZONE_META } from "@/lib/types/deck";
 import { type DeckIssue, zoneCounts } from "@/lib/deck/deck-model";
 import { CARD_DOMAINS } from "@/lib/constants";
+import { LocalizedCard } from "@/components/cards/localized-card";
+import { CardText } from "@/components/cards/card-text";
 import type { PoolTab } from "@/components/deck/card-pool";
 import { cn } from "@/lib/utils";
 
 const DOMAIN_COLOR = new Map(CARD_DOMAINS.map((d) => [d.slug, d.color]));
+
+type Peek = (card: Card | null) => void;
+
+/** 마우스를 올린 카드를 화면 좌측에 크게 미리보기 (데스크톱). */
+function CardPeek({ card }: { card: Card | null }) {
+  if (!card) return null;
+  const ko = resolveCardText(card, "ko");
+  return (
+    <div className="pointer-events-none fixed left-4 top-1/2 z-50 hidden w-[300px] -translate-y-1/2 xl:block">
+      <div className="overflow-hidden rounded-2xl border border-line bg-card shadow-e3">
+        <LocalizedCard card={card} sizes="300px" className="!rounded-none" />
+        <div className="flex flex-col gap-1.5 p-3">
+          <p className="text-body-md font-bold text-ink">{ko.name}</p>
+          {ko.text && (
+            <CardText
+              text={ko.text}
+              className="text-body-sm leading-relaxed text-ink-soft"
+            />
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
 
 /**
  * 섹션별 덱 목록: 레전드 → 챔피언 → 메인덱 → 전장 → 룬.
@@ -32,13 +60,19 @@ export function DeckList({
   onFocusPool: (tab: PoolTab) => void;
 }) {
   const c = zoneCounts(rd);
+  const [peek, setPeek] = useState<Card | null>(null);
 
   return (
-    <div className="flex max-h-[64vh] flex-col gap-3 overflow-y-auto pr-1">
+    <div
+      className="flex max-h-[64vh] flex-col gap-3 overflow-y-auto pr-1"
+      onMouseLeave={() => setPeek(null)}
+    >
+      <CardPeek card={peek} />
+
       {/* 레전드 */}
       <Section title="레전드" n={c.legend} target="1" ok={c.legend === 1}>
         {rd.legend ? (
-          <SlotRow card={rd.legend} onRemove={onClearLegend} />
+          <SlotRow card={rd.legend} onRemove={onClearLegend} onPeek={setPeek} />
         ) : (
           <EmptySlot label="레전드 선택" onClick={() => onFocusPool("legend")} />
         )}
@@ -47,7 +81,7 @@ export function DeckList({
       {/* 챔피언 */}
       <Section title="리더 챔피언" n={c.champion} target="1" ok={c.champion === 1}>
         {rd.champion ? (
-          <SlotRow card={rd.champion} onRemove={onClearChampion} />
+          <SlotRow card={rd.champion} onRemove={onClearChampion} onPeek={setPeek} />
         ) : (
           <EmptySlot label="리더 챔피언 선택" onClick={() => onFocusPool("champion")} />
         )}
@@ -64,6 +98,7 @@ export function DeckList({
         emptyLabel="카드 추가"
         onEmpty={() => onFocusPool("main")}
         onChange={onChangeEntry}
+        onPeek={setPeek}
       />
 
       {/* 전장 */}
@@ -76,6 +111,7 @@ export function DeckList({
         emptyLabel="전장 추가"
         onEmpty={() => onFocusPool("battlefield")}
         onChange={onChangeEntry}
+        onPeek={setPeek}
       />
 
       {/* 룬 */}
@@ -88,6 +124,7 @@ export function DeckList({
         emptyLabel="룬 추가"
         onEmpty={() => onFocusPool("rune")}
         onChange={onChangeEntry}
+        onPeek={setPeek}
       />
 
       {issues.length > 0 && (
@@ -151,6 +188,7 @@ function EntrySection({
   emptyLabel,
   onEmpty,
   onChange,
+  onPeek,
 }: {
   title: string;
   subtitle?: string;
@@ -161,6 +199,7 @@ function EntrySection({
   emptyLabel: string;
   onEmpty: () => void;
   onChange: (id: string, delta: number) => void;
+  onPeek: Peek;
 }) {
   return (
     <Section title={title} subtitle={subtitle} n={n} target={target} ok={ok}>
@@ -169,7 +208,7 @@ function EntrySection({
       ) : (
         <ul className="flex flex-col">
           {entries.map((e) => (
-            <EntryRow key={e.card.id} entry={e} onChange={onChange} />
+            <EntryRow key={e.card.id} entry={e} onChange={onChange} onPeek={onPeek} />
           ))}
         </ul>
       )}
@@ -198,9 +237,21 @@ function CostBadge({ card }: { card: Card }) {
   );
 }
 
-function SlotRow({ card, onRemove }: { card: Card; onRemove: () => void }) {
+function SlotRow({
+  card,
+  onRemove,
+  onPeek,
+}: {
+  card: Card;
+  onRemove: () => void;
+  onPeek: Peek;
+}) {
   return (
-    <div className="flex items-center gap-2 rounded-xl border border-line bg-subcanvas/40 p-1.5">
+    <div
+      className="flex items-center gap-2 rounded-xl border border-line bg-subcanvas/40 p-1.5"
+      onMouseEnter={() => onPeek(card)}
+      onMouseLeave={() => onPeek(null)}
+    >
       <div className="relative h-12 w-12 shrink-0 overflow-hidden rounded-lg bg-subcanvas">
         {card.imageUrl && (
           <Image
@@ -229,13 +280,19 @@ function SlotRow({ card, onRemove }: { card: Card; onRemove: () => void }) {
 function EntryRow({
   entry,
   onChange,
+  onPeek,
 }: {
   entry: ResolvedEntry;
   onChange: (id: string, delta: number) => void;
+  onPeek: Peek;
 }) {
   const { card, qty } = entry;
   return (
-    <li className="group flex items-center gap-2 rounded-lg px-1 py-1 hover:bg-subcanvas/60">
+    <li
+      className="group flex items-center gap-2 rounded-lg px-1 py-1 hover:bg-subcanvas/60"
+      onMouseEnter={() => onPeek(card)}
+      onMouseLeave={() => onPeek(null)}
+    >
       <DomainBars card={card} />
       <CostBadge card={card} />
       <span className="min-w-0 flex-1 truncate text-body-sm text-ink">{card.name}</span>
