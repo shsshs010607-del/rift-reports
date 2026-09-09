@@ -78,7 +78,14 @@ export const NAV_PRIMARY: readonly {
       { href: "report:", label: "오역 신고" },
     ],
   },
-  { href: "/deck-simulator", label: "덱 시뮬레이터" },
+  {
+    href: "/deck-simulator",
+    label: "덱 시뮬레이터",
+    children: [
+      { href: "/deck-simulator", label: "덱 빌더" },
+      { href: "/decks", label: "메타 덱" },
+    ],
+  },
   { href: "/tiers", label: "덱 티어리스트" },
   { href: "/trading", label: "트레이딩" },
   { href: "/community", label: "커뮤니티" },

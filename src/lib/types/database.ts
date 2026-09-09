@@ -208,6 +208,46 @@ export interface Database {
         Update: Partial<Database["public"]["Tables"]["saved_decks"]["Insert"]>;
         Relationships: [];
       };
+      meta_decks: {
+        Row: {
+          id: string;
+          source: string;
+          source_id: string;
+          source_url: string | null;
+          name: string;
+          author_name: string | null;
+          legend_name: string | null;
+          legend_ref: string | null;
+          domains: string[];
+          deck_code: string;
+          card_count: number;
+          likes: number;
+          views: number;
+          is_tournament: boolean;
+          published_at: string | null;
+          synced_at: string;
+        };
+        Insert: {
+          id?: string;
+          source?: string;
+          source_id: string;
+          source_url?: string | null;
+          name: string;
+          author_name?: string | null;
+          legend_name?: string | null;
+          legend_ref?: string | null;
+          domains?: string[];
+          deck_code: string;
+          card_count?: number;
+          likes?: number;
+          views?: number;
+          is_tournament?: boolean;
+          published_at?: string | null;
+          synced_at?: string;
+        };
+        Update: Partial<Database["public"]["Tables"]["meta_decks"]["Insert"]>;
+        Relationships: [];
+      };
       notification_dismissals: {
         Row: {
           notification_id: string;
