@@ -78,6 +78,8 @@ export function CardPool({
 
   const onResultsRef = useRef(onResults);
   onResultsRef.current = onResults;
+  const rdRef = useRef(rd);
+  rdRef.current = rd;
 
   useEffect(() => {
     const ctrl = new AbortController();
@@ -97,7 +99,9 @@ export function CardPool({
         const data = (await res.json()) as ApiResponse;
         const filtered =
           tab === "main"
-            ? data.cards.filter((c) => MAIN_TYPES.includes(c.type))
+            ? data.cards.filter(
+                (c) => MAIN_TYPES.includes(c.type) && matchesIdentity(rdRef.current, c),
+              )
             : data.cards;
         setCards(filtered);
         setCount(tab === "main" ? filtered.length : data.count);
@@ -113,7 +117,8 @@ export function CardPool({
       ctrl.abort();
       clearTimeout(t);
     };
-  }, [q, domain, setCode, apiType, tab]);
+    // rd.legend/champion 변경 시 메인덱 색 필터 갱신
+  }, [q, domain, setCode, apiType, tab, rd.legend?.id, rd.champion?.id]);
 
   const idColors = rd.legend?.domains ?? rd.champion?.domains ?? [];
   const idLabels = CARD_DOMAINS.filter((d) => idColors.includes(d.slug));
