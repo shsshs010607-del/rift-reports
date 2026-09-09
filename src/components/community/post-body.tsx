@@ -8,7 +8,10 @@ import { CardInline } from "@/components/community/card-inline";
  *       · **굵게** · [텍스트](url) · [[카드명]] 카드 이미지 · 빈 줄 문단
  */
 export function PostBody({ text }: { text: string }) {
-  const lines = text.replace(/\r\n/g, "\n").split("\n");
+  const lines = text
+    .replace(/\r\n/g, "\n")
+    .replace(/<!--[\s\S]*?-->/g, "") // HTML 주석은 렌더 안 함 (내부 마커 등)
+    .split("\n");
   const blocks: React.ReactNode[] = [];
   let i = 0;
   let key = 0;
