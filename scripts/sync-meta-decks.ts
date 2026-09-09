@@ -65,27 +65,32 @@ function refOf(v: { prefix: string; num: number }): string | null {
   return letter ? `${letter}${v.num}` : null;
 }
 
-async function buildPaCardMap() {
-  // card.id → { variant, name, isChampion }
-  const map = new Map<string, { v: { prefix: string; num: number }; name: string; champ: boolean }>();
+type PaCard = { v: { prefix: string; num: number }; name: string };
+
+async function buildPaCardMaps() {
+  // card.id → 대표(Standard/최소번호) 변형,  variant.id → card.id
+  const byCard = new Map<string, PaCard>();
+  const stdRank = new Map<string, number>(); // card.id → 현재 채택된 변형의 우선순위(낮을수록 우선)
+  const variantToCard = new Map<string, string>();
+
   for (let page = 1; page <= 40; page++) {
     const j = await getJson(`${API}/cards?limit=100&page=${page}`);
-    const items: any[] = j.data ?? [];
-    for (const variant of items) {
+    for (const variant of (j.data ?? []) as any[]) {
       const cardId = variant.card?.id;
-      if (!cardId || map.has(cardId)) continue;
       const v = parseVariant(variant.variantNumber);
-      if (!v || !KR_SETS.has(v.prefix)) continue;
-      map.set(cardId, {
-        v,
-        name: variant.card?.name ?? "",
-        champ: variant.card?.super === "Champion",
-      });
+      if (!cardId || !v || !KR_SETS.has(v.prefix)) continue;
+      if (variant.id) variantToCard.set(variant.id, cardId);
+      // Standard 변형 우선, 그다음 낮은 수집번호
+      const rank = (variant.variantType === "Standard" ? 0 : 100000) + v.num;
+      if (!stdRank.has(cardId) || rank < stdRank.get(cardId)!) {
+        stdRank.set(cardId, rank);
+        byCard.set(cardId, { v, name: variant.card?.name ?? "" });
+      }
     }
     if (!j.pagination?.hasNext) break;
     await sleep(200);
   }
-  return map;
+  return { byCard, variantToCard };
 }
 
 async function main() {
@@ -94,8 +99,8 @@ async function main() {
   console.log(`우리 카드풀: ${ourPool.size}개 (OGN/OGS)`);
 
   console.log("Piltover Archive 카드 맵 구축 중…");
-  const paCards = await buildPaCardMap();
-  console.log(`  PA OGN/OGS 카드: ${paCards.size}개`);
+  const { byCard, variantToCard } = await buildPaCardMaps();
+  console.log(`  PA OGN/OGS 카드: ${byCard.size}개`);
 
   // 1) 덱 목록에서 sets ⊆ {OGN,OGS} 후보 수집
   type Cand = { id: string; name: string; likes: number; views: number; created: string; tourney: boolean };
@@ -141,19 +146,23 @@ async function main() {
       continue;
     }
 
-    const legendV = parseVariant(detail.legend?.variantNumber);
-    if (!legendV || !KR_SETS.has(legendV.prefix) || !ourPool.has(`${legendV.prefix}:${legendV.num}`)) {
-      skipped.push(`${cand.name} — 레전드 해석 불가 (${detail.legend?.variantNumber})`);
-      continue;
-    }
-
-    // 모든 카드(cardId) 해석
-    const resolve = (cardId: string) => {
-      const hit = paCards.get(cardId);
+    // 카드(cardId 또는 variantId) → 우리 풀의 대표 변형
+    const resolve = (id: string | undefined) => {
+      if (!id) return null;
+      const cardId = byCard.has(id) ? id : variantToCard.get(id);
+      const hit = cardId ? byCard.get(cardId) : undefined;
       if (!hit) return null;
       if (!ourPool.has(`${hit.v.prefix}:${hit.v.num}`)) return null;
       return hit;
     };
+
+    // 레전드: deck.legend.id(변형 id) → card → 대표 변형
+    const legendHit = resolve(detail.legend?.id) ?? resolve(detail.legend?.cardId);
+    if (!legendHit) {
+      skipped.push(`${cand.name} — 레전드 해석 불가 (${detail.legend?.variantNumber})`);
+      continue;
+    }
+    const legendV = legendHit.v;
 
     const zones: Array<{ list: any[]; def: number }> = [
       { list: detail.champions ?? [], def: 1 },
@@ -195,7 +204,7 @@ async function main() {
     }
 
     const legendRef = refOf(legendV)!;
-    const parts = [...entryCount.entries()].map(([ref, q]) => `${ref}q${Math.min(q, 9)}`);
+    const parts = [...entryCount.entries()].map(([ref, q]) => `${ref}q${Math.min(q, 12)}`);
     const deckCode = `rr1.${legendRef}.${championRef ?? "_"}.${parts.join("-")}`;
 
     const domains: string[] = (detail.legend?.colors ?? [])
