@@ -178,13 +178,7 @@ export function validateDeck(rd: ResolvedDeck): DeckIssue[] {
       level: "error",
       message: `지정 챔피언은 레전드(${rd.legend.name})와 같은 챔피언이어야 합니다.`,
     });
-
-  for (const e of rd.sections.main)
-    if (e.card.type === "champion" && rd.legend && !matchesLegendChampion(rd, e.card))
-      issues.push({
-        level: "error",
-        message: `"${e.card.name}" — 레전드와 다른 챔피언은 넣을 수 없습니다.`,
-      });
+  // 메인덱의 다른 챔피언 유닛은 색만 맞으면 허용 (위 색 검증에서 이미 처리됨).
 
   return issues;
 }
@@ -207,9 +201,9 @@ export function planAdd(deck: Deck, rd: ResolvedDeck, card: Card): AddAction {
   if (!matchesIdentity(rd, card)) return { kind: "blocked", reason: "덱 색과 다릅니다" };
 
   if (card.type === "champion") {
-    if (!matchesLegendChampion(rd, card))
-      return { kind: "blocked", reason: "레전드와 같은 챔피언만" };
-    if (!rd.champion) return { kind: "champion", id: card.id };
+    // 레전드와 같은 이름의 챔피언 + 지정 슬롯이 비었으면 슬롯으로.
+    // 그 외 챔피언(다른 이름 / 슬롯 참)은 색만 맞으면 메인덱 카드로 넣는다.
+    if (matchesLegendChampion(rd, card) && !rd.champion) return { kind: "champion", id: card.id };
   }
 
   const zone = entryZoneOf(card.type);
