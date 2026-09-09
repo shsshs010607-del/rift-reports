@@ -33,7 +33,7 @@ const MIN_COMMUNITY_LIKES = Number(
 );
 
 const TOURNEY_RE =
-  /\b(1st|2nd|3rd|first place|top\s?\d|winner|won|champion|championship|regional|qualifier|\bRQ\b|nationals?|national open|city challenge|skirmish|worlds?|invitational|undefeated|best of|placed?)\b/i;
+  /\b(1st|2nd|3rd|first place|top\s?\d|winner|won|champion|championship|regional|qualifier|\bRQ\b|nationals?|national open|city challenge|skirmish|worlds?|invitational|undefeated|best of|placed?|\d+k\b|open\b|cup\b)\b/i;
 
 /** 스타터·프리콘 덱 — 기본 제외 (사용자가 별도 큐레이션). */
 const STARTER_RE =
