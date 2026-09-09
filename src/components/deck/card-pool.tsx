@@ -85,7 +85,9 @@ export function CardPool({
       setLoading(true);
       setError(null);
       try {
-        const sp = new URLSearchParams({ limit: String(LIMIT) });
+        // 타입 필터가 없는 탭(전체·메인덱)은 전량을 받아 클라에서 색 정체성으로 거른다.
+        // (limit 90 이면 수집번호 앞쪽 카드만 와서 색 하나가 통째로 빠지는 버그)
+        const sp = new URLSearchParams({ limit: apiType ? String(LIMIT) : "500" });
         if (q.trim()) sp.set("q", q.trim());
         if (domain) sp.set("domain", domain);
         if (setCode) sp.set("setCode", setCode);

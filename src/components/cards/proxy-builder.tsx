@@ -1,11 +1,27 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { Search, Plus, Minus, Trash2, Printer, X, SlidersHorizontal } from "lucide-react";
+import {
+  Search,
+  Plus,
+  Minus,
+  Trash2,
+  Printer,
+  X,
+  SlidersHorizontal,
+  ClipboardPaste,
+} from "lucide-react";
 
 import type { Card } from "@/lib/types/card";
 import { resolveCardText, cardNumber } from "@/lib/types/card";
 import { CARD_DOMAINS, CARD_TYPES } from "@/lib/constants";
+import {
+  buildDeckRefMaps,
+  decodeDeck,
+  decodeDeckCode,
+  isDeckCode,
+} from "@/lib/deck/deck-code";
+import type { Deck } from "@/lib/types/deck";
 import { renderProxySheets, type ProxyEntry } from "@/lib/cards/proxy-sheet";
 import { LocalizedCard } from "@/components/cards/localized-card";
 import { cn } from "@/lib/utils";
@@ -25,6 +41,9 @@ export function ProxyBuilder() {
   const [picks, setPicks] = useState<Record<string, number>>({});
   const [busy, setBusy] = useState(false);
   const [note, setNote] = useState("");
+  const [importOpen, setImportOpen] = useState(false);
+  const [deckInput, setDeckInput] = useState("");
+  const [importMsg, setImportMsg] = useState("");
 
   useEffect(() => {
     fetch("/api/cards?limit=2000")
@@ -97,6 +116,46 @@ export function ProxyBuilder() {
     setSetCode("");
   };
 
+  /** rr1.* / base64 / 공유 URL 붙여넣기 → 덱의 모든 카드를 담기 목록에 추가 */
+  function importDeck() {
+    setImportMsg("");
+    if (all.length === 0) return setImportMsg("카드 데이터를 불러오는 중입니다.");
+    let s = deckInput.trim();
+    const urlMatch = s.match(/[?&](?:d|deck)=([^&\s]+)/);
+    if (urlMatch) s = decodeURIComponent(urlMatch[1]);
+    if (!s) return setImportMsg("덱 코드를 붙여넣으세요.");
+
+    let deck: Deck | null = null;
+    if (isDeckCode(s)) {
+      const { idByRef } = buildDeckRefMaps(all);
+      deck = decodeDeckCode(s, idByRef);
+    } else {
+      deck = decodeDeck(s);
+    }
+    if (!deck) return setImportMsg("덱 코드를 해석할 수 없습니다.");
+
+    const add: Record<string, number> = {};
+    const inc = (id: string | null | undefined, n = 1) => {
+      if (id) add[id] = (add[id] ?? 0) + n;
+    };
+    inc(deck.legendId);
+    inc(deck.championId);
+    for (const e of deck.entries) inc(e.id, e.qty);
+
+    const resolved = Object.entries(add).filter(([id]) => byId.has(id));
+    if (resolved.length === 0) return setImportMsg("이 덱의 카드를 찾지 못했습니다.");
+
+    setPicks((p) => {
+      const copy = { ...p };
+      for (const [id, n] of resolved) copy[id] = Math.min(99, (copy[id] ?? 0) + n);
+      return copy;
+    });
+    const total = resolved.reduce((s2, [, n]) => s2 + n, 0);
+    const missing = Object.keys(add).length - resolved.length;
+    setImportMsg(`${total}장 담았어요${missing ? ` (${missing}종은 데이터 없음)` : ""}.`);
+    setDeckInput("");
+  }
+
   async function download() {
     if (entries.length === 0) return;
     setBusy(true);
@@ -147,6 +206,19 @@ export function ProxyBuilder() {
           </div>
           <button
             type="button"
+            onClick={() => setImportOpen((v) => !v)}
+            className={cn(
+              "inline-flex shrink-0 items-center gap-1.5 rounded-2xl border-2 px-3.5 text-label-md font-bold transition",
+              importOpen
+                ? "border-primary bg-primary/10 text-primary-strong"
+                : "border-line bg-card text-ink-soft hover:text-ink",
+            )}
+          >
+            <ClipboardPaste className="h-4 w-4" />
+            덱 불러오기
+          </button>
+          <button
+            type="button"
             onClick={() => setOpenFilters((v) => !v)}
             className={cn(
               "inline-flex shrink-0 items-center gap-1.5 rounded-2xl border-2 px-3.5 text-label-md font-bold transition",
@@ -159,6 +231,36 @@ export function ProxyBuilder() {
             필터
           </button>
         </div>
+
+        {importOpen && (
+          <div className="mt-3 flex flex-col gap-2 rounded-2xl border border-line bg-card p-3.5">
+            <p className="text-label-sm font-bold text-ink">덱 코드 · 공유 URL 붙여넣기</p>
+            <textarea
+              value={deckInput}
+              onChange={(e) => setDeckInput(e.target.value)}
+              onKeyDown={(e) => {
+                if ((e.metaKey || e.ctrlKey) && e.key === "Enter") importDeck();
+              }}
+              rows={2}
+              placeholder="rr1.… 또는 ?d= / ?deck= 링크 (덱 시뮬레이터 → 덱 코드)"
+              className="w-full resize-y rounded-xl border border-line bg-subcanvas/50 px-3 py-2 font-mono text-[13px] text-ink placeholder:text-ink-soft/60 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/15"
+            />
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={importDeck}
+                disabled={!deckInput.trim()}
+                className="rounded-full bg-primary px-4 py-2 text-label-sm font-bold text-white transition hover:bg-primary-container disabled:opacity-50"
+              >
+                덱 카드 담기
+              </button>
+              {importMsg && <span className="text-label-sm text-ink-soft">{importMsg}</span>}
+            </div>
+            <p className="text-[12px] text-ink-soft/70">
+              덱의 레전드·챔피언·메인덱·전장·룬을 전부 담습니다. 필요 없는 카드는 아래 목록에서 빼면 돼요.
+            </p>
+          </div>
+        )}
 
         {openFilters && (
           <div className="mt-3 flex flex-col gap-3 rounded-2xl border border-line bg-card p-3.5">
