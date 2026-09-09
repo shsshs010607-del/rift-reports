@@ -33,6 +33,15 @@ const DOMAIN_LABEL: Record<string, string> = {
   Fury: "분노", Calm: "침착", Mind: "지혜", Body: "육체", Chaos: "혼돈", Order: "질서",
 };
 
+/** 받침 유무 → 조사 선택 */
+function hasJong(word: string): boolean {
+  const ch = word.charCodeAt(word.length - 1);
+  if (ch < 0xac00 || ch > 0xd7a3) return false;
+  return (ch - 0xac00) % 28 !== 0;
+}
+const iRan = (w: string) => w + (hasJong(w) ? "이란" : "란");
+const eulReul = (w: string) => w + (hasJong(w) ? "을" : "를");
+
 function pool(D: string) {
   return CARDS.filter(
     (c) =>
@@ -215,7 +224,7 @@ function buildBody(D: string): string {
 
   return `> 리프트 리포트 ${e.n}편. ${e.hook}
 
-## ${label}이란
+## ${iRan(label)}
 
 ${e.para} 상징색은 ${e.color}.
 
@@ -243,7 +252,7 @@ ${gallery([...units, ...gear])}
 
 > 카드 아래 **색 점이 2개면 2색 카드**입니다. 챔피언 전용 주문(용의 분노 등)은 그 챔피언의 두 색을 모두 가져 여러 도메인 리포트에 나옵니다.
 
-## ${label}을(를) 쓴다면
+## ${eulReul(label)} 쓴다면
 
 | | |
 |---|---|
