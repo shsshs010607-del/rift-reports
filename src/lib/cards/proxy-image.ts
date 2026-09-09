@@ -13,17 +13,17 @@ const CARD_SHORT_MM = 63;
 const CARD_LONG_MM = 88;
 const BLEED_MM = 2;
 
-function proxied(src: string, w: number) {
-  return `/_next/image?url=${encodeURIComponent(src)}&w=${w}&q=90`;
+function proxied(src: string) {
+  return `/api/card-image?url=${encodeURIComponent(src)}`;
 }
 
-function loadImg(src: string, w: number): Promise<HTMLImageElement | null> {
+function loadImg(src: string): Promise<HTMLImageElement | null> {
   return new Promise((resolve) => {
     const img = new Image();
     img.crossOrigin = "anonymous";
     img.onload = () => resolve(img);
     img.onerror = () => resolve(null);
-    img.src = proxied(src, w);
+    img.src = proxied(src);
   });
 }
 
@@ -54,7 +54,7 @@ export async function renderProxyImage(card: Card, locale: Locale = "ko"): Promi
     card.localization.en.imageUrl ??
     card.imageUrl ??
     null;
-  const img = src ? await loadImg(src, landscape ? 1400 : 1024) : null;
+  const img = src ? await loadImg(src) : null;
 
   ctx.save();
   ctx.beginPath();

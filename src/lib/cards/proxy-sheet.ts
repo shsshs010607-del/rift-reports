@@ -20,8 +20,8 @@ const GRID_H = CARD_H * ROWS;
 const OX = Math.round((PAGE_W - GRID_W) / 2);
 const OY = Math.round((PAGE_H - GRID_H) / 2);
 
-function proxied(src: string, w: number) {
-  return `/_next/image?url=${encodeURIComponent(src)}&w=${w}&q=90`;
+function proxied(src: string) {
+  return `/api/card-image?url=${encodeURIComponent(src)}`;
 }
 
 function loadImg(src: string): Promise<HTMLImageElement | null> {
@@ -30,7 +30,7 @@ function loadImg(src: string): Promise<HTMLImageElement | null> {
     img.crossOrigin = "anonymous";
     img.onload = () => resolve(img);
     img.onerror = () => resolve(null);
-    img.src = proxied(src, 1024);
+    img.src = proxied(src);
   });
 }
 
