@@ -24,7 +24,7 @@ function CardPeek({ card }: { card: Card | null }) {
   if (!card) return null;
   const ko = resolveCardText(card, "ko");
   return (
-    <div className="pointer-events-none fixed left-4 top-1/2 z-50 hidden w-[300px] -translate-y-1/2 xl:block">
+    <div className="pointer-events-none fixed left-3 top-1/2 z-50 hidden w-[270px] -translate-y-1/2 lg:block xl:left-6 xl:w-[300px]">
       <div className="overflow-hidden rounded-2xl border border-line bg-card shadow-e3">
         <LocalizedCard card={card} sizes="300px" className="!rounded-none" />
         <div className="flex flex-col gap-1.5 p-3">
