@@ -11,7 +11,8 @@ export const metadata: Metadata = {
   title: "덱 티어리스트",
   description: "리프트바운드 현재 메타 덱 티어리스트 (S·A·B·C·Z).",
 };
-export const revalidate = 60;
+// DeckQuiz 가 useSearchParams(?quiz) 로 자동 오픈하므로 동적 렌더.
+export const dynamic = "force-dynamic";
 
 async function legendImages(): Promise<Record<string, string>> {
   try {
@@ -28,11 +29,7 @@ async function legendImages(): Promise<Record<string, string>> {
   }
 }
 
-export default async function TiersPage({
-  searchParams,
-}: {
-  searchParams: { quiz?: string };
-}) {
+export default async function TiersPage() {
   const images = await legendImages();
 
   return (
@@ -42,7 +39,9 @@ export default async function TiersPage({
           title="덱 티어리스트"
           description="현재 메타 예상 기준 · 덱을 누르면 공략으로 이동"
         />
-        <DeckQuiz images={images} autoOpen={Boolean(searchParams.quiz)} />
+        <Suspense fallback={null}>
+          <DeckQuiz images={images} />
+        </Suspense>
       </div>
       <Suspense fallback={<BoardSkeleton />}>
         <TierBoard />

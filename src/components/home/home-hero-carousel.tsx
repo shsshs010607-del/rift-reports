@@ -1,110 +1,31 @@
-"use client";
-
-import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { ArrowRight, BookOpen, Layers, MessagesSquare, Sparkles, TrendingUp } from "lucide-react";
+import Image from "next/image";
+import {
+  ArrowRight,
+  BookOpen,
+  Layers,
+  MessagesSquare,
+  Sparkles,
+  TrendingUp,
+  Wand2,
+} from "lucide-react";
 
+import { CarouselClient } from "@/components/home/carousel-client";
 import { T1EditionBanner } from "@/components/home/t1-edition-banner";
-import { cn } from "@/lib/utils";
 
 /**
- * 홈 상단 프로모 캐러셀 — 한 번에 2개(모바일 1개) 노출, 번호로 넘긴다.
- * 슬라이드는 각자 완결된 카드. 새 배너는 SLIDES 에 추가만 하면 됨.
+ * 홈 상단 프로모 캐러셀 — 한 번에 1장, 번호 = 배너 순서.
+ * 슬라이드는 전부 서버 컴포넌트, 스크롤/번호만 CarouselClient(클라).
  */
-const SLIDES: { key: string; node: React.ReactNode }[] = [
-  { key: "intro", node: <IntroSlide /> },
-  { key: "ogn", node: <OgnSlide /> },
-  { key: "t1", node: <T1EditionBanner /> },
-  { key: "tools", node: <ToolsSlide /> },
-];
-
 export function HomeHeroCarousel() {
-  const trackRef = useRef<HTMLDivElement>(null);
-  const [active, setActive] = useState(0);
-
-  function go(i: number) {
-    const track = trackRef.current;
-    const first = track?.children[0] as HTMLElement | undefined;
-    const child = track?.children[i] as HTMLElement | undefined;
-    if (track && first && child) {
-      // 부드러운 스크롤은 scroll-snap 컨테이너에서 Chromium 버그로 되돌아가므로 즉시 이동.
-      track.scrollTo({ left: child.offsetLeft - first.offsetLeft });
-    }
-    setActive(i);
-  }
-
-  // 수동 스크롤에도 번호 상태를 맞춘다.
-  useEffect(() => {
-    const track = trackRef.current;
-    if (!track) return;
-    let raf = 0;
-    const onScroll = () => {
-      cancelAnimationFrame(raf);
-      raf = requestAnimationFrame(() => {
-        const kids = Array.from(track.children) as HTMLElement[];
-        // 끝까지 스크롤됐으면 마지막 슬라이드로 (마지막은 왼쪽 정렬이 불가능).
-        if (track.scrollLeft + track.clientWidth >= track.scrollWidth - 4) {
-          setActive(kids.length - 1);
-          return;
-        }
-        const base = kids[0]?.offsetLeft ?? 0;
-        const left = track.scrollLeft;
-        let nearest = 0;
-        let best = Infinity;
-        kids.forEach((k, i) => {
-          const dist = Math.abs(k.offsetLeft - base - left);
-          if (dist < best) {
-            best = dist;
-            nearest = i;
-          }
-        });
-        setActive(nearest);
-      });
-    };
-    track.addEventListener("scroll", onScroll, { passive: true });
-    return () => {
-      track.removeEventListener("scroll", onScroll);
-      cancelAnimationFrame(raf);
-    };
-  }, []);
-
   return (
-    <section>
-      <div
-        ref={trackRef}
-        className="-mx-1 flex snap-x snap-mandatory gap-4 overflow-x-auto px-1 pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
-      >
-        {SLIDES.map((s) => (
-          <div
-            key={s.key}
-            className="min-w-0 shrink-0 snap-start basis-full sm:basis-[calc(50%_-_0.5rem)]"
-          >
-            {s.node}
-          </div>
-        ))}
-      </div>
-
-      {/* 번호 페이저 */}
-      <div className="mt-2.5 flex items-center justify-center gap-1.5">
-        {SLIDES.map((s, i) => (
-          <button
-            key={s.key}
-            type="button"
-            onClick={() => go(i)}
-            aria-label={`${i + 1}번 배너`}
-            aria-current={active === i}
-            className={cn(
-              "grid h-7 w-7 place-items-center rounded-full text-label-sm font-bold transition",
-              active === i
-                ? "bg-primary text-white"
-                : "bg-subcanvas text-ink-soft hover:bg-primary/10 hover:text-primary-strong",
-            )}
-          >
-            {i + 1}
-          </button>
-        ))}
-      </div>
-    </section>
+    <CarouselClient>
+      <IntroSlide />
+      <MbtiSlide />
+      <OgnSlide />
+      <T1EditionBanner />
+      <ToolsSlide />
+    </CarouselClient>
   );
 }
 
@@ -116,7 +37,7 @@ function SlideShell({
   children: React.ReactNode;
 }) {
   return (
-    <div className={cn("flex h-full flex-col justify-center rounded-2xl border p-5", className)}>
+    <div className={`flex h-full flex-col justify-center rounded-2xl border p-5 ${className ?? ""}`}>
       {children}
     </div>
   );
@@ -149,6 +70,60 @@ function IntroSlide() {
           className="inline-flex items-center gap-1.5 rounded-full border border-line bg-card px-4 py-2 text-label-sm font-bold text-ink-soft transition hover:border-primary/40 hover:text-ink"
         >
           덱 티어리스트
+        </Link>
+      </div>
+    </SlideShell>
+  );
+}
+
+/** 장식용 카드 아트 (Riot 공식 CDN) — MBTI 슬라이드. */
+const MBTI_ART = [
+  "https://cmsassets.rgpub.io/sanity/images/dsfx7636/game_data_live/68e4d3230b785738ae9d86f780f7f5607ef11807-744x1040.png?accountingTag=RB",
+  "https://cmsassets.rgpub.io/sanity/images/dsfx7636/game_data_live/fbce641f5e4d8cdf2956e8ead5884b6cd3ccd90d-744x1040.png?accountingTag=RB",
+];
+
+function MbtiSlide() {
+  return (
+    <SlideShell className="border-tertiary/25 bg-gradient-to-br from-tertiary/[0.08] via-card to-card">
+      <div className="flex items-center gap-4">
+        <div className="relative hidden h-[104px] w-[92px] shrink-0 sm:block">
+          {MBTI_ART.map((src, i) => (
+            <span
+              key={i}
+              className="absolute left-0 top-1/2 block w-[60px] overflow-hidden rounded-[4px] shadow-lg ring-1 ring-black/10"
+              style={{ transform: `translateX(${i * 48}%) translateY(-50%) rotate(${i ? 10 : -10}deg)`, zIndex: i ? 10 : 20 }}
+            >
+              <Image src={src} alt="" width={60} height={84} className="h-auto w-full" />
+            </span>
+          ))}
+        </div>
+        <div className="min-w-0">
+          <p className="inline-flex items-center gap-1.5 text-label-sm font-bold uppercase tracking-wide text-tertiary">
+            <Wand2 className="h-3.5 w-3.5" />
+            8문항 · 16유형
+          </p>
+          <h2 className="mt-1 font-display text-headline-md leading-tight text-ink">
+            내 MBTI에 맞는 덱은?
+          </h2>
+          <p className="mt-1.5 text-body-sm leading-snug text-ink-soft">
+            성향 질문 8개로 MBTI를 뽑고, 16유형별 어울리는 리프트바운드 덱과 상극 덱을 알려드려요.
+          </p>
+        </div>
+      </div>
+      <div className="mt-3.5 flex flex-wrap gap-2">
+        <Link
+          href="/tiers?quiz=1"
+          className="inline-flex items-center gap-1.5 rounded-full bg-primary px-4 py-2 text-label-sm font-bold text-white transition hover:bg-primary-container"
+        >
+          <Wand2 className="h-4 w-4" />
+          MBTI 덱 찾기
+          <ArrowRight className="h-4 w-4" />
+        </Link>
+        <Link
+          href="/tiers"
+          className="inline-flex items-center gap-1.5 rounded-full border border-line bg-card px-4 py-2 text-label-sm font-bold text-ink-soft transition hover:border-primary/40 hover:text-ink"
+        >
+          덱 티어표
         </Link>
       </div>
     </SlideShell>

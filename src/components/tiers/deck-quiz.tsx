@@ -3,10 +3,11 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { Wand2, X, RotateCcw, ArrowRight } from "lucide-react";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { Wand2, X, RotateCcw, ArrowRight, Share2, Check } from "lucide-react";
 
 import { TIER_DECKS } from "@/lib/data/tier-list";
-import { QUIZ_QUESTIONS, scoreQuiz, type QuizResult } from "@/lib/data/deck-quiz";
+import { MBTI_TYPES, QUIZ_QUESTIONS, scoreQuiz, type QuizResult } from "@/lib/data/deck-quiz";
 import { cn } from "@/lib/utils";
 
 const DECK_HREF = "/community/deck-guide";
@@ -14,23 +15,56 @@ const listHref = (d: { guidePostId?: string }) =>
   d.guidePostId ? `/community/post/${d.guidePostId}` : DECK_HREF;
 const deckOf = (id: string) => TIER_DECKS.find((d) => d.id === id) ?? null;
 
-/** "내 MBTI 덱 찾기" — /tiers 안에서 모달로 뜬다. `?quiz=1` 이면 자동 오픈. */
-export function DeckQuiz({
-  images = {},
-  autoOpen = false,
-}: {
-  images?: Record<string, string>;
-  autoOpen?: boolean;
-}) {
-  const [open, setOpen] = useState(autoOpen);
+/** "내 MBTI 덱 찾기" — /tiers 안에서 모달로 뜬다. `?quiz` 파라미터가 있으면 자동 오픈. */
+export function DeckQuiz({ images = {} }: { images?: Record<string, string> }) {
+  const params = useSearchParams();
+  const router = useRouter();
+  const pathname = usePathname();
+  const sharedCode = (params.get("mbti") ?? "").toUpperCase();
+  const sharedType = MBTI_TYPES[sharedCode] ?? null;
+  const wantOpen = params.get("quiz") != null || sharedType != null;
+
+  const [open, setOpen] = useState(wantOpen);
   const [step, setStep] = useState(0);
   const [answers, setAnswers] = useState<(number | null)[]>(QUIZ_QUESTIONS.map(() => null));
+  const [copied, setCopied] = useState(false);
+
+  // 상단 메뉴/공유링크로 ?quiz·?mbti 가 들어오면 (이미 마운트돼 있어도) 연다.
+  useEffect(() => {
+    if (wantOpen) setOpen(true);
+  }, [wantOpen]);
+
+  // 닫으면 ?quiz·?mbti 파라미터를 URL 에서 정리.
+  useEffect(() => {
+    if (!open && wantOpen) router.replace(pathname, { scroll: false });
+  }, [open, wantOpen, pathname, router]);
 
   const total = QUIZ_QUESTIONS.length;
   const done = step >= total;
-  const result: QuizResult | null = done ? scoreQuiz(answers) : null;
+  const result: QuizResult | null = sharedType
+    ? { type: sharedType, deckId: sharedType.deckId, worstDeckId: sharedType.worstDeckId }
+    : done
+      ? scoreQuiz(answers)
+      : null;
   const deck = result ? deckOf(result.deckId) : null;
   const worst = result ? deckOf(result.worstDeckId) : null;
+
+  async function share() {
+    if (!result || !deck) return;
+    const url = `${window.location.origin}/tiers?mbti=${result.type.code}`;
+    const text = `내 MBTI 덱은 「${result.type.nickname} ${deck.name}」 (#${result.type.code})`;
+    try {
+      if (navigator.share) {
+        await navigator.share({ title: "내 MBTI 덱 · 리바지지", text, url });
+      } else {
+        await navigator.clipboard.writeText(`${text}\n${url}`);
+        setCopied(true);
+        setTimeout(() => setCopied(false), 1600);
+      }
+    } catch {
+      /* 사용자가 공유 취소 */
+    }
+  }
 
   useEffect(() => {
     if (!open) return;
@@ -92,7 +126,7 @@ export function DeckQuiz({
             </div>
 
             <div className="overflow-y-auto p-5">
-              {!done ? (
+              {!done && !sharedType ? (
                 <>
                   <div className="mb-3 flex items-center gap-2">
                     <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-subcanvas">
@@ -194,7 +228,7 @@ export function DeckQuiz({
                     )}
                   </div>
 
-                  <div className="mt-5 flex items-center justify-center gap-4">
+                  <div className="mt-5 flex flex-wrap items-center justify-center gap-2.5">
                     <Link
                       href={listHref(deck)}
                       onClick={() => setOpen(false)}
@@ -204,11 +238,29 @@ export function DeckQuiz({
                     </Link>
                     <button
                       type="button"
-                      onClick={reset}
+                      onClick={share}
+                      className="inline-flex items-center gap-1.5 rounded-full border border-line px-4 py-2 text-label-md font-bold text-ink-soft transition hover:border-primary/40 hover:text-ink"
+                    >
+                      {copied ? (
+                        <>
+                          <Check className="h-3.5 w-3.5 text-emerald" /> 복사됨
+                        </>
+                      ) : (
+                        <>
+                          <Share2 className="h-3.5 w-3.5" /> 공유
+                        </>
+                      )}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        reset();
+                        if (sharedType) router.replace(pathname, { scroll: false });
+                      }}
                       className="inline-flex items-center gap-1.5 text-label-md font-bold text-ink-soft hover:text-ink"
                     >
                       <RotateCcw className="h-3.5 w-3.5" />
-                      다시 하기
+                      다시
                     </button>
                   </div>
                 </div>
