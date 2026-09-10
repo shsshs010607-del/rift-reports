@@ -28,7 +28,11 @@ async function legendImages(): Promise<Record<string, string>> {
   }
 }
 
-export default async function TiersPage() {
+export default async function TiersPage({
+  searchParams,
+}: {
+  searchParams: { quiz?: string };
+}) {
   const images = await legendImages();
 
   return (
@@ -38,7 +42,7 @@ export default async function TiersPage() {
           title="덱 티어리스트"
           description="현재 메타 예상 기준 · 덱을 누르면 공략으로 이동"
         />
-        <DeckQuiz images={images} />
+        <DeckQuiz images={images} autoOpen={Boolean(searchParams.quiz)} />
       </div>
       <Suspense fallback={<BoardSkeleton />}>
         <TierBoard />

@@ -88,7 +88,14 @@ export const NAV_PRIMARY: readonly {
       { href: "/decks", label: "메타 덱" },
     ],
   },
-  { href: "/tiers", label: "덱 티어리스트" },
+  {
+    href: "/tiers",
+    label: "덱 티어리스트",
+    children: [
+      { href: "/tiers", label: "티어리스트" },
+      { href: "/tiers?quiz=1", label: "내 MBTI 덱 찾기" },
+    ],
+  },
   { href: "/trading", label: "트레이딩" },
   { href: "/community", label: "커뮤니티" },
 ];

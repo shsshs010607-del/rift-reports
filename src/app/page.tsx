@@ -10,11 +10,9 @@ import {
   BookOpen,
 } from "lucide-react";
 
-import { PatchBanner } from "@/components/home/patch-banner";
-import { T1EditionBanner } from "@/components/home/t1-edition-banner";
+import { HomeHeroCarousel } from "@/components/home/home-hero-carousel";
+import { HomeQuickBar } from "@/components/home/home-quick-bar";
 import { SnsChannels } from "@/components/home/sns-channels";
-import { ChannelBanner } from "@/components/home/channel-banner";
-import { HomeCardSearch } from "@/components/home/home-card-search";
 import { MetaSnapshot } from "@/components/home/meta-snapshot";
 import { OfficialLinks } from "@/components/home/official-links";
 import { HomeCommunity } from "@/components/home/home-community";
@@ -39,32 +37,9 @@ const SECTIONS = [
 export default function HomePage() {
   return (
     <div className="flex flex-col gap-6">
-      <PatchBanner />
+      <HomeHeroCarousel />
 
-      <T1EditionBanner />
-
-      <section className="grid gap-5 rounded-3xl border border-primary/20 bg-gradient-to-br from-primary-wash via-card to-card p-5 sm:p-6 lg:grid-cols-[minmax(0,1fr)_380px] lg:items-center">
-        <div>
-          <p className="text-label-md font-bold uppercase tracking-wide text-primary-strong">
-            Riftbound 한국 팬 커뮤니티
-          </p>
-          <h1 className="mt-1.5 font-display text-headline-lg leading-none text-ink sm:text-display-hero-mobile">
-            리바지지
-          </h1>
-          <p className="mt-1 font-display text-body-sm font-bold uppercase tracking-[0.2em] text-ink-soft/70">
-            RIBA.GG
-          </p>
-          <p className="mt-2.5 max-w-xl text-body-md leading-snug text-ink-soft">
-            리프트바운드 TCG 국내 유저를 위한 정보·커뮤니티 허브 — 메타 덱, 카드 DB, 덱 시뮬레이터,
-            실시간 시세, 매장 대회 일정.
-            <span className="text-ink-soft/70">
-              {" "}모든 콘텐츠 <strong className="text-ink-soft">한국 스탠다드 메타</strong> 기준.
-            </span>
-          </p>
-          <ChannelBanner className="mt-3" />
-        </div>
-        <HomeCardSearch />
-      </section>
+      <HomeQuickBar />
 
       {/* 좌: 추천덱(압축) + 커뮤니티 최신글 / 우: 인기글 + 시세 */}
       <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_340px] xl:items-start">

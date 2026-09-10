@@ -14,9 +14,15 @@ const listHref = (d: { guidePostId?: string }) =>
   d.guidePostId ? `/community/post/${d.guidePostId}` : DECK_HREF;
 const deckOf = (id: string) => TIER_DECKS.find((d) => d.id === id) ?? null;
 
-/** "내 MBTI 덱 찾기" — /tiers 안에서 모달로 뜬다. */
-export function DeckQuiz({ images = {} }: { images?: Record<string, string> }) {
-  const [open, setOpen] = useState(false);
+/** "내 MBTI 덱 찾기" — /tiers 안에서 모달로 뜬다. `?quiz=1` 이면 자동 오픈. */
+export function DeckQuiz({
+  images = {},
+  autoOpen = false,
+}: {
+  images?: Record<string, string>;
+  autoOpen?: boolean;
+}) {
+  const [open, setOpen] = useState(autoOpen);
   const [step, setStep] = useState(0);
   const [answers, setAnswers] = useState<(number | null)[]>(QUIZ_QUESTIONS.map(() => null));
 

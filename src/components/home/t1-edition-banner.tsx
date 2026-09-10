@@ -39,8 +39,8 @@ export function T1EditionBanner() {
   const dLabel = d > 0 ? `D-${d}` : d === 0 ? "D-DAY" : "출시";
 
   return (
-    <section className="overflow-hidden rounded-2xl border border-[#e2012d]/30 bg-gradient-to-br from-[#0b0b0d] via-[#1b0509] to-[#3a0d15] text-white">
-      <div className="flex items-center gap-3.5 p-3.5 sm:gap-6 sm:p-5">
+    <section className="h-full overflow-hidden rounded-2xl border border-[#e2012d]/30 bg-gradient-to-br from-[#0b0b0d] via-[#1b0509] to-[#3a0d15] text-white">
+      <div className="flex h-full items-center gap-3.5 p-3.5 sm:gap-6 sm:p-5">
         {/* 카드 아트 팬 */}
         <div className="relative h-[92px] w-[92px] shrink-0 sm:h-[116px] sm:w-[136px]">
           {FAN.map((c, i) => (
