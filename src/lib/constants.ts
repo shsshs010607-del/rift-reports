@@ -10,6 +10,8 @@ export const SITE = {
   discordReport: "#" as string,
   youtube: "#" as string,
   instagram: "#" as string,
+  /** 리바지지 공식 X(트위터). 확정 전 "#". */
+  x: "#" as string,
   naverCafe: "https://cafe.naver.com/riftboundmarketplace" as string,
   /** 네이버 카페 거래 게시판(카드 판매) 바로가기 */
   naverCafeTrade: "https://cafe.naver.com/f-e/cafes/31788328/menus/14?viewType=L" as string,
