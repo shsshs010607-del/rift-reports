@@ -48,14 +48,14 @@ export function PostList({
             <Link
               href={`/community/post/${p.id}`}
               className={cn(
-                "flex items-center gap-2.5 px-3 py-2.5 transition-colors hover:bg-primary/[0.045]",
+                "flex items-center gap-2.5 px-3 py-1.5 transition-colors hover:bg-primary/[0.045]",
                 p.is_notice && "bg-primary/[0.055]",
               )}
             >
               {/* 썸네일 슬롯 — 이미지 있으면 이미지, 없으면 게시판 색 아이콘 */}
               <span
                 className={cn(
-                  "relative grid h-11 w-11 shrink-0 place-items-center overflow-hidden rounded-lg",
+                  "relative grid h-8 w-8 shrink-0 place-items-center overflow-hidden rounded-md",
                   thumb ? "bg-subcanvas" : cn(m.soft, m.fg),
                 )}
               >
@@ -69,14 +69,14 @@ export function PostList({
                     className="h-full w-full object-cover"
                   />
                 ) : hasDeck ? (
-                  <Layers className="h-5 w-5" />
+                  <Layers className="h-4 w-4" />
                 ) : (
-                  <Icon className="h-5 w-5" />
+                  <Icon className="h-4 w-4" />
                 )}
               </span>
 
               {/* 본문 */}
-              <span className="flex min-w-0 flex-1 flex-col justify-center gap-1">
+              <span className="flex min-w-0 flex-1 flex-col justify-center gap-0.5">
                 <span className="flex flex-wrap items-center gap-x-1.5 gap-y-1">
                   {p.is_notice && (
                     <span className="rounded bg-primary px-1.5 py-0.5 text-[10px] font-bold text-white">
@@ -91,7 +91,7 @@ export function PostList({
                   )}
                   <span
                     className={cn(
-                      "min-w-0 flex-1 truncate text-body-md font-semibold sm:text-body-lg",
+                      "min-w-0 flex-1 truncate text-body-md font-semibold",
                       p.is_notice ? "text-primary-strong" : "text-ink",
                     )}
                   >

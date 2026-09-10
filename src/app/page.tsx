@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 
 import { PatchBanner } from "@/components/home/patch-banner";
+import { T1EditionBanner } from "@/components/home/t1-edition-banner";
 import { SnsChannels } from "@/components/home/sns-channels";
 import { ChannelBanner } from "@/components/home/channel-banner";
 import { HomeCardSearch } from "@/components/home/home-card-search";
@@ -40,6 +41,10 @@ export default function HomePage() {
     <div className="flex flex-col gap-6">
       <PatchBanner />
 
+      <Suspense fallback={<div className="h-44 animate-pulse rounded-2xl bg-subcanvas/50" />}>
+        <T1EditionBanner />
+      </Suspense>
+
       <section className="grid gap-5 rounded-3xl border border-primary/20 bg-gradient-to-br from-primary-wash via-card to-card p-5 sm:p-6 lg:grid-cols-[minmax(0,1fr)_380px] lg:items-center">
         <div>
           <p className="text-label-md font-bold uppercase tracking-wide text-primary-strong">
@@ -51,14 +56,14 @@ export default function HomePage() {
           <p className="mt-1 font-display text-body-sm font-bold uppercase tracking-[0.2em] text-ink-soft/70">
             RIBA.GG
           </p>
-          <p className="mt-3 max-w-xl text-body-md leading-relaxed text-ink-soft">
-            리프트바운드(Riftbound) TCG 국내 유저를 위한 정보·커뮤니티 허브. 메타 덱 티어리스트, 전체
-            카드 DB, 덱 시뮬레이터, 실시간 시세, 매장 대회 일정을 한곳에 모았습니다.
-            <span className="mt-1 block text-body-sm text-ink-soft/80">
-              모든 콘텐츠는 <strong className="text-ink-soft">한국 스탠다드 포맷 메타</strong> 기준입니다.
+          <p className="mt-2.5 max-w-xl text-body-md leading-snug text-ink-soft">
+            리프트바운드 TCG 국내 유저를 위한 정보·커뮤니티 허브 — 메타 덱, 카드 DB, 덱 시뮬레이터,
+            실시간 시세, 매장 대회 일정.
+            <span className="text-ink-soft/70">
+              {" "}모든 콘텐츠 <strong className="text-ink-soft">한국 스탠다드 메타</strong> 기준.
             </span>
           </p>
-          <ChannelBanner className="mt-4" />
+          <ChannelBanner className="mt-3" />
         </div>
         <HomeCardSearch />
       </section>
