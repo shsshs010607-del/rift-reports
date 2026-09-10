@@ -2,14 +2,14 @@
 
 import { useState, useTransition } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { X, SlidersHorizontal, ChevronDown } from "lucide-react";
+import { X, SlidersHorizontal, ChevronDown, Circle } from "lucide-react";
 
 import { CARD_DOMAINS, CARD_RARITIES, CARD_SETS, CARD_TYPES } from "@/lib/constants";
 import type { CardFacets } from "@/lib/services/cardService";
 import { cn } from "@/lib/utils";
 
 const LABELS: Record<string, Record<string, string>> = {
-  domain: Object.fromEntries(CARD_DOMAINS.map((d) => [d.slug, d.label])),
+  domain: { ...Object.fromEntries(CARD_DOMAINS.map((d) => [d.slug, d.label])), neutral: "무색" },
   type: Object.fromEntries(CARD_TYPES.map((t) => [t.slug, t.label])),
   setCode: Object.fromEntries(CARD_SETS.map((s) => [s.code, s.code])),
   rarity: Object.fromEntries(CARD_RARITIES.map((r) => [r.slug, r.label])),
@@ -181,6 +181,47 @@ export function CardFilterBar({ facets }: { facets?: CardFacets | null }) {
                   </button>
                 );
               })}
+              {/* 무색(중립) — 도메인 없는 카드만 */}
+              {(() => {
+                const on = active("domain", "neutral");
+                const n = facets?.domain.neutral;
+                const empty = facets != null && !on && n === 0;
+                return (
+                  <button
+                    type="button"
+                    onClick={() => toggle("domain", "neutral")}
+                    aria-pressed={on}
+                    disabled={empty}
+                    className={cn(
+                      "group flex flex-col items-center gap-1 rounded-xl px-2 py-1.5 transition",
+                      on ? "bg-primary/10 ring-1 ring-primary/40" : "hover:bg-subcanvas",
+                      empty && "cursor-not-allowed opacity-35",
+                    )}
+                  >
+                    <span
+                      className={cn(
+                        "grid h-9 w-9 place-items-center transition",
+                        on ? "scale-110" : "opacity-55 group-hover:opacity-100",
+                      )}
+                    >
+                      <Circle
+                        className="h-7 w-7 text-ink-soft"
+                        strokeDasharray="3 3"
+                        fill="none"
+                      />
+                    </span>
+                    <span
+                      className={cn(
+                        "text-[11px] font-bold",
+                        on ? "text-primary-strong" : "text-ink-soft",
+                      )}
+                    >
+                      무색
+                      {n != null && <span className="ml-0.5 font-normal text-ink-soft/70">{n}</span>}
+                    </span>
+                  </button>
+                );
+              })()}
             </div>
           </section>
 

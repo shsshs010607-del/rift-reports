@@ -3,7 +3,7 @@ import { z } from "zod";
 
 import { getCardService, CardServiceError } from "@/lib/services/cardService";
 import {
-  CARD_DOMAIN_SLUGS,
+  CARD_DOMAIN_FILTER_SLUGS,
   CARD_RARITY_SLUGS,
   CARD_SET_CODES,
   CARD_TYPE_SLUGS,
@@ -30,7 +30,7 @@ export const dynamic = "force-dynamic";
 
 const QuerySchema = z.object({
   q: z.string().trim().min(1).optional(),
-  domain: z.enum(CARD_DOMAIN_SLUGS as unknown as [string, ...string[]]).optional(),
+  domain: z.enum(CARD_DOMAIN_FILTER_SLUGS as unknown as [string, ...string[]]).optional(),
   type: z.enum(CARD_TYPE_SLUGS as unknown as [string, ...string[]]).optional(),
   rarity: z.enum(CARD_RARITY_SLUGS as unknown as [string, ...string[]]).optional(),
   cost: z.coerce.number().int().min(0).max(30).optional(),

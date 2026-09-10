@@ -140,10 +140,15 @@ export interface Card {
  * `/cards` 페이지 및 `/api/cards` 라우트의 URL searchParams 계약과 1:1 대응한다.
  * 모든 필드는 선택 — 아무것도 없으면 "전체"로 해석한다.
  */
+/** 도메인 필터 값 — 6색 슬러그 + "무색만" 을 뜻하는 특수값. */
+export const NEUTRAL_DOMAIN = "neutral";
+export type CardDomainFilter = CardDomain | typeof NEUTRAL_DOMAIN;
+
 export interface CardSearchQuery {
   /** 자유 텍스트. 카드명 + 룰 텍스트를 대상으로 한/영 부분일치 검색. */
   q?: string;
-  domain?: CardDomain;
+  /** 6색 중 하나, 또는 "neutral"(도메인 없는 무색 카드만). */
+  domain?: CardDomainFilter;
   /** true 면 도메인 필터가 걸려도 무색(중립) 카드는 통과시킨다 — 덱 빌더용. */
   colorlessOk?: boolean;
   type?: CardType;
@@ -179,6 +184,11 @@ export function cardNumber(
 
 /** constants 슬러그 화이트리스트 (런타임 검증용). */
 export const CARD_DOMAIN_SLUGS = CARD_DOMAINS.map((d) => d.slug) as readonly CardDomain[];
+/** 필터 UI 가 받는 값 = 6색 + "neutral". */
+export const CARD_DOMAIN_FILTER_SLUGS = [
+  ...CARD_DOMAIN_SLUGS,
+  NEUTRAL_DOMAIN,
+] as readonly CardDomainFilter[];
 export const CARD_TYPE_SLUGS = CARD_TYPES.map((t) => t.slug) as readonly CardType[];
 export const CARD_RARITY_SLUGS = CARD_RARITIES.map((r) => r.slug) as readonly CardRarity[];
 export const CARD_SET_CODES = CARD_SETS.map((s) => s.code) as readonly CardSetCode[];

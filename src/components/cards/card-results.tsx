@@ -1,7 +1,28 @@
 import { getCardService, CardServiceError } from "@/lib/services/cardService";
 import type { Card, CardSearchQuery } from "@/lib/types/card";
+import type { CardSortKey } from "@/components/cards/card-sort-bar";
 import { Pagination } from "@/components/community/pagination";
 import { CardGrid } from "@/components/cards/card-grid";
+
+const collator = new Intl.Collator("ko-KR", { numeric: true, sensitivity: "base" });
+
+/** 수집번호 "OGN-066/298" → 66 (정렬용). 숫자 없으면 큰 값으로 밀어냄. */
+function numberKey(c: Card): number {
+  const m = /(\d+)/.exec(c.collectorNumber ?? "");
+  return m ? Number(m[1]) : Number.MAX_SAFE_INTEGER;
+}
+
+function sortCards(cards: Card[], sort: CardSortKey, dir: "asc" | "desc"): Card[] {
+  const sign = dir === "asc" ? 1 : -1;
+  const nullLast = (v: number | null) => (v == null ? Number.MAX_SAFE_INTEGER : v);
+  const cmp: Record<CardSortKey, (a: Card, b: Card) => number> = {
+    number: (a, b) => numberKey(a) - numberKey(b),
+    cost: (a, b) => nullLast(a.cost) - nullLast(b.cost) || numberKey(a) - numberKey(b),
+    power: (a, b) => nullLast(a.power) - nullLast(b.power) || numberKey(a) - numberKey(b),
+    name: (a, b) => collator.compare(a.name, b.name),
+  };
+  return [...cards].sort((a, b) => sign * cmp[sort](a, b));
+}
 
 /**
  * 어댑터를 통해 카드를 가져와 그리드로 렌더하는 서버 컴포넌트.
@@ -13,11 +34,15 @@ export async function CardResults({
   query,
   page,
   perPage,
+  sort = "number",
+  dir = "asc",
   hrefForPage,
 }: {
   query: CardSearchQuery;
   page: number;
   perPage: number;
+  sort?: CardSortKey;
+  dir?: "asc" | "desc";
   hrefForPage: (page: number) => string;
 }) {
   let all: Card[];
@@ -45,9 +70,10 @@ export async function CardResults({
     );
   }
 
+  const sorted = sortCards(all, sort, dir);
   const start = (page - 1) * perPage;
-  const pageItems = all.slice(start, start + perPage);
-  const pages = Math.ceil(all.length / perPage);
+  const pageItems = sorted.slice(start, start + perPage);
+  const pages = Math.ceil(sorted.length / perPage);
 
   return (
     <>

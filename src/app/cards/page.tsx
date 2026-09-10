@@ -7,10 +7,11 @@ import { AdSenseUnit } from "@/components/ads/adsense-unit";
 import { CardSearchBox } from "@/components/cards/card-search-box";
 import { CardResults } from "@/components/cards/card-results";
 import { CardFilterBar } from "@/components/cards/card-filter-bar";
+import { CardSortBar, type CardSortKey } from "@/components/cards/card-sort-bar";
 import { getCardFacets } from "@/lib/services/cardService";
 import { findGlossaryMatches } from "@/content/glossary";
 import {
-  CARD_DOMAIN_SLUGS,
+  CARD_DOMAIN_FILTER_SLUGS,
   CARD_RARITY_SLUGS,
   CARD_SET_CODES,
   CARD_TYPE_SLUGS,
@@ -49,7 +50,7 @@ function buildQuery(sp: RawSearchParams): CardSearchQuery {
 
   return {
     q,
-    domain: pick(sp.domain, CARD_DOMAIN_SLUGS),
+    domain: pick(sp.domain, CARD_DOMAIN_FILTER_SLUGS),
     type: pick(sp.type, CARD_TYPE_SLUGS),
     rarity: pick(sp.rarity, CARD_RARITY_SLUGS),
     cost,
@@ -67,6 +68,14 @@ export default function CardsPage({ searchParams }: { searchParams: RawSearchPar
   const pageRaw = Number(Array.isArray(searchParams.page) ? searchParams.page[0] : searchParams.page);
   const page = Number.isFinite(pageRaw) && pageRaw >= 1 ? Math.floor(pageRaw) : 1;
 
+  const sortRaw = Array.isArray(searchParams.sort) ? searchParams.sort[0] : searchParams.sort;
+  const sort = (["number", "cost", "name", "power"] as const).includes(sortRaw as CardSortKey)
+    ? (sortRaw as CardSortKey)
+    : "number";
+  const dir = (Array.isArray(searchParams.dir) ? searchParams.dir[0] : searchParams.dir) === "desc"
+    ? "desc"
+    : "asc";
+
   // 필터가 걸린 쿼리스트링을 유지하며 page 만 바꾸는 링크 생성기
   const hrefForPage = (next: number) => {
     const sp = new URLSearchParams();
@@ -76,6 +85,8 @@ export default function CardsPage({ searchParams }: { searchParams: RawSearchPar
     if (query.rarity) sp.set("rarity", String(query.rarity));
     if (typeof query.cost === "number") sp.set("cost", String(query.cost));
     if (query.setCode) sp.set("setCode", query.setCode);
+    if (sort !== "number") sp.set("sort", sort);
+    if (dir !== "asc") sp.set("dir", dir);
     if (next > 1) sp.set("page", String(next));
     const qs = sp.toString();
     return qs ? `/cards?${qs}` : "/cards";
@@ -119,8 +130,18 @@ export default function CardsPage({ searchParams }: { searchParams: RawSearchPar
         </div>
 
         <div className="min-w-0 xl:order-1">
+          <Suspense fallback={<div className="mb-3 h-7" />}>
+            <CardSortBar />
+          </Suspense>
           <Suspense fallback={<CardResultsSkeleton />}>
-            <CardResults query={query} page={page} perPage={PER_PAGE} hrefForPage={hrefForPage} />
+            <CardResults
+              query={query}
+              page={page}
+              perPage={PER_PAGE}
+              sort={sort}
+              dir={dir}
+              hrefForPage={hrefForPage}
+            />
           </Suspense>
           <AdSenseUnit className="mt-8" />
         </div>
