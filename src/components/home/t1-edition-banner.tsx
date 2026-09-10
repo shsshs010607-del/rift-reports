@@ -50,7 +50,7 @@ export function T1EditionBanner() {
           T1 시그니처 에디션
         </h2>
         <p className="text-[11px] leading-snug text-white/70">
-          2025 월드 챔피언 · 페이커·구마유시 등 챔피언 카드 5종 · 금박 사인
+          2025 월드 챔피언 · 페이커·구마유시 등 5종 · 금박 사인
         </p>
 
         <dl className="mt-1 flex flex-col gap-0.5">
