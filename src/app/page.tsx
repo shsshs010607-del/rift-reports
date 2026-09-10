@@ -41,9 +41,7 @@ export default function HomePage() {
     <div className="flex flex-col gap-6">
       <PatchBanner />
 
-      <Suspense fallback={<div className="h-44 animate-pulse rounded-2xl bg-subcanvas/50" />}>
-        <T1EditionBanner />
-      </Suspense>
+      <T1EditionBanner />
 
       <section className="grid gap-5 rounded-3xl border border-primary/20 bg-gradient-to-br from-primary-wash via-card to-card p-5 sm:p-6 lg:grid-cols-[minmax(0,1fr)_380px] lg:items-center">
         <div>

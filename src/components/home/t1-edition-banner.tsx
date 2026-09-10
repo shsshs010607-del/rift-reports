@@ -1,127 +1,97 @@
-import { existsSync } from "node:fs";
-import path from "node:path";
 import Link from "next/link";
 import Image from "next/image";
-import { ArrowRight, CalendarClock, TrendingUp } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 
-import { getPriceBoard } from "@/lib/prices";
-import { getUsdKrw } from "@/lib/fx";
-import { fmtKrw } from "@/lib/money";
-
-/** T1 에디션(OGN) 정식 출시일 — KST. */
+/** 리프트바운드 × 2025 월드 챔피언 T1 — 정식 출시일(KST). */
 const RELEASE = new Date("2026-09-18T00:00:00+09:00");
-/** public/ 아래 이미지 경로 (사용자가 넣으면 자동 노출, 없으면 플레이스홀더). */
-const IMG_SRC = "/brand/t1-edition.jpg";
-/** 파일 존재 여부는 모듈 로드 시 1회만 확인. */
-const HAS_IMG = existsSync(path.join(process.cwd(), "public", "brand", "t1-edition.jpg"));
+
+/** 장식용 카드 아트 (Riot 공식 CDN). 실제 T1 카드 이미지는 미공개라 OGN 카드로 대체. */
+const FAN = [
+  {
+    src: "https://cmsassets.rgpub.io/sanity/images/dsfx7636/game_data_live/68e4d3230b785738ae9d86f780f7f5607ef11807-744x1040.png?accountingTag=RB",
+    rot: "-14deg",
+    z: 10,
+  },
+  {
+    src: "https://cmsassets.rgpub.io/sanity/images/dsfx7636/game_data_live/3c7b219245cd6c6ee835974dd74771bc605289de-744x1039.png?accountingTag=RB",
+    rot: "-1deg",
+    z: 30,
+  },
+  {
+    src: "https://cmsassets.rgpub.io/sanity/images/dsfx7636/game_data_live/fbce641f5e4d8cdf2956e8ead5884b6cd3ccd90d-744x1040.png?accountingTag=RB",
+    rot: "12deg",
+    z: 20,
+  },
+];
+
+const BUNDLES = [
+  { name: "시그니처 에디션", note: "언어별 10,125세트 · 금박 사인", price: "₩500,000" },
+  { name: "플레이어 번들", note: "게임 사용 가능 · 챔피언 카드 5종", price: "₩100,000" },
+];
 
 function dDay(): number {
-  const now = new Date();
-  const ms = RELEASE.getTime() - now.getTime();
-  return Math.ceil(ms / 86_400_000);
+  return Math.ceil((RELEASE.getTime() - Date.now()) / 86_400_000);
 }
 
-/**
- * 홈 상단 유입용 프로모 — Riftbound OGN "T1 에디션" 9/18 출시 + 주요 카드 시세.
- * 이미지가 없으면 T1 컬러 플레이스홀더로 대체된다.
- */
-export async function T1EditionBanner() {
-  const hasImg = HAS_IMG;
-  const [board, fx] = await Promise.all([getPriceBoard(120), getUsdKrw()]);
-  // 일반 카드만 (시그니처*·쇼케이스·오버넘버드 변형 제외) → 대표 시세로 보이게
-  const top = board
-    .filter((r) => {
-      const num = r.print?.number ?? "";
-      if (r.market_price == null || num.includes("*")) return false;
-      if (/showcase|쇼케이스/i.test(r.print?.rarity ?? "")) return false;
-      const m = /^(\d+)\s*\/\s*(\d+)/.exec(num);
-      if (m && Number(m[1]) > Number(m[2])) return false; // 오버넘버드
-      return true;
-    })
-    .slice(0, 3);
-
+/** 홈 상단 유입 프로모 — 리프트바운드 × T1, 9/18 출시 + 번들 정가. */
+export function T1EditionBanner() {
   const d = dDay();
-  const dLabel = d > 0 ? `D-${d}` : d === 0 ? "D-DAY" : "출시 완료";
+  const dLabel = d > 0 ? `D-${d}` : d === 0 ? "D-DAY" : "출시";
 
   return (
-    <section className="overflow-hidden rounded-2xl border border-[#e2012d]/30 bg-gradient-to-br from-[#0b0b0d] via-[#1b0509] to-[#400d15] text-white">
-      <div className="flex flex-col gap-4 p-4 sm:flex-row sm:items-stretch sm:gap-5 sm:p-5">
-        {/* 이미지 / 플레이스홀더 */}
-        <div className="relative aspect-[16/9] w-full shrink-0 overflow-hidden rounded-xl bg-black/40 sm:aspect-square sm:w-40">
-          {hasImg ? (
-            <Image src={IMG_SRC} alt="Riftbound OGN T1 에디션" fill className="object-cover" sizes="160px" />
-          ) : (
-            <div className="grid h-full w-full place-items-center bg-[radial-gradient(circle_at_30%_20%,#e2012d33,transparent_60%)]">
-              <span className="font-display text-4xl font-black tracking-tight text-white/90">T1</span>
-            </div>
-          )}
-          <span className="absolute left-2 top-2 rounded-full bg-[#e2012d] px-2 py-0.5 text-[11px] font-black tracking-wide">
-            {dLabel}
+    <section className="overflow-hidden rounded-2xl border border-[#e2012d]/30 bg-gradient-to-br from-[#0b0b0d] via-[#1b0509] to-[#3a0d15] text-white">
+      <div className="flex items-center gap-3.5 p-3.5 sm:gap-6 sm:p-5">
+        {/* 카드 아트 팬 */}
+        <div className="relative h-[92px] w-[92px] shrink-0 sm:h-[116px] sm:w-[136px]">
+          {FAN.map((c, i) => (
+            <span
+              key={i}
+              className="absolute left-0 top-1/2 block w-[48px] overflow-hidden rounded-[3px] shadow-lg ring-1 ring-white/15 sm:w-[66px]"
+              style={{
+                transform: `translateX(${i * 44}%) translateY(-50%) rotate(${c.rot})`,
+                zIndex: c.z,
+              }}
+            >
+              <Image src={c.src} alt="" width={66} height={92} className="h-auto w-full" />
+            </span>
+          ))}
+        </div>
+
+        {/* 내용 */}
+        <div className="min-w-0 flex-1">
+          <span className="inline-flex items-center gap-1.5 rounded-full bg-[#e2012d] px-2 py-0.5 text-[10px] font-black tracking-wide text-white">
+            9월 18일 출시 · {dLabel}
           </span>
-        </div>
-
-        {/* 카피 + CTA */}
-        <div className="flex min-w-0 flex-1 flex-col justify-center">
-          <p className="inline-flex items-center gap-1.5 text-label-sm font-bold uppercase tracking-wide text-[#ff5b78]">
-            <CalendarClock className="h-3.5 w-3.5" />
-            9월 18일 정식 출시
-          </p>
-          <h2 className="mt-1 font-display text-title-lg font-black leading-tight text-white sm:text-headline-sm">
-            Riftbound OGN · T1 에디션
+          <h2 className="mt-1.5 font-display text-title-lg font-black leading-tight text-white sm:text-headline-sm">
+            리프트바운드 <span className="text-[#ff5b78]">×</span> T1
           </h2>
-          <p className="mt-1.5 text-body-sm leading-relaxed text-white/70">
-            출시 전부터 전체 카드 DB·덱 시뮬레이터·<strong className="text-white">실시간 시세</strong>를 리바지지에서
-            미리 확인하세요.
-          </p>
+          <p className="text-[12px] text-white/60">2025 월드 챔피언 기념 에디션</p>
 
-          <div className="mt-3 flex flex-wrap gap-2">
+          <dl className="mt-2 flex flex-col gap-1">
+            {BUNDLES.map((b) => (
+              <div
+                key={b.name}
+                className="flex items-baseline justify-between gap-3 border-b border-white/10 pb-1 last:border-0"
+              >
+                <dt className="min-w-0 truncate">
+                  <span className="text-body-sm font-bold text-white">{b.name}</span>
+                  <span className="ml-1.5 hidden text-[11px] text-white/50 sm:inline">{b.note}</span>
+                </dt>
+                <dd className="shrink-0 text-body-sm font-black tabular-nums text-white">{b.price}</dd>
+              </div>
+            ))}
+          </dl>
+
+          <div className="mt-2.5 flex flex-wrap items-center gap-x-3 gap-y-1.5">
+            <span className="text-[11px] text-white/50">예약: T1 멤버십 · KREAM</span>
             <Link
-              href="/trading"
-              className="inline-flex items-center gap-1.5 rounded-full bg-white px-4 py-2 text-body-sm font-bold text-[#1b0509] transition hover:bg-white/90"
+              href="/cards?setCode=OGN"
+              className="inline-flex items-center gap-1 rounded-full bg-white px-3 py-1.5 text-label-sm font-bold text-[#1b0509] transition hover:bg-white/90"
             >
-              카드 시세 보기 <ArrowRight className="h-4 w-4" />
-            </Link>
-            <Link
-              href="/cards"
-              className="inline-flex items-center gap-1.5 rounded-full border border-white/30 px-4 py-2 text-body-sm font-bold text-white transition hover:bg-white/10"
-            >
-              카드 DB
+              OGN 카드 보기 <ArrowRight className="h-3.5 w-3.5" />
             </Link>
           </div>
         </div>
-
-        {/* 시세 미니 */}
-        {top.length > 0 && (
-          <div className="shrink-0 rounded-xl bg-white/[0.06] p-3 sm:w-52">
-            <p className="mb-1.5 flex items-center gap-1 text-[11px] font-bold uppercase tracking-wide text-white/60">
-              <TrendingUp className="h-3 w-3" />
-              주요 카드 시세
-            </p>
-            <ul className="flex flex-col gap-1">
-              {top.map((r) => (
-                <li key={r.id}>
-                  <Link
-                    href={`/trading/cards/${r.print_id}`}
-                    className="flex items-baseline gap-2 rounded-md px-1.5 py-1 transition hover:bg-white/10"
-                  >
-                    <span className="min-w-0 flex-1 truncate text-[12px] text-white/85">
-                      {r.print?.ko_name || r.print?.name || "—"}
-                    </span>
-                    <span className="shrink-0 text-[12px] font-bold tabular-nums text-white">
-                      {fmtKrw(r.market_price, fx.usdKrw)}
-                    </span>
-                  </Link>
-                </li>
-              ))}
-            </ul>
-            <Link
-              href="/trading"
-              className="mt-1.5 block text-right text-[11px] font-semibold text-[#ff5b78] hover:underline"
-            >
-              전체 시세표 →
-            </Link>
-          </div>
-        )}
       </div>
     </section>
   );
