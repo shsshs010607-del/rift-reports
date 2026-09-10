@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { Search, ArrowUpDown, ChevronLeft, ChevronRight } from "lucide-react";
+import { Search, ArrowUp, ArrowDown, ChevronLeft, ChevronRight } from "lucide-react";
 import type { PriceRow } from "@/lib/prices";
 import type { FxRate } from "@/lib/fx";
 import { PRINT_LANGUAGES } from "@/lib/constants";
@@ -26,16 +26,22 @@ const SORTS: { key: SortKey; label: string }[] = [
 
 const PER_PAGE = 10;
 
+// 기본 목록에서 접어두는 카드 = 세트 장수를 넘는 순수 중복 수집번호(overnumbered, 예: "303/298").
+// 시그니처("303 star /298")·쇼케이스·알트아트는 거래 대상이라 포함한다.
+const OVERNUMBERED_RE = /overnumbered|오버넘버/i;
+function isSpecial(r: PriceRow): boolean {
+  const number = r.print?.number ?? "";
+  if (OVERNUMBERED_RE.test(r.print?.rarity ?? "") || OVERNUMBERED_RE.test(r.print?.art_variant ?? "")) {
+    return true;
+  }
+  const m = /^\s*(\d+)\s*\/\s*(\d+)/.exec(number);
+  return m ? Number(m[1]) > Number(m[2]) && !number.includes("*") : false;
+}
+
 /**
  * 카드 시세표 — 검색·세트·정렬 + 페이지네이션.
  * 행을 누르면 /trading/cards/[printId] 상세로 이동.
  */
-const SPECIAL_RE = /showcase|signature|promo|overnumbered|시그니처|쇼케이스/i;
-const isSpecial = (r: PriceRow) =>
-  SPECIAL_RE.test(r.print?.rarity ?? "") ||
-  SPECIAL_RE.test(r.print?.art_variant ?? "") ||
-  /[*]|\bs\b/i.test(r.print?.number ?? "");
-
 export function PriceBoard({ rows, fx }: { rows: PriceRow[]; fx: FxRate }) {
   const [q, setQ] = useState("");
   const [set, setSet] = useState("");
@@ -64,12 +70,27 @@ export function PriceBoard({ rows, fx }: { rows: PriceRow[]; fx: FxRate }) {
       );
     });
     const dir = asc ? 1 : -1;
-    const delta = (r: PriceRow) =>
-      r.market_price != null && r.change_7d != null ? deltaUsd(r.market_price, r.change_7d) : 0;
+    const num = (v: number | null | undefined) => {
+      const n = Number(v);
+      return Number.isFinite(n) ? n : 0;
+    };
+    const delta = (r: PriceRow) => {
+      const mp = num(r.market_price);
+      const p = num(r.change_7d);
+      if (!mp || !p || p <= -100) return 0; // -100% 이하 → 0 나눗셈 방지
+      return deltaUsd(mp, p);
+    };
+    const primary = (a: PriceRow, b: PriceRow) => {
+      if (sort === "change") return delta(a) - delta(b);
+      if (sort === "changePct") return num(a.change_7d) - num(b.change_7d);
+      return num(a.market_price) - num(b.market_price);
+    };
+    // 동점(같은 값)은 방향과 무관하게 이름→id 순으로 고정 — 목록이 매번 뒤바뀌지 않도록.
+    const key = (r: PriceRow) => r.print?.ko_name || r.print?.name || "";
     return [...filtered].sort((a, b) => {
-      if (sort === "change") return dir * (delta(a) - delta(b));
-      if (sort === "changePct") return dir * ((a.change_7d ?? 0) - (b.change_7d ?? 0));
-      return dir * ((a.market_price ?? 0) - (b.market_price ?? 0));
+      const p = primary(a, b);
+      if (p !== 0 && Number.isFinite(p)) return dir * p;
+      return key(a).localeCompare(key(b), "ko") || a.id.localeCompare(b.id);
     });
   }, [rows, q, set, sort, asc, showSpecial]);
 
@@ -111,19 +132,19 @@ export function PriceBoard({ rows, fx }: { rows: PriceRow[]; fx: FxRate }) {
             </FilterChip>
           ))}
           <FilterChip on={showSpecial} onClick={() => setShowSpecial((v) => !v)}>
-            특별판 포함
+            중복번호 포함
           </FilterChip>
         </div>
       </div>
 
       {/* 정렬 */}
-      <div className="flex items-center gap-1 text-label-sm">
+      <div className="flex flex-wrap items-center gap-1 text-label-sm">
         <span className="text-ink-soft">정렬</span>
         {SORTS.map((s) => (
           <button
             key={s.key}
             type="button"
-            onClick={() => (sort === s.key ? setAsc((v) => !v) : (setSort(s.key), setAsc(false)))}
+            onClick={() => setSort(s.key)}
             className={cn(
               "inline-flex items-center gap-1 rounded-lg px-2 py-1 font-semibold transition",
               sort === s.key
@@ -132,9 +153,17 @@ export function PriceBoard({ rows, fx }: { rows: PriceRow[]; fx: FxRate }) {
             )}
           >
             {s.label}
-            {sort === s.key && <ArrowUpDown className="h-3 w-3" />}
           </button>
         ))}
+        <button
+          type="button"
+          onClick={() => setAsc((v) => !v)}
+          aria-label={asc ? "오름차순" : "내림차순"}
+          className="inline-flex items-center gap-1 rounded-lg border border-line px-2 py-1 font-semibold text-ink-soft transition hover:bg-subcanvas hover:text-ink"
+        >
+          {asc ? <ArrowUp className="h-3.5 w-3.5" /> : <ArrowDown className="h-3.5 w-3.5" />}
+          {asc ? "오름차순" : "내림차순"}
+        </button>
         <span className="ml-auto text-ink-soft">{view.length.toLocaleString("ko-KR")}장</span>
       </div>
 

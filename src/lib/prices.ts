@@ -45,6 +45,9 @@ function moverQuery(dir: "asc" | "desc", limit: number) {
       .eq("is_headline", true)
       .not("change_7d", "is", null)
       .not("market_price", "is", null)
+      // 동점(같은 값) 행이 매 요청마다 순서가 뒤바뀌지 않도록 결정적 정렬 키를 준다.
+      .order("change_7d", { ascending: dir === "asc" })
+      .order("print_id", { ascending: true })
       .limit(600);
     if (error) throw error;
     // 퍼센트가 아니라 "절대 변동액(USD)" 기준으로 정렬한다.
@@ -55,7 +58,9 @@ function moverQuery(dir: "asc" | "desc", limit: number) {
     rows.sort((a, b) => {
       const da = deltaUsd(a.market_price!, a.change_7d!);
       const db = deltaUsd(b.market_price!, b.change_7d!);
-      return dir === "asc" ? da - db : db - da;
+      const primary = dir === "asc" ? da - db : db - da;
+      if (primary !== 0 && Number.isFinite(primary)) return primary;
+      return a.print_id.localeCompare(b.print_id); // 동점 → 결정적
     });
     return rows.slice(0, limit);
   }, []);
@@ -80,6 +85,7 @@ export function getPriceBoard(limit = 600) {
       .eq("is_headline", true)
       .not("market_price", "is", null)
       .order("market_price", { ascending: false })
+      .order("print_id", { ascending: true }) // 동점 시세 행의 순서를 고정 (매 요청 셔플 방지)
       .limit(limit);
     if (error) throw error;
     return ((data as unknown as PriceRow[]) ?? []).map((r) =>

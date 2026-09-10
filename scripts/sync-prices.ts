@@ -12,7 +12,13 @@
 import { readFileSync } from "node:fs";
 import { loadEnv, requireEnv, supabaseAdmin } from "./_shared";
 import { PRICE } from "../src/lib/constants";
-import { fetchAllCards, toPrintRow, toSnapshotRows, type JustTcgConfig } from "../src/lib/justtcg";
+import {
+  fetchAllCards,
+  fetchCardsByName,
+  toPrintRow,
+  toSnapshotRows,
+  type JustTcgConfig,
+} from "../src/lib/justtcg";
 
 loadEnv();
 
@@ -50,9 +56,26 @@ async function main() {
   console.log(`[sync-prices]${DRY ? " (dry)" : ""} game=${cfg.game}`);
 
   const raw = await fetchAllCards(cfg, (remain) => console.log(`  … 수집 중 (남은 콜: ${remain})`));
+
+  // OGN·OGS 외 개별 편입 카드 (한국 출시 프로모 등)
+  const extra: typeof raw = [];
+  for (const e of PRICE.extraCards) {
+    const found = await fetchCardsByName(cfg, e.set, e.q, e.names, (remain) =>
+      console.log(`  … 프로모 "${e.q}" (남은 콜: ${remain})`),
+    );
+    console.log(`  프로모 편입: ${e.q} → ${found.map((c) => `${c.name} ${c.number}`).join(", ") || "없음"}`);
+    extra.push(...found);
+  }
+
   // 실드 상품(박스/케이스 등) 제외 — 수집번호 없음
-  const cards = raw.filter((c) => c.number && c.number !== "N/A" && c.rarity && c.rarity !== "None");
-  console.log(`  카드 ${cards.length}건 (실드 ${raw.length - cards.length}건 제외)`);
+  const seen = new Set<string>();
+  const cards = [...raw, ...extra].filter((c) => {
+    if (!c.number || c.number === "N/A" || !c.rarity || c.rarity === "None") return false;
+    if (seen.has(c.id)) return false;
+    seen.add(c.id);
+    return true;
+  });
+  console.log(`  카드 ${cards.length}건 (수집 ${raw.length + extra.length}건 중 실드·중복 제외, 프로모 ${extra.length}건 포함)`);
   if (cards.length === 0) throw new Error("카드 0건 — game id 또는 키 확인");
 
   if (DRY) {

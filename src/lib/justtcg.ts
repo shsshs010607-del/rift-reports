@@ -129,6 +129,31 @@ export async function fetchAllCards(cfg: JustTcgConfig, onPage?: (remain: number
   return out;
 }
 
+/**
+ * 특정 세트에서 검색어로 소수의 카드만 가져온다 (프로모 개별 편입용).
+ * `names` 로 카드명을 정확히(대소문자·공백 무시) 좁힌다. 보통 1콜.
+ */
+export async function fetchCardsByName(
+  cfg: JustTcgConfig,
+  setId: string,
+  q: string,
+  names: string[],
+  onPage?: (remain: number) => void,
+): Promise<RawCard[]> {
+  const norm = (s: string) => s.toLowerCase().replace(/\s+/g, " ").trim();
+  const want = new Set(names.map(norm));
+  const params = new URLSearchParams({
+    game: cfg.game,
+    set: setId,
+    q,
+    limit: String(Math.max(cfg.pageLimit, 20)),
+    offset: "0",
+  });
+  const res = await request(cfg, `/cards?${params}`);
+  onPage?.(res._metadata?.apiRequestsRemaining ?? -1);
+  return res.data.filter((c) => want.has(norm(c.name)));
+}
+
 export interface PrintRow {
   group_id: string;
   name: string;
@@ -160,6 +185,17 @@ export interface SnapshotRow {
   tcgplayer_sku: string | null;
 }
 
+/** JustTCG 세트명 → 우리 짧은 코드 (CARD_SETS 와 동일 어휘). 없으면 원문 유지. */
+const SET_CODE_MAP: Record<string, string> = {
+  Origins: "OGN",
+  "Origins: Proving Grounds": "OGS",
+  "Riftbound Organized Play Promotional Cards": "OPP",
+  "Riftbound Promotional Cards": "PR",
+  "Riftbound Judge Promotional Cards": "JDG",
+};
+const shortSetCode = (name?: string | null) =>
+  name ? (SET_CODE_MAP[name] ?? name) : null;
+
 export function groupIdFor(name: string): string {
   return name
     .toLowerCase()
@@ -174,7 +210,7 @@ export function toPrintRow(c: RawCard): PrintRow {
     group_id: groupIdFor(c.name),
     name: c.name,
     name_en: c.name,
-    set_code: c.set_name ?? null,
+    set_code: shortSetCode(c.set_name),
     number: c.number ?? null,
     rarity: c.rarity ?? null,
     language: lang,

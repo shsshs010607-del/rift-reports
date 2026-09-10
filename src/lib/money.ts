@@ -2,7 +2,11 @@
 
 /** 7일 변동률(%) → 절대 USD 변동액 추정 (현재가 기준 역산). */
 export function deltaUsd(marketPrice: number, changePct: number): number {
-  return marketPrice - marketPrice / (1 + changePct / 100);
+  const mp = Number(marketPrice);
+  const pct = Number(changePct);
+  if (!Number.isFinite(mp) || !Number.isFinite(pct) || pct <= -100) return 0;
+  const prev = mp / (1 + pct / 100);
+  return Number.isFinite(prev) ? mp - prev : 0;
 }
 
 export function toKrw(usd: number, rate: number): number {
