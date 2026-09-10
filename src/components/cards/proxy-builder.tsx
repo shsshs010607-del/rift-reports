@@ -1,20 +1,11 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import {
-  Search,
-  Plus,
-  Minus,
-  Trash2,
-  Printer,
-  X,
-  SlidersHorizontal,
-  ClipboardPaste,
-} from "lucide-react";
+import { Search, Plus, Minus, Trash2, Printer, X, ClipboardPaste } from "lucide-react";
 
 import type { Card } from "@/lib/types/card";
 import { resolveCardText, cardNumber } from "@/lib/types/card";
-import { CARD_DOMAINS, CARD_TYPES } from "@/lib/constants";
+import { CARD_DOMAINS } from "@/lib/constants";
 import {
   buildDeckRefMaps,
   decodeDeck,
@@ -29,6 +20,18 @@ import { cn } from "@/lib/utils";
 const COSTS = ["0", "1", "2", "3", "4", "5", "6", "7+"] as const;
 const SHOW_STEP = 60;
 
+/** 유형 탭 — 덱 시뮬레이터 존 탭과 같은 방식. "" = 전체. */
+const TYPE_TABS: { key: string; label: string }[] = [
+  { key: "", label: "전체" },
+  { key: "legend", label: "레전드" },
+  { key: "champion", label: "챔피언" },
+  { key: "unit", label: "유닛" },
+  { key: "spell", label: "주문" },
+  { key: "gear", label: "도구" },
+  { key: "battlefield", label: "전장" },
+  { key: "rune", label: "룬" },
+];
+
 export function ProxyBuilder() {
   const [all, setAll] = useState<Card[]>([]);
   const [q, setQ] = useState("");
@@ -36,7 +39,6 @@ export function ProxyBuilder() {
   const [type, setType] = useState("");
   const [cost, setCost] = useState("");
   const [setCode, setSetCode] = useState("");
-  const [openFilters, setOpenFilters] = useState(false);
   const [limit, setLimit] = useState(SHOW_STEP);
   const [picks, setPicks] = useState<Record<string, number>>({});
   const [busy, setBusy] = useState(false);
@@ -217,19 +219,53 @@ export function ProxyBuilder() {
             <ClipboardPaste className="h-4 w-4" />
             덱 불러오기
           </button>
-          <button
-            type="button"
-            onClick={() => setOpenFilters((v) => !v)}
-            className={cn(
-              "inline-flex shrink-0 items-center gap-1.5 rounded-2xl border-2 px-3.5 text-label-md font-bold transition",
-              openFilters || (domain || type || cost || setCode)
-                ? "border-primary bg-primary/10 text-primary-strong"
-                : "border-line bg-card text-ink-soft hover:text-ink",
-            )}
-          >
-            <SlidersHorizontal className="h-4 w-4" />
-            필터
-          </button>
+        </div>
+
+        {/* 유형 탭 (덱 시뮬레이터와 동일 방식) */}
+        <div className="mt-3 flex flex-wrap gap-1 border-b border-line pb-2">
+          {TYPE_TABS.map((t) => (
+            <button
+              key={t.key}
+              type="button"
+              onClick={() => setType(t.key)}
+              className={cn(
+                "rounded-lg px-3 py-1.5 text-label-md font-bold transition",
+                type === t.key
+                  ? "bg-primary text-white"
+                  : "text-ink-soft hover:bg-subcanvas hover:text-ink",
+              )}
+            >
+              {t.label}
+            </button>
+          ))}
+        </div>
+
+        {/* 도메인 · 코스트 · 확장팩 — 항상 노출 */}
+        <div className="mt-3 flex flex-col gap-2">
+          <div className="flex flex-wrap gap-1.5">
+            {CARD_DOMAINS.map((d) => (
+              <Swatch
+                key={d.slug}
+                on={domain === d.slug}
+                color={d.color}
+                label={d.label}
+                onClick={() => setDomain(domain === d.slug ? "" : d.slug)}
+              />
+            ))}
+          </div>
+          <div className="flex flex-wrap gap-1.5">
+            {COSTS.map((c) => (
+              <Pill key={c} on={cost === c} onClick={() => setCost(cost === c ? "" : c)}>
+                {c}
+              </Pill>
+            ))}
+            <span className="mx-0.5 self-center text-ink-soft/30">·</span>
+            {["OGN", "OGS"].map((s) => (
+              <Pill key={s} on={setCode === s} onClick={() => setSetCode(setCode === s ? "" : s)}>
+                {s}
+              </Pill>
+            ))}
+          </div>
         </div>
 
         {importOpen && (
@@ -259,47 +295,6 @@ export function ProxyBuilder() {
             <p className="text-[12px] text-ink-soft/70">
               덱의 레전드·챔피언·메인덱·전장·룬을 전부 담습니다. 필요 없는 카드는 아래 목록에서 빼면 돼요.
             </p>
-          </div>
-        )}
-
-        {openFilters && (
-          <div className="mt-3 flex flex-col gap-3 rounded-2xl border border-line bg-card p-3.5">
-            <FilterRow label="도메인">
-              {CARD_DOMAINS.map((d) => (
-                <Swatch
-                  key={d.slug}
-                  on={domain === d.slug}
-                  color={d.color}
-                  label={d.label}
-                  onClick={() => setDomain(domain === d.slug ? "" : d.slug)}
-                />
-              ))}
-            </FilterRow>
-            <FilterRow label="유형">
-              {CARD_TYPES.filter((t) => t.slug !== "legend").map((t) => (
-                <Pill
-                  key={t.slug}
-                  on={type === t.slug}
-                  onClick={() => setType(type === t.slug ? "" : t.slug)}
-                >
-                  {t.label}
-                </Pill>
-              ))}
-            </FilterRow>
-            <FilterRow label="코스트">
-              {COSTS.map((c) => (
-                <Pill key={c} on={cost === c} onClick={() => setCost(cost === c ? "" : c)}>
-                  {c}
-                </Pill>
-              ))}
-            </FilterRow>
-            <FilterRow label="확장팩">
-              {["OGN", "OGS"].map((s) => (
-                <Pill key={s} on={setCode === s} onClick={() => setSetCode(setCode === s ? "" : s)}>
-                  {s}
-                </Pill>
-              ))}
-            </FilterRow>
           </div>
         )}
 
@@ -334,6 +329,11 @@ export function ProxyBuilder() {
                       title={`${resolveCardText(c, "ko").name} 담기`}
                     >
                       <LocalizedCard card={c} sizes="150px" className="!rounded-none" />
+                      {typeof c.cost === "number" && (
+                        <span className="absolute left-1 top-1 grid h-5 w-5 place-items-center rounded-full bg-black/70 text-label-sm font-bold text-white">
+                          {c.cost}
+                        </span>
+                      )}
                       {qty > 0 && (
                         <span className="absolute right-1 top-1 grid h-6 min-w-6 place-items-center rounded-full bg-primary px-1 text-label-sm font-black text-white shadow">
                           {qty}
@@ -446,14 +446,6 @@ export function ProxyBuilder() {
   );
 }
 
-function FilterRow({ label, children }: { label: string; children: React.ReactNode }) {
-  return (
-    <div className="flex flex-wrap items-center gap-1.5">
-      <span className="w-12 shrink-0 text-label-sm font-bold text-ink-soft">{label}</span>
-      {children}
-    </div>
-  );
-}
 
 function Pill({
   on,

@@ -26,16 +26,17 @@ const SORTS: { key: SortKey; label: string }[] = [
 
 const PER_PAGE = 10;
 
-// 기본 목록에서 접어두는 카드 = 세트 장수를 넘는 순수 중복 수집번호(overnumbered, 예: "303/298").
-// 시그니처("303 star /298")·쇼케이스·알트아트는 거래 대상이라 포함한다.
+// 시그니처(수집번호에 "*") · 오버넘버(세트 장수를 넘는 수집번호, 예: "303/298").
+// "시그니처·오버넘버" 태그로 켜고 끈다.
 const OVERNUMBERED_RE = /overnumbered|오버넘버/i;
 function isSpecial(r: PriceRow): boolean {
   const number = r.print?.number ?? "";
+  if (number.includes("*")) return true; // 시그니처
   if (OVERNUMBERED_RE.test(r.print?.rarity ?? "") || OVERNUMBERED_RE.test(r.print?.art_variant ?? "")) {
     return true;
   }
   const m = /^\s*(\d+)\s*\/\s*(\d+)/.exec(number);
-  return m ? Number(m[1]) > Number(m[2]) && !number.includes("*") : false;
+  return m ? Number(m[1]) > Number(m[2]) : false;
 }
 
 /**
@@ -47,7 +48,7 @@ export function PriceBoard({ rows, fx }: { rows: PriceRow[]; fx: FxRate }) {
   const [set, setSet] = useState("");
   const [sort, setSort] = useState<SortKey>("price");
   const [asc, setAsc] = useState(false);
-  const [showSpecial, setShowSpecial] = useState(false);
+  const [showSpecial, setShowSpecial] = useState(true);
   const [page, setPage] = useState(1);
 
   const sets = useMemo(() => {
@@ -132,7 +133,7 @@ export function PriceBoard({ rows, fx }: { rows: PriceRow[]; fx: FxRate }) {
             </FilterChip>
           ))}
           <FilterChip on={showSpecial} onClick={() => setShowSpecial((v) => !v)}>
-            중복번호 포함
+            {showSpecial ? "시그니처·오버넘버 ✓" : "시그니처·오버넘버"}
           </FilterChip>
         </div>
       </div>

@@ -1,14 +1,6 @@
 import Link from "next/link";
 import Image from "next/image";
-import {
-  ArrowRight,
-  BookOpen,
-  Layers,
-  MessagesSquare,
-  Sparkles,
-  TrendingUp,
-  Wand2,
-} from "lucide-react";
+import { ArrowRight, Layers, MessagesSquare, TrendingUp, Wand2 } from "lucide-react";
 
 import { CarouselClient } from "@/components/home/carousel-client";
 import { T1EditionBanner } from "@/components/home/t1-edition-banner";
@@ -22,7 +14,6 @@ export function HomeHeroCarousel() {
     <CarouselClient>
       <IntroSlide />
       <MbtiSlide />
-      <OgnSlide />
       <T1EditionBanner />
       <ToolsSlide />
     </CarouselClient>
@@ -126,29 +117,6 @@ function MbtiSlide() {
           덱 티어표
         </Link>
       </div>
-    </SlideShell>
-  );
-}
-
-function OgnSlide() {
-  return (
-    <SlideShell className="border-line bg-card">
-      <span className="inline-flex w-fit items-center gap-1 rounded-full bg-primary px-2 py-0.5 text-label-sm font-bold text-white">
-        <Sparkles className="h-3 w-3" />
-        OGN · 9월 18일 출시
-      </span>
-      <p className="mt-2.5 text-body-md leading-snug text-ink-soft">
-        리프트바운드 &lsquo;오리진&rsquo;이 9월 18일 한국 정식 출시됩니다. 카드 DB·덱 시뮬레이터·시세는
-        지금 이용할 수 있어요.
-      </p>
-      <Link
-        href="/rules"
-        className="mt-3.5 inline-flex w-fit items-center gap-1.5 rounded-full bg-primary px-4 py-2 text-label-sm font-bold text-white transition hover:bg-primary-container"
-      >
-        <BookOpen className="h-4 w-4" />
-        초보자 가이드 바로가기
-        <ArrowRight className="h-4 w-4" />
-      </Link>
     </SlideShell>
   );
 }

@@ -30,20 +30,27 @@ const RESALE = {
 /** 홈 상단 유입 프로모 — 리프트바운드 × T1 시그니처 에디션 + eBay 실거래가. */
 export function T1EditionBanner() {
   return (
-    <section className="relative flex h-full min-h-[168px] overflow-hidden rounded-2xl border border-[#e2012d]/40 bg-[#0a0708] text-white">
+    <section className="relative flex h-full min-h-[168px] overflow-hidden rounded-2xl border border-[#8a2733]/40 bg-[#0a0708] text-white">
       {/* 배경: 제품 사진 (오른쪽에서 왼쪽으로 페이드) */}
       {BOX_IMG ? (
-        <div className="pointer-events-none absolute inset-y-0 right-0 w-[68%] sm:w-[58%]">
-          <Image src={BOX_IMG} alt="리프트바운드 × T1 시그니처 에디션" fill className="object-cover object-center" sizes="(max-width:640px) 68vw, 420px" />
-          <div className="absolute inset-0 bg-gradient-to-r from-[#0a0708] via-[#0a0708]/55 to-[#0a0708]/10" />
+        <div className="pointer-events-none absolute inset-y-0 right-0 w-[74%] sm:w-[64%]">
+          <Image
+            src={BOX_IMG}
+            alt="리프트바운드 × T1 시그니처 에디션"
+            fill
+            priority
+            className="object-cover object-center"
+            sizes="(max-width:640px) 74vw, 460px"
+          />
+          <div className="absolute inset-0 bg-gradient-to-r from-[#0a0708] via-[#0a0708]/45 to-transparent" />
         </div>
       ) : (
-        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(120%_100%_at_100%_0%,#e2012d40,transparent_55%),linear-gradient(120deg,#0a0708,#1b0509_55%,#3a0d15)]" />
+        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(120%_100%_at_100%_0%,#8a273340,transparent_55%),linear-gradient(120deg,#0a0708,#1b0509_55%,#3a0d15)]" />
       )}
 
       {/* 내용 */}
       <div className="relative z-10 flex max-w-[62%] flex-col justify-center gap-1.5 p-4 sm:max-w-[54%] sm:p-5">
-        <span className="inline-flex w-fit items-center gap-1 rounded-full bg-[#e2012d] px-2 py-0.5 text-[10px] font-black tracking-wide text-white shadow-lg">
+        <span className="inline-flex w-fit items-center gap-1 rounded-full bg-[#8a2733] px-2 py-0.5 text-[10px] font-black tracking-wide text-white shadow-lg">
           RIFTBOUND <span className="opacity-70">×</span> T1 · 리셀 시장가
         </span>
         <h2 className="font-display text-title-lg font-black leading-tight drop-shadow sm:text-headline-sm">

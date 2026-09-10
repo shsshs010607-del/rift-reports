@@ -20,7 +20,7 @@ export function LogoMark({ className }: { className?: string }) {
   return (
     <span
       className={cn(
-        "relative block h-8 w-[164px] shrink-0 overflow-hidden rounded-lg bg-[#191512] ring-1 ring-white/10",
+        "relative block h-10 w-[164px] shrink-0 overflow-hidden rounded-lg bg-[#191512] ring-1 ring-white/10",
         className,
       )}
     >
@@ -28,7 +28,7 @@ export function LogoMark({ className }: { className?: string }) {
       <img
         src={LOGO_SRC}
         alt="리바지지 RIBA.GG"
-        className="pointer-events-none absolute left-1/2 top-1/2 h-[420%] max-w-none -translate-x-1/2 -translate-y-1/2 select-none"
+        className="pointer-events-none absolute left-1/2 top-1/2 h-[360%] max-w-none -translate-x-1/2 -translate-y-1/2 select-none"
       />
     </span>
   );
