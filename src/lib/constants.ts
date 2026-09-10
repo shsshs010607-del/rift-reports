@@ -141,7 +141,7 @@ export const COMMUNITY_CATEGORIES = [
   { slug: "report", label: "메타 리포트", desc: "메타 분석 · 뉴스 · 번역" },
   { slug: "riftbound", label: "리프트바운드 게시판", desc: "자유 주제 · 잡담 · 질문" },
   { slug: "deck-guide", label: "덱 공략 게시판", desc: "덱 리스트 · 운영법 · 매치업" },
-  { slug: "tournament", label: "대회 정보", desc: "대회 소식 · 후기 · 참가 모집" },
+  { slug: "tournament", label: "매장 정보", desc: "매장 위치 · 매장 대회 · 이벤트 · 후기" },
   { slug: "recruit", label: "구인구직", desc: "팀원 · 길드 · 듀오 · 스태프" },
 ] as const;
 

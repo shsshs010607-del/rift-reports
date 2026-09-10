@@ -74,10 +74,18 @@ export default async function BoardPage({
         >
           <Icon className="h-6 w-6" />
         </span>
-        <div>
+        <div className="min-w-0 flex-1">
           <h1 className="font-display text-headline-md text-ink">{category.label}</h1>
           <p className="text-body-sm text-ink-soft">{category.desc}</p>
         </div>
+        {slug === "tournament" && (
+          <Link
+            href="/shops"
+            className="shrink-0 rounded-full bg-primary px-3.5 py-2 text-label-sm font-bold text-white transition hover:bg-primary-container"
+          >
+            내 주변 매장 보기
+          </Link>
+        )}
       </header>
       <CategoryTabs active={slug} />
       <Suspense fallback={<div className="mb-4 h-24" />}>

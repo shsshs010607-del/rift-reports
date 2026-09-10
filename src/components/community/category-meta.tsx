@@ -1,4 +1,4 @@
-import { MessageCircle, Newspaper, Layers, Trophy, Users } from "lucide-react";
+import { MessageCircle, Newspaper, Layers, Store, Users } from "lucide-react";
 import type { CommunityCategory } from "@/lib/types/database";
 import { cn } from "@/lib/utils";
 
@@ -55,8 +55,8 @@ export const CATEGORY_META: Record<string, Meta> = {
       "bg-emerald-500/12 text-emerald-700 ring-emerald-500/25 dark:bg-emerald-400/15 dark:text-emerald-300 dark:ring-emerald-400/30",
   },
   tournament: {
-    icon: Trophy,
-    short: "대회",
+    icon: Store,
+    short: "매장",
     soft: "bg-yellow-100",
     fg: "text-yellow-800",
     ring: "hover:border-yellow-300",
