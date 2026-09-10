@@ -104,7 +104,7 @@ export type MbtiType = {
   traits: string[];
   /** 가장 잘 맞는 덱. */
   deckId: string;
-  /** 상극인 덱. */
+  /** 상극인 덱 — 해당 덱의 실제 상대전적 최악 매치업 기준 (Piltover Archive 승률표 참고). */
   worstDeckId: string;
 };
 
@@ -135,7 +135,7 @@ export const MBTI_TYPES: Record<MbtiCode, MbtiType> = {
       "이겨도 요란하게 세리머니하지 않는다",
     ],
     deckId: "leona",
-    worstDeckId: "yasuo",
+    worstDeckId: "kaisa",
   },
   INFJ: {
     code: "INFJ",
@@ -149,7 +149,7 @@ export const MBTI_TYPES: Record<MbtiCode, MbtiType> = {
       "남들이 안 보는 상호작용을 잘 찾아낸다",
     ],
     deckId: "viktor",
-    worstDeckId: "darius",
+    worstDeckId: "kaisa",
   },
   INTJ: {
     code: "INTJ",
@@ -163,7 +163,7 @@ export const MBTI_TYPES: Record<MbtiCode, MbtiType> = {
       "티어표보다 자기 분석을 더 믿는다",
     ],
     deckId: "kaisa",
-    worstDeckId: "annie",
+    worstDeckId: "yi",
   },
   ISTP: {
     code: "ISTP",
@@ -177,7 +177,7 @@ export const MBTI_TYPES: Record<MbtiCode, MbtiType> = {
       "위기 상황에서 오히려 침착해진다",
     ],
     deckId: "leesin",
-    worstDeckId: "garen",
+    worstDeckId: "yi",
   },
   ISFP: {
     code: "ISFP",
@@ -191,7 +191,7 @@ export const MBTI_TYPES: Record<MbtiCode, MbtiType> = {
       "튀는 걸 원하진 않지만 실력은 확실하다",
     ],
     deckId: "yi",
-    worstDeckId: "lux",
+    worstDeckId: "teemo",
   },
   INFP: {
     code: "INFP",
@@ -205,7 +205,7 @@ export const MBTI_TYPES: Record<MbtiCode, MbtiType> = {
       "이기는 방식에도 미학이 있다고 믿는다",
     ],
     deckId: "lux",
-    worstDeckId: "darius",
+    worstDeckId: "kaisa",
   },
   INTP: {
     code: "INTP",
@@ -219,7 +219,7 @@ export const MBTI_TYPES: Record<MbtiCode, MbtiType> = {
       "감정 싸움은 피하고 판 자체에 집중",
     ],
     deckId: "ahri",
-    worstDeckId: "sett",
+    worstDeckId: "annie",
   },
   ESTP: {
     code: "ESTP",
@@ -247,7 +247,7 @@ export const MBTI_TYPES: Record<MbtiCode, MbtiType> = {
       "분위기 띄우는 데 진심",
     ],
     deckId: "jinx",
-    worstDeckId: "leona",
+    worstDeckId: "yi",
   },
   ENFP: {
     code: "ENFP",
@@ -261,7 +261,7 @@ export const MBTI_TYPES: Record<MbtiCode, MbtiType> = {
       "새로운 조합 실험이 제일 재밌다",
     ],
     deckId: "teemo",
-    worstDeckId: "volibear",
+    worstDeckId: "annie",
   },
   ENTP: {
     code: "ENTP",
@@ -275,7 +275,7 @@ export const MBTI_TYPES: Record<MbtiCode, MbtiType> = {
       "지루한 장기전보다 빠른 결판을 선호",
     ],
     deckId: "annie",
-    worstDeckId: "leona",
+    worstDeckId: "jinx",
   },
   ESTJ: {
     code: "ESTJ",
@@ -289,7 +289,7 @@ export const MBTI_TYPES: Record<MbtiCode, MbtiType> = {
       "판을 주도하고 지휘하는 데 익숙하다",
     ],
     deckId: "darius",
-    worstDeckId: "ahri",
+    worstDeckId: "kaisa",
   },
   ESFJ: {
     code: "ESFJ",
@@ -303,7 +303,7 @@ export const MBTI_TYPES: Record<MbtiCode, MbtiType> = {
       "안정적으로 판을 관리하는 걸 선호",
     ],
     deckId: "mf",
-    worstDeckId: "leesin",
+    worstDeckId: "yasuo",
   },
   ENFJ: {
     code: "ENFJ",
@@ -317,7 +317,7 @@ export const MBTI_TYPES: Record<MbtiCode, MbtiType> = {
       "정면 승부를 피하지 않는다",
     ],
     deckId: "sett",
-    worstDeckId: "teemo",
+    worstDeckId: "darius",
   },
   ENTJ: {
     code: "ENTJ",
@@ -331,7 +331,7 @@ export const MBTI_TYPES: Record<MbtiCode, MbtiType> = {
       "질질 끄는 걸 싫어하고 확실하게 끝낸다",
     ],
     deckId: "volibear",
-    worstDeckId: "teemo",
+    worstDeckId: "annie",
   },
 };
 
