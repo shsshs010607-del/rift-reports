@@ -2,12 +2,14 @@
 
 import { useState, useTransition } from "react";
 import { useFormState, useFormStatus } from "react-dom";
-import { Trash2 } from "lucide-react";
+import { Trash2, Pencil, Check, X } from "lucide-react";
 import {
   createReport,
   createTournament,
   createNotification,
   deleteNotification,
+  deleteMetaDeck,
+  updateMetaDeck,
   type AdminState,
 } from "@/app/admin/actions";
 import { createShop, type ShopState } from "@/lib/actions/shops";
@@ -61,6 +63,167 @@ export function NotificationList({
             </button>
           </li>
         ))}
+      </ul>
+    </div>
+  );
+}
+
+export function MetaDeckList({
+  items,
+}: {
+  items: {
+    id: string;
+    name: string;
+    legend_name: string | null;
+    is_tournament: boolean;
+    source_url: string | null;
+  }[];
+}) {
+  const [rows, setRows] = useState(items);
+  const [pending, start] = useTransition();
+  const [msg, setMsg] = useState<string | null>(null);
+  const [editId, setEditId] = useState<string | null>(null);
+  const [draft, setDraft] = useState({ name: "", legend_name: "", is_tournament: false });
+
+  if (rows.length === 0) {
+    return <p className="text-body-sm text-ink-soft">등록된 메타 덱이 없습니다.</p>;
+  }
+
+  const remove = (id: string, name: string) => {
+    if (!confirm(`메타 덱 "${name}" 을(를) 삭제할까요?`)) return;
+    start(async () => {
+      const res = await deleteMetaDeck(id);
+      if (res.error) setMsg(res.error);
+      else {
+        setMsg(null);
+        setRows((r) => r.filter((x) => x.id !== id));
+      }
+    });
+  };
+
+  const beginEdit = (d: (typeof rows)[number]) => {
+    setMsg(null);
+    setEditId(d.id);
+    setDraft({
+      name: d.name,
+      legend_name: d.legend_name ?? "",
+      is_tournament: d.is_tournament,
+    });
+  };
+
+  const save = (id: string) => {
+    start(async () => {
+      const res = await updateMetaDeck({ id, ...draft });
+      if (res.error) setMsg(res.error);
+      else {
+        setMsg(null);
+        setRows((r) =>
+          r.map((x) =>
+            x.id === id
+              ? {
+                  ...x,
+                  name: draft.name.trim(),
+                  legend_name: draft.legend_name.trim() || null,
+                  is_tournament: draft.is_tournament,
+                }
+              : x,
+          ),
+        );
+        setEditId(null);
+      }
+    });
+  };
+
+  return (
+    <div className="flex flex-col gap-2">
+      {msg && <p className="text-body-sm text-coral">{msg}</p>}
+      <ul className="divide-y divide-line/50 overflow-hidden rounded-xl border border-line/70">
+        {rows.map((d) =>
+          editId === d.id ? (
+            <li key={d.id} className="flex flex-col gap-2 px-3 py-3">
+              <input
+                value={draft.name}
+                onChange={(e) => setDraft((s) => ({ ...s, name: e.target.value }))}
+                placeholder="덱 이름"
+                className="w-full rounded-lg border border-line bg-canvas px-2.5 py-1.5 text-body-md text-ink focus:border-primary focus:outline-none"
+              />
+              <div className="flex flex-wrap items-center gap-2">
+                <input
+                  value={draft.legend_name}
+                  onChange={(e) => setDraft((s) => ({ ...s, legend_name: e.target.value }))}
+                  placeholder="레전드명 (예: Garen)"
+                  className="min-w-[140px] flex-1 rounded-lg border border-line bg-canvas px-2.5 py-1.5 text-body-sm text-ink focus:border-primary focus:outline-none"
+                />
+                <label className="flex items-center gap-1.5 text-body-sm text-ink-soft">
+                  <input
+                    type="checkbox"
+                    checked={draft.is_tournament}
+                    onChange={(e) => setDraft((s) => ({ ...s, is_tournament: e.target.checked }))}
+                  />
+                  대회 덱
+                </label>
+                <button
+                  type="button"
+                  onClick={() => save(d.id)}
+                  disabled={pending || !draft.name.trim()}
+                  className="inline-flex items-center gap-1 rounded-lg bg-primary px-2.5 py-1.5 text-label-sm font-bold text-white transition hover:bg-primary-container disabled:opacity-40"
+                >
+                  <Check className="h-3.5 w-3.5" /> 저장
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setEditId(null)}
+                  disabled={pending}
+                  className="inline-flex items-center gap-1 rounded-lg px-2 py-1.5 text-label-sm text-ink-soft transition hover:bg-subcanvas"
+                >
+                  <X className="h-3.5 w-3.5" /> 취소
+                </button>
+              </div>
+            </li>
+          ) : (
+            <li key={d.id} className="flex items-center gap-3 px-3 py-2.5">
+              {d.is_tournament && (
+                <span className="shrink-0 rounded bg-subcanvas px-1.5 py-0.5 text-[11px] font-bold text-ink-soft">
+                  대회
+                </span>
+              )}
+              <span className="min-w-0 flex-1 truncate text-body-md text-ink">
+                {d.name}
+                {d.legend_name && (
+                  <span className="ml-1.5 text-label-sm text-ink-soft">· {d.legend_name}</span>
+                )}
+              </span>
+              {d.source_url && (
+                <a
+                  href={d.source_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="shrink-0 text-label-sm text-primary-strong hover:underline"
+                >
+                  원본
+                </a>
+              )}
+              <button
+                type="button"
+                onClick={() => beginEdit(d)}
+                disabled={pending}
+                className="shrink-0 rounded-lg p-1.5 text-ink-soft transition hover:bg-subcanvas hover:text-ink disabled:opacity-40"
+                aria-label="수정"
+              >
+                <Pencil className="h-4 w-4" />
+              </button>
+              <button
+                type="button"
+                onClick={() => remove(d.id, d.name)}
+                disabled={pending}
+                className="shrink-0 rounded-lg p-1.5 text-ink-soft transition hover:bg-error/10 hover:text-error disabled:opacity-40"
+                aria-label="삭제"
+              >
+                <Trash2 className="h-4 w-4" />
+              </button>
+            </li>
+          ),
+        )}
       </ul>
     </div>
   );

@@ -1,12 +1,22 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useState, useTransition } from "react";
 import Link from "next/link";
-import { ArrowRight, Check, Copy, ExternalLink, Heart, Layers, Trophy } from "lucide-react";
+import {
+  ArrowRight,
+  Check,
+  Copy,
+  ExternalLink,
+  Heart,
+  Layers,
+  Trash2,
+  Trophy,
+} from "lucide-react";
 
 import { CARD_DOMAINS } from "@/lib/constants";
 import { normLegend } from "@/lib/legend-name";
 import type { MetaDeck } from "@/lib/meta-decks";
+import { deleteMetaDeck } from "@/app/admin/actions";
 import { cn } from "@/lib/utils";
 
 const DOMAIN = Object.fromEntries(CARD_DOMAINS.map((d) => [d.slug, d]));
@@ -16,16 +26,19 @@ export function MetaDeckBrowser({
   decks,
   images,
   initialLegend,
+  isStaff = false,
 }: {
   decks: MetaDeck[];
   images: Record<string, string>;
   initialLegend?: string;
+  isStaff?: boolean;
 }) {
+  const [list, setList] = useState(decks);
   const legends = useMemo(() => {
     const m = new Map<string, number>();
-    for (const d of decks) if (d.legend_name) m.set(d.legend_name, (m.get(d.legend_name) ?? 0) + 1);
+    for (const d of list) if (d.legend_name) m.set(d.legend_name, (m.get(d.legend_name) ?? 0) + 1);
     return [...m.entries()].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]));
-  }, [decks]);
+  }, [list]);
 
   // initialLegend(영문명 등)를 정규화 매칭으로 실제 legend_name 에 대응
   const matchedInitial = useMemo(() => {
@@ -37,11 +50,25 @@ export function MetaDeckBrowser({
 
   const [legend, setLegend] = useState<string | null>(matchedInitial);
   const [tourneyOnly, setTourneyOnly] = useState(false);
+  const [deleting, startDelete] = useTransition();
+  const [err, setErr] = useState<string | null>(null);
 
-  const shown = decks.filter(
+  const shown = list.filter(
     (d) => (!legend || d.legend_name === legend) && (!tourneyOnly || d.is_tournament),
   );
-  const tourneyCount = decks.filter((d) => d.is_tournament).length;
+  const tourneyCount = list.filter((d) => d.is_tournament).length;
+
+  const onDelete = (deck: MetaDeck) => {
+    if (!confirm(`메타 덱 "${deck.name}" 을(를) 삭제할까요?`)) return;
+    startDelete(async () => {
+      const res = await deleteMetaDeck(deck.id);
+      if (res.error) setErr(res.error);
+      else {
+        setErr(null);
+        setList((r) => r.filter((x) => x.id !== deck.id));
+      }
+    });
+  };
 
   return (
     <div className="mt-4">
@@ -64,12 +91,18 @@ export function MetaDeckBrowser({
           <span className="text-label-sm text-ink-soft">
             총 <b className="text-ink">{shown.length}</b>덱 · 현행 룰(밴 반영)
           </span>
+          {isStaff && (
+            <span className="rounded-full bg-primary/12 px-2 py-0.5 text-[11px] font-bold text-primary-strong">
+              운영진 · 카드에서 삭제 가능
+            </span>
+          )}
         </div>
+        {err && <p className="text-body-sm text-coral">{err}</p>}
 
         {legends.length > 1 && (
           <div className="-mx-1 flex gap-1.5 overflow-x-auto px-1 pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
             <LegendChip on={legend === null} onClick={() => setLegend(null)}>
-              전체 {decks.length}
+              전체 {list.length}
             </LegendChip>
             {legends.map(([name, n]) => (
               <LegendChip key={name} on={legend === name} onClick={() => setLegend(name)}>
@@ -85,7 +118,13 @@ export function MetaDeckBrowser({
       ) : (
         <div className="mt-4 grid gap-3 md:grid-cols-2">
           {shown.map((d) => (
-            <DeckCard key={d.id} deck={d} img={d.legend_ref ? images[d.legend_ref] : undefined} />
+            <DeckCard
+              key={d.id}
+              deck={d}
+              img={d.legend_ref ? images[d.legend_ref] : undefined}
+              onDelete={isStaff ? () => onDelete(d) : undefined}
+              deleting={deleting}
+            />
           ))}
         </div>
       )}
@@ -118,7 +157,17 @@ function LegendChip({
   );
 }
 
-function DeckCard({ deck, img }: { deck: MetaDeck; img?: string }) {
+function DeckCard({
+  deck,
+  img,
+  onDelete,
+  deleting,
+}: {
+  deck: MetaDeck;
+  img?: string;
+  onDelete?: () => void;
+  deleting?: boolean;
+}) {
   const [copied, setCopied] = useState(false);
   const copy = async () => {
     try {
@@ -219,6 +268,17 @@ function DeckCard({ deck, img }: { deck: MetaDeck; img?: string }) {
             >
               <ExternalLink className="h-4 w-4" />
             </Link>
+          )}
+          {onDelete && (
+            <button
+              type="button"
+              onClick={onDelete}
+              disabled={deleting}
+              title="메타 덱 삭제 (운영진)"
+              className="grid h-9 w-9 shrink-0 place-items-center rounded-lg border border-line text-ink-soft transition hover:border-error/50 hover:bg-error/10 hover:text-error disabled:opacity-40"
+            >
+              <Trash2 className="h-4 w-4" />
+            </button>
           )}
         </div>
       </div>

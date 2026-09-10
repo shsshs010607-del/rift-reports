@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 
 export type AdminState = { error?: string; ok?: string };
 
@@ -179,4 +180,54 @@ export async function deleteNotification(id: string): Promise<AdminState> {
   revalidatePath("/", "layout");
   revalidatePath("/admin");
   return { ok: "알림을 삭제했습니다" };
+}
+
+/**
+ * 메타 덱 삭제 — meta_decks 는 RLS 로 일반 쓰기가 막혀 있어 service_role 로 지운다.
+ * 운영진(editor·admin)만. 스크립트가 다시 동기화하면 재등록될 수 있음(source_id unique).
+ */
+export async function deleteMetaDeck(id: string): Promise<AdminState> {
+  await requireStaff();
+  const parsed = z.string().uuid().safeParse(id);
+  if (!parsed.success) return { error: "잘못된 덱 ID" };
+
+  const admin = createAdminClient();
+  const { error } = await admin.from("meta_decks").delete().eq("id", parsed.data);
+  if (error) return { error: error.message };
+
+  revalidatePath("/decks");
+  revalidatePath("/admin");
+  return { ok: "메타 덱을 삭제했습니다" };
+}
+
+const metaDeckPatchSchema = z.object({
+  id: z.string().uuid(),
+  name: z.string().trim().min(1).max(120),
+  legend_name: z.string().trim().max(80).optional().or(z.literal("")),
+  is_tournament: z.boolean(),
+});
+
+/** 메타 덱 이름·레전드명·대회여부 수정 — service_role, 운영진만. */
+export async function updateMetaDeck(
+  input: z.input<typeof metaDeckPatchSchema>,
+): Promise<AdminState> {
+  await requireStaff();
+  const parsed = metaDeckPatchSchema.safeParse(input);
+  if (!parsed.success) return { error: "입력을 확인하세요 (이름 1자 이상)" };
+  const d = parsed.data;
+
+  const admin = createAdminClient();
+  const { error } = await admin
+    .from("meta_decks")
+    .update({
+      name: d.name,
+      legend_name: d.legend_name ? d.legend_name : null,
+      is_tournament: d.is_tournament,
+    })
+    .eq("id", d.id);
+  if (error) return { error: error.message };
+
+  revalidatePath("/decks");
+  revalidatePath("/admin");
+  return { ok: `"${d.name}" 저장됨` };
 }
