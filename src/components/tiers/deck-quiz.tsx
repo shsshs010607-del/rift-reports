@@ -7,12 +7,14 @@ import { Wand2, X, RotateCcw, ArrowRight } from "lucide-react";
 
 import { TIER_DECKS } from "@/lib/data/tier-list";
 import { QUIZ_QUESTIONS, scoreQuiz, type QuizResult } from "@/lib/data/deck-quiz";
+import { cn } from "@/lib/utils";
 
 const DECK_HREF = "/community/deck-guide";
 const listHref = (d: { guidePostId?: string }) =>
   d.guidePostId ? `/community/post/${d.guidePostId}` : DECK_HREF;
+const deckOf = (id: string) => TIER_DECKS.find((d) => d.id === id) ?? null;
 
-/** "내게 맞는 덱 유형" 테스트 — /tiers 안에서 모달로 뜬다. */
+/** "내 MBTI 덱 찾기" — /tiers 안에서 모달로 뜬다. */
 export function DeckQuiz({ images = {} }: { images?: Record<string, string> }) {
   const [open, setOpen] = useState(false);
   const [step, setStep] = useState(0);
@@ -21,10 +23,8 @@ export function DeckQuiz({ images = {} }: { images?: Record<string, string> }) {
   const total = QUIZ_QUESTIONS.length;
   const done = step >= total;
   const result: QuizResult | null = done ? scoreQuiz(answers) : null;
-  const deck = result ? TIER_DECKS.find((d) => d.id === result.deckIds[0]) : null;
-  const alsoDecks = result
-    ? result.deckIds.slice(1).map((id) => TIER_DECKS.find((d) => d.id === id)).filter(Boolean)
-    : [];
+  const deck = result ? deckOf(result.deckId) : null;
+  const worst = result ? deckOf(result.worstDeckId) : null;
 
   useEffect(() => {
     if (!open) return;
@@ -58,7 +58,7 @@ export function DeckQuiz({ images = {} }: { images?: Record<string, string> }) {
         className="inline-flex items-center gap-1.5 rounded-full bg-primary px-4 py-2 text-label-md font-bold text-white shadow-[0_4px_14px_rgba(70,72,212,0.3)] transition hover:bg-primary-container"
       >
         <Wand2 className="h-4 w-4" />
-        내게 맞는 덱 찾기
+        내 MBTI 덱 찾기
       </button>
 
       {open && (
@@ -73,7 +73,7 @@ export function DeckQuiz({ images = {} }: { images?: Record<string, string> }) {
             <div className="flex items-center justify-between border-b border-line/60 px-5 py-3">
               <h2 className="flex items-center gap-1.5 font-display text-title-md font-bold text-ink">
                 <Wand2 className="h-4 w-4 text-primary" />
-                내게 맞는 덱 유형
+                내 MBTI 덱 찾기
               </h2>
               <button
                 type="button"
@@ -127,76 +127,131 @@ export function DeckQuiz({ images = {} }: { images?: Record<string, string> }) {
                     </button>
                   )}
                 </>
-              ) : (
-                <div className="text-center">
-                  <p className="text-label-sm font-bold uppercase tracking-wide text-primary-strong">
-                    내게 맞는 덱
-                  </p>
-
-                  {deck ? (
-                    <div className="mt-3">
-                      <div className="relative mx-auto aspect-[744/1039] w-full max-w-[260px] overflow-hidden rounded-xl bg-subcanvas">
+              ) : result && deck ? (
+                <div>
+                  {/* 폴라로이드 — 대표 덱 아트 */}
+                  <div className="mx-auto w-fit -rotate-2">
+                    <div className="rounded-[10px] bg-white p-2 pb-8 shadow-[0_8px_24px_rgba(0,0,0,0.18)] dark:bg-neutral-200">
+                      <div className="relative aspect-[744/1039] w-40 overflow-hidden rounded-sm bg-subcanvas">
                         {images[deck.id] ? (
-                          <Image
-                            src={images[deck.id]}
-                            alt={deck.name}
-                            fill
-                            sizes="260px"
-                            className="object-contain"
-                          />
+                          <Image src={images[deck.id]} alt={deck.name} fill sizes="160px" className="object-contain" />
                         ) : (
-                          <div className="grid h-full place-items-center text-body-sm text-ink-soft">
+                          <div className="grid h-full place-items-center text-body-sm text-neutral-500">
                             {deck.keyCard}
                           </div>
                         )}
                       </div>
-                      <p className="mt-3 font-display text-headline-sm font-bold text-ink">
+                      <p className="mt-1.5 text-center font-display text-title-lg font-black text-neutral-800">
                         {deck.name}
                       </p>
-                      <Link
-                        href={listHref(deck)}
-                        onClick={() => setOpen(false)}
-                        className="mt-3 inline-flex items-center gap-1 rounded-full bg-primary px-4 py-2 text-label-md font-bold text-white transition hover:bg-primary-container"
-                      >
-                        덱리스트 보기 <ArrowRight className="h-4 w-4" />
-                      </Link>
                     </div>
-                  ) : (
-                    <p className="mt-4 text-body-sm text-ink-soft">추천 덱을 찾지 못했어요.</p>
-                  )}
+                  </div>
 
-                  {alsoDecks.length > 0 && (
-                    <div className="mt-3">
-                      <p className="mb-1.5 text-label-sm font-bold text-ink-soft">이런 덱도 잘 맞아요</p>
-                      <div className="flex flex-wrap justify-center gap-1.5">
-                        {alsoDecks.map((d) => (
-                          <Link
-                            key={d!.id}
-                            href={listHref(d!)}
-                            onClick={() => setOpen(false)}
-                            className="rounded-full border border-line bg-card px-3 py-1 text-label-sm font-bold text-ink transition hover:border-primary/50"
-                          >
-                            {d!.name}
-                          </Link>
-                        ))}
-                      </div>
-                    </div>
-                  )}
+                  {/* 유형 타이틀 */}
+                  <div className="mt-5 text-center">
+                    <p className="text-label-sm font-bold text-ink-soft">당신의 유형은…</p>
+                    <p className="mt-1 font-display text-headline-sm font-black leading-tight text-primary-strong">
+                      {result.type.nickname} {deck.name}
+                    </p>
+                    <span className="mx-auto mt-2 block h-1 w-8 rounded-full bg-primary/40" />
+                  </div>
 
-                  <button
-                    type="button"
-                    onClick={reset}
-                    className="mt-4 inline-flex items-center gap-1.5 text-label-md font-bold text-ink-soft hover:text-ink"
-                  >
-                    <RotateCcw className="h-3.5 w-3.5" />
-                    다시 하기
-                  </button>
+                  {/* 해시태그 */}
+                  <p className="mt-4 flex flex-wrap gap-x-2 gap-y-1 text-body-sm font-bold text-ink">
+                    {result.type.hashtags.map((h) => (
+                      <span key={h}>{h}</span>
+                    ))}
+                    <span className="text-primary-strong">#{result.type.code}</span>
+                  </p>
+
+                  {/* 특징 */}
+                  <ul className="mt-3 flex flex-col gap-2">
+                    {result.type.traits.map((t) => (
+                      <li key={t} className="flex gap-2 text-body-sm text-ink">
+                        <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-primary" />
+                        <span>{t}</span>
+                      </li>
+                    ))}
+                  </ul>
+
+                  {/* 잘 맞는 / 안 맞는 챔피언 */}
+                  <div className="mt-6 grid grid-cols-2 gap-3">
+                    <MatchCard label="나와 잘 맞는 챔피언" tone="good" deck={deck} img={images[deck.id]} onNav={() => setOpen(false)} />
+                    {worst && (
+                      <MatchCard
+                        label="나와 잘 안 맞는 챔피언"
+                        tone="bad"
+                        deck={worst}
+                        img={images[worst.id]}
+                        onNav={() => setOpen(false)}
+                      />
+                    )}
+                  </div>
+
+                  <div className="mt-5 flex items-center justify-center gap-4">
+                    <Link
+                      href={listHref(deck)}
+                      onClick={() => setOpen(false)}
+                      className="inline-flex items-center gap-1 rounded-full bg-primary px-4 py-2 text-label-md font-bold text-white transition hover:bg-primary-container"
+                    >
+                      덱리스트 보기 <ArrowRight className="h-4 w-4" />
+                    </Link>
+                    <button
+                      type="button"
+                      onClick={reset}
+                      className="inline-flex items-center gap-1.5 text-label-md font-bold text-ink-soft hover:text-ink"
+                    >
+                      <RotateCcw className="h-3.5 w-3.5" />
+                      다시 하기
+                    </button>
+                  </div>
                 </div>
+              ) : (
+                <p className="py-8 text-center text-body-sm text-ink-soft">결과를 불러오지 못했어요.</p>
               )}
             </div>
           </div>
         </div>
       )}
     </>
+  );
+}
+
+function MatchCard({
+  label,
+  tone,
+  deck,
+  img,
+  onNav,
+}: {
+  label: string;
+  tone: "good" | "bad";
+  deck: { id: string; name: string; keyCard: string; guidePostId?: string };
+  img?: string;
+  onNav: () => void;
+}) {
+  return (
+    <Link
+      href={listHref(deck)}
+      onClick={onNav}
+      className="flex flex-col items-center rounded-xl border border-line bg-subcanvas/40 p-2.5 transition hover:border-primary/40"
+    >
+      <span
+        className={cn(
+          "text-[11px] font-black",
+          tone === "good" ? "text-emerald" : "text-coral",
+        )}
+      >
+        {label}
+      </span>
+      <span className="relative mt-1.5 aspect-[744/1039] w-full overflow-hidden rounded bg-subcanvas">
+        {img ? (
+          <Image src={img} alt={deck.name} fill sizes="140px" className="object-contain" />
+        ) : (
+          <span className="grid h-full place-items-center text-[11px] text-ink-soft">{deck.keyCard}</span>
+        )}
+      </span>
+      <span className="mt-1.5 text-label-sm font-bold text-ink">{deck.name}</span>
+    </Link>
   );
 }
