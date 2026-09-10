@@ -43,11 +43,8 @@ export function Navbar() {
     <header className="fixed inset-x-0 top-0 z-50 bg-surface/95 shadow-header backdrop-blur-xl">
       {/* ── 1행: 로고 · 주요 메뉴 · 알림/글쓰기/프로필 ── */}
       <div className="mx-auto flex h-[68px] max-w-[1280px] items-center gap-4 px-gutter-desktop">
-        <Link href="/" className="flex shrink-0 items-center gap-2.5">
-          <LogoMark className="h-10 w-auto rounded-lg shadow-e1" />
-          <span className="font-display text-headline-sm font-extrabold tracking-tight text-on-surface sm:text-headline-md">
-            리바지지
-          </span>
+        <Link href="/" aria-label="리바지지 홈" className="flex shrink-0 items-center">
+          <LogoMark className="shadow-e1" />
         </Link>
 
         <nav className="hidden flex-1 items-center gap-1 xl:flex">

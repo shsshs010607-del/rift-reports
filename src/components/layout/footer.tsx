@@ -24,15 +24,7 @@ export function Footer() {
 
         <div className="mb-space-2xl grid grid-cols-1 gap-space-xl md:grid-cols-4">
           <div className="space-y-space-sm md:col-span-2">
-            <div className="flex items-center gap-2.5">
-              <LogoMark className="h-8 w-auto rounded-md" />
-              <span className="font-display text-headline-sm font-extrabold text-primary">
-                리바지지
-              </span>
-              <span className="rounded-full bg-surface-container-high px-space-xs py-0.5 text-label-sm text-on-surface-variant">
-                RIBA.GG
-              </span>
-            </div>
+            <LogoMark />
             <p className="max-w-md text-body-sm text-on-surface-variant">
               {SITE.description}. 공정한 플레이와 건강한 커뮤니티 문화를 함께 만들어갑니다.
             </p>
