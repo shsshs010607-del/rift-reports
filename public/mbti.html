@@ -1,0 +1,672 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
+<meta name="theme-color" content="#0a0a0f" />
+<title>내 MBTI 덱 찾기 · 리프트바운드 | RIBA.GG</title>
+<style>
+  /* ============================================================
+     리프트바운드 "내 MBTI 덱 찾기" — 단일 파일, 외부 라이브러리 없음.
+     문항 · 선택지 · MBTI 16유형 · 채점(축별 다수결, 동점 시 I/N/F/P)은
+     리바지지(riba.gg) /tiers 의 deck-quiz.ts 와 100% 동일.
+     링크 대상은 CONFIG.baseUrl 로 조정.
+     ============================================================ */
+
+  :root {
+    --bg: #0a0a0f;
+    --card: rgba(255, 255, 255, 0.045);
+    --card-strong: rgba(255, 255, 255, 0.08);
+    --border: rgba(255, 255, 255, 0.09);
+    --border-bright: rgba(255, 255, 255, 0.22);
+    --ink: #f4f4f7;
+    --ink-dim: #a2a2b0;
+    --ink-faint: #6c6c7a;
+    --brand: #7c5cff;
+    --brand-2: #4aa3ff;
+    --good: #34d399;
+    --bad: #ff6b81;
+    --radius: 20px;
+    --ease: cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+  html, body {
+    height: 100%;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: "Pretendard", -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo",
+                 "Malgun Gothic", "Segoe UI", Roboto, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+    overscroll-behavior: none;
+  }
+
+  body { display: flex; justify-content: center; align-items: stretch; }
+
+  .app {
+    position: relative;
+    width: 100%;
+    max-width: 440px;
+    min-height: 100dvh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    background:
+      radial-gradient(120% 60% at 12% -8%, rgba(124, 92, 255, 0.22), transparent 60%),
+      radial-gradient(120% 55% at 92% 108%, rgba(74, 163, 255, 0.16), transparent 60%),
+      var(--bg);
+    isolation: isolate;
+  }
+
+  .blob {
+    position: absolute; border-radius: 50%; filter: blur(60px);
+    opacity: 0.5; z-index: -1; pointer-events: none; mix-blend-mode: screen;
+    transition: background 0.8s var(--ease);
+  }
+  .blob.b1 { width: 320px; height: 320px; top: -90px; left: -110px; background: #6a3cff; animation: drift1 16s ease-in-out infinite; }
+  .blob.b2 { width: 300px; height: 300px; bottom: -110px; right: -120px; background: #1f6bff; animation: drift2 20s ease-in-out infinite; }
+  @keyframes drift1 { 0%,100% { transform: translate(0,0) scale(1); } 50% { transform: translate(28px,40px) scale(1.12); } }
+  @keyframes drift2 { 0%,100% { transform: translate(0,0) scale(1); } 50% { transform: translate(-32px,-30px) scale(1.1); } }
+
+  .topbar {
+    flex-shrink: 0;
+    padding: max(14px, env(safe-area-inset-top)) 20px 10px;
+    display: flex; align-items: center; gap: 12px; min-height: 52px;
+  }
+  .brandmark { font-size: 13px; font-weight: 800; letter-spacing: 0.14em; color: var(--ink-dim); }
+  .brandmark b { color: var(--ink); }
+
+  .back-btn {
+    border: 0; background: var(--card); color: var(--ink-dim);
+    width: 34px; height: 34px; border-radius: 12px; font-size: 17px;
+    display: grid; place-items: center; cursor: pointer;
+    transition: background .2s, color .2s, transform .15s;
+  }
+  .back-btn:active { transform: scale(0.9); }
+  .back-btn[hidden] { display: none; }
+
+  .progress-wrap { flex: 1; display: flex; align-items: center; gap: 10px; }
+  .progress-track { flex: 1; height: 6px; border-radius: 999px; background: rgba(255,255,255,0.08); overflow: hidden; }
+  .progress-fill { height: 100%; width: 0%; border-radius: 999px; background: linear-gradient(90deg, var(--brand), var(--brand-2)); transition: width .5s var(--ease); }
+  .progress-count { font-size: 12px; font-weight: 700; color: var(--ink-faint); font-variant-numeric: tabular-nums; min-width: 34px; text-align: right; }
+  .progress-wrap[hidden] { display: none; }
+
+  .stage { flex: 1; position: relative; display: flex; }
+  .screen {
+    position: absolute; inset: 0;
+    display: flex; flex-direction: column;
+    padding: 8px 20px calc(24px + env(safe-area-inset-bottom));
+    overflow-y: auto; -webkit-overflow-scrolling: touch;
+  }
+  .screen.enter { animation: screenIn .44s var(--ease) both; }
+  @keyframes screenIn { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
+
+  /* 시작 화면 */
+  .intro { justify-content: center; text-align: center; gap: 18px; }
+  .intro .eyebrow { font-size: 12px; font-weight: 800; letter-spacing: 0.22em; color: var(--brand-2); text-transform: uppercase; }
+  .intro h1 { font-size: clamp(28px, 8.5vw, 36px); line-height: 1.24; font-weight: 850; letter-spacing: -0.02em; }
+  .intro h1 .grad { background: linear-gradient(120deg, #9b7bff, #4aa3ff); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  .intro p { font-size: 15px; line-height: 1.7; color: var(--ink-dim); max-width: 320px; margin: 0 auto; }
+  .intro .meta { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; margin-top: 4px; }
+  .chip { font-size: 12px; font-weight: 700; color: var(--ink-dim); background: var(--card); border: 1px solid var(--border); padding: 7px 12px; border-radius: 999px; }
+  .hero-glyph {
+    width: 92px; height: 92px; margin: 0 auto 4px; border-radius: 26px;
+    display: grid; place-items: center; font-size: 24px; font-weight: 850; letter-spacing: 0.02em;
+    background: linear-gradient(150deg, rgba(124,92,255,0.28), rgba(74,163,255,0.14));
+    border: 1px solid var(--border-bright);
+    box-shadow: 0 20px 50px -20px rgba(124,92,255,0.5);
+    animation: floaty 4.5s ease-in-out infinite;
+  }
+  @keyframes floaty { 0%,100% { transform: translateY(0) rotate(-2deg); } 50% { transform: translateY(-8px) rotate(2deg); } }
+
+  /* 질문 화면 */
+  .q-head { margin: 6px 0 22px; }
+  .q-index { font-size: 12px; font-weight: 800; letter-spacing: 0.12em; color: var(--brand-2); margin-bottom: 10px; }
+  .q-axis { font-size: 11px; font-weight: 800; color: var(--ink-faint); letter-spacing: 0.1em; }
+  .q-text { font-size: clamp(21px, 5.8vw, 25px); line-height: 1.4; font-weight: 800; letter-spacing: -0.01em; margin-top: 6px; }
+
+  .options { display: flex; flex-direction: column; gap: 12px; padding-bottom: 8px; }
+  .option {
+    --stagger: 0ms;
+    position: relative; text-align: left;
+    border: 1px solid var(--border); background: var(--card); color: var(--ink);
+    border-radius: 16px; padding: 18px 18px;
+    font-size: 15.5px; line-height: 1.55; font-weight: 650; font-family: inherit;
+    cursor: pointer;
+    transition: transform .18s var(--ease), border-color .2s, background .2s;
+    animation: optIn .4s var(--ease) both; animation-delay: var(--stagger);
+  }
+  @keyframes optIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+  .option:active { transform: scale(0.975); }
+  @media (hover: hover) { .option:hover { border-color: var(--border-bright); background: var(--card-strong); } }
+  .option.chosen { border-color: var(--brand); background: color-mix(in srgb, var(--brand) 20%, transparent); transform: scale(0.985); }
+  .options.locked .option:not(.chosen) { opacity: 0.4; }
+  .options.locked .option { pointer-events: none; }
+
+  .prev-link { margin-top: 16px; align-self: flex-start; background: none; border: 0; color: var(--ink-faint); font-size: 13px; font-weight: 700; font-family: inherit; cursor: pointer; }
+
+  /* 결과 화면 */
+  .result-kicker { text-align: center; font-size: 12px; font-weight: 800; letter-spacing: 0.16em; color: var(--brand-2); text-transform: uppercase; margin: 6px 0 16px; animation: screenIn .5s var(--ease) both; }
+
+  .polaroid-wrap { display: flex; justify-content: center; animation: pop .6s var(--ease) both; }
+  @keyframes pop { 0% { opacity: 0; transform: scale(0.8) rotate(-2deg); } 60% { transform: scale(1.03) rotate(-2deg); } 100% { opacity: 1; transform: scale(1) rotate(-2deg); } }
+  .polaroid {
+    background: #f4f4f2; padding: 10px 10px 34px; border-radius: 10px;
+    box-shadow: 0 18px 44px rgba(0,0,0,0.45);
+  }
+  .polaroid .pic {
+    display: block; position: relative; width: 190px; aspect-ratio: 744 / 1039;
+    border-radius: 3px; overflow: hidden; background: #d8d8d6;
+  }
+  .polaroid .pic img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; opacity: 0; transition: opacity .5s var(--ease); }
+  .polaroid .pic img.ready { opacity: 1; }
+  .polaroid .pic .fallback { position: absolute; inset: 0; display: grid; place-items: center; text-align: center; padding: 10px; font-size: 15px; font-weight: 800; color: #555; opacity: 0; }
+  .polaroid .pic.failed .fallback { opacity: 1; }
+  .polaroid .name { margin-top: 12px; text-align: center; font-size: 20px; font-weight: 900; color: #1c1c22; letter-spacing: -0.01em; }
+
+  .type-title { text-align: center; margin-top: 22px; animation: screenIn .5s var(--ease) .08s both; }
+  .type-title .lead { font-size: 12px; font-weight: 700; color: var(--ink-dim); }
+  .type-title .name {
+    margin-top: 6px; font-size: clamp(20px, 5.6vw, 25px); font-weight: 850; line-height: 1.32;
+    background: linear-gradient(120deg, #b7a2ff, #7cc0ff);
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+  }
+  .type-title .rule { display: block; width: 34px; height: 3px; border-radius: 999px; background: rgba(124,92,255,0.5); margin: 12px auto 0; }
+
+  .hashtags { display: flex; flex-wrap: wrap; gap: 6px 10px; justify-content: center; margin-top: 16px; font-size: 13.5px; font-weight: 800; color: var(--ink); }
+  .hashtags .code { color: var(--brand-2); }
+
+  .traits { list-style: none; margin: 18px 0 0; display: flex; flex-direction: column; gap: 10px; }
+  .traits li { display: flex; gap: 10px; font-size: 14px; line-height: 1.55; color: var(--ink); }
+  .traits li::before { content: ""; flex-shrink: 0; width: 6px; height: 6px; margin-top: 8px; border-radius: 50%; background: var(--brand); }
+
+  .match-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 24px; }
+  .match {
+    display: flex; flex-direction: column; align-items: center; text-decoration: none;
+    border: 1px solid var(--border); background: var(--card); border-radius: 16px; padding: 12px 10px;
+    transition: border-color .2s, transform .15s;
+  }
+  .match:active { transform: scale(0.97); }
+  .match .tag { font-size: 11px; font-weight: 900; letter-spacing: 0.02em; }
+  .match.good .tag { color: var(--good); }
+  .match.bad .tag { color: var(--bad); }
+  .match .pic { display: block; position: relative; width: 100%; aspect-ratio: 744 / 1039; margin-top: 10px; border-radius: 8px; overflow: hidden; background: #16161e; }
+  .match .pic img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; opacity: 0; transition: opacity .5s var(--ease); }
+  .match .pic img.ready { opacity: 1; }
+  .match .pic .fallback { position: absolute; inset: 0; display: grid; place-items: center; text-align: center; padding: 8px; font-size: 12px; font-weight: 700; color: var(--ink-dim); opacity: 0; }
+  .match .pic.failed .fallback { opacity: 1; }
+  .match .mname { margin-top: 9px; font-size: 13px; font-weight: 800; color: var(--ink); }
+
+  .share-box {
+    margin-top: 22px;
+    background: linear-gradient(150deg, rgba(124,92,255,0.16), rgba(74,163,255,0.08));
+    border: 1px solid var(--border-bright); border-radius: 16px;
+    padding: 16px; text-align: center;
+    animation: screenIn .5s var(--ease) .16s both;
+  }
+  .share-box .ico { font-size: 24px; }
+  .share-box p { font-size: 13.5px; line-height: 1.65; color: var(--ink); margin-top: 6px; font-weight: 600; }
+  .share-box .mention { color: var(--brand-2); font-weight: 800; }
+
+  .actions { display: flex; flex-direction: column; gap: 10px; margin-top: 16px; padding-bottom: 6px; }
+  .btn {
+    appearance: none; border: 0; border-radius: 15px; padding: 16px 18px;
+    font-family: inherit; font-size: 15px; font-weight: 800; cursor: pointer;
+    display: flex; align-items: center; justify-content: center; gap: 8px; text-decoration: none;
+    transition: transform .15s var(--ease), filter .2s, background .2s;
+  }
+  .btn:active { transform: scale(0.97); }
+  .btn-primary { color: #fff; background: linear-gradient(120deg, var(--brand), var(--brand-2)); box-shadow: 0 16px 40px -14px rgba(124,92,255,0.6); }
+  .btn-primary:active { filter: brightness(1.08); }
+  .btn-ghost { color: var(--ink); background: var(--card-strong); border: 1px solid var(--border); }
+  .btn-block { width: 100%; }
+  .cta-row { display: flex; gap: 10px; }
+  .cta-row .btn { flex: 1; }
+
+  .foot-note { text-align: center; font-size: 11px; color: var(--ink-faint); margin-top: 14px; line-height: 1.6; }
+
+  @media (max-width: 360px) { .screen { padding-left: 16px; padding-right: 16px; } }
+  @media (prefers-reduced-motion: reduce) { * { animation-duration: .001s !important; transition-duration: .08s !important; } }
+</style>
+</head>
+<body>
+<div class="app" id="app">
+  <div class="blob b1" id="blob1"></div>
+  <div class="blob b2" id="blob2"></div>
+
+  <header class="topbar">
+    <button class="back-btn" id="backBtn" hidden aria-label="이전 질문">←</button>
+    <div class="brandmark">RIBA<b>.GG</b></div>
+    <div class="progress-wrap" id="progressWrap" hidden>
+      <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+      <div class="progress-count" id="progressCount">0/0</div>
+    </div>
+  </header>
+
+  <main class="stage" id="stage"></main>
+</div>
+
+<script>
+(function () {
+  "use strict";
+
+  var CONFIG = {
+    siteName: "리바지지",
+    baseUrl: "https://riba.gg",
+    // 레전드별 덱리스트(메타 덱) 페이지. {legend} 에 레전드 영문명이 들어갑니다.
+    decksUrl: "https://riba.gg/decks?legend={legend}",
+    instaHandle: "@riba.gg"
+  };
+
+  /* ============================================================
+     문항 — deck-quiz.ts QUIZ_QUESTIONS 와 동일 (E/I·S/N·T/F·J/P 각 2문항).
+     options[0] = 앞 글자(E/S/T/J), options[1] = 뒤 글자(I/N/F/P).
+     ============================================================ */
+  var QUIZ_QUESTIONS = [
+    { id: "ei1", axis: "EI", question: "새 카드팩을 뜯고 나면?",
+      options: [
+        { label: "바로 단톡방에 자랑하고 같이 뜯자고 한다 📣", letter: "E" },
+        { label: "혼자 조용히 정리하면서 뭐 나왔나 음미한다 🔍", letter: "I" }
+      ] },
+    { id: "ei2", axis: "EI", question: "매장 대회에 갔다. 시작 전 나는?",
+      options: [
+        { label: "여기저기 인사 다니며 덱 얘기로 수다 💬", letter: "E" },
+        { label: "구석 자리에서 내 덱 마지막 점검 🎧", letter: "I" }
+      ] },
+    { id: "sn1", axis: "SN", question: "덱을 짤 때 먼저 보는 건?",
+      options: [
+        { label: "지금 검증된, 잘 나가는 카드부터 📊", letter: "S" },
+        { label: "아무도 안 쓰는 조합의 가능성 💡", letter: "N" }
+      ] },
+    { id: "sn2", axis: "SN", question: "공략 가이드를 읽을 때?",
+      options: [
+        { label: "1번부터 순서대로 정확히 따라 한다 📝", letter: "S" },
+        { label: "핵심 원리만 잡고 내 식으로 응용 🌀", letter: "N" }
+      ] },
+    { id: "tf1", axis: "TF", question: "친구가 내 덱에 지고 시무룩해지면?",
+      options: [
+        { label: "어디서 플레이가 어긋났는지 짚어준다 🧮", letter: "T" },
+        { label: "일단 \"방금 그 판 개꿀잼이었다\"고 분위기부터 🫂", letter: "F" }
+      ] },
+    { id: "tf2", axis: "TF", question: "덱을 고르는 최종 기준은?",
+      options: [
+        { label: "승률과 효율, 숫자가 말해준다 📈", letter: "T" },
+        { label: "손맛과 내 취향, 재미없으면 안 한다 💖", letter: "F" }
+      ] },
+    { id: "jp1", axis: "JP", question: "게임 중 계획이 틀어졌다!",
+      options: [
+        { label: "미리 짜둔 플랜 B로 침착하게 전환 🗂️", letter: "J" },
+        { label: "즉흥으로 그 자리에서 새 그림을 그린다 🎨", letter: "P" }
+      ] },
+    { id: "jp2", axis: "JP", question: "내 덱 리스트는?",
+      options: [
+        { label: "40장 확정. 웬만해선 안 바꾼다 🔒", letter: "J" },
+        { label: "매 판 한두 장씩 계속 만지작거린다 🔧", letter: "P" }
+      ] }
+  ];
+
+  var TIE_DEFAULT = { EI: "I", SN: "N", TF: "F", JP: "P" };
+  var AXIS_ORDER = ["EI", "SN", "TF", "JP"];
+  var AXIS_PAIR = { EI: ["E", "I"], SN: ["S", "N"], TF: ["T", "F"], JP: ["J", "P"] };
+
+  /* ============================================================
+     MBTI 16유형 — deck-quiz.ts MBTI_TYPES 와 동일.
+     ============================================================ */
+  var MBTI_TYPES = {
+    ISTJ: { code: "ISTJ", nickname: "원칙주의 기본기 장인", hashtags: ["#정석", "#기본기", "#꾸준함", "#안정"],
+      traits: ["화려한 콤보보다 확실한 한 수를 믿는다", "덱 리스트도 방 정리도 딱 맞아떨어져야 마음이 편하다", "룰과 매너를 지키고, 상대에게도 그걸 기대한다", "검증 안 된 신카드는 일단 지켜보는 편", "지고 있어도 흔들리지 않고 계획대로 둔다"],
+      deckId: "garen", worstDeckId: "jinx" },
+    ISFJ: { code: "ISFJ", nickname: "묵묵히 팀을 지키는 방패", hashtags: ["#수비", "#헌신", "#인내", "#보호"],
+      traits: ["먼저 나서기보다 뒤를 단단히 받치는 역할이 편하다", "상대가 지칠 때까지 버티는 존버의 달인", "판을 흔드는 변수보다 안정적인 방어를 선호", "덱의 약점을 미리 메워두는 세심함", "이겨도 요란하게 세리머니하지 않는다"],
+      deckId: "leona", worstDeckId: "kaisa" },
+    INFJ: { code: "INFJ", nickname: "큰 그림을 그리는 설계자", hashtags: ["#통찰", "#장기전", "#엔진", "#완성"],
+      traits: ["몇 턴 뒤의 그림을 머릿속에 미리 그려둔다", "조용히 자원을 쌓다가 한 번에 완성형을 낸다", "왜 이렇게 두는지 설명하려면 항상 좀 길어진다", "겉은 차분한데 승부욕은 은근히 강하다", "남들이 안 보는 상호작용을 잘 찾아낸다"],
+      deckId: "viktor", worstDeckId: "kaisa" },
+    INTJ: { code: "INTJ", nickname: "후반을 계산하는 전략가", hashtags: ["#설계", "#후반캐리", "#자원", "#냉정"],
+      traits: ["\"후반 가면 내가 이겨\"가 입버릇", "초반 손해는 계산된 투자라고 생각한다", "감정보다 효율, 필요 없는 카드는 가차 없이 뺀다", "장기 플랜이 서면 도중에 잘 안 흔들린다", "티어표보다 자기 분석을 더 믿는다"],
+      deckId: "kaisa", worstDeckId: "yi" },
+    ISTP: { code: "ISTP", nickname: "손이 먼저 나가는 콤보 장인", hashtags: ["#손기술", "#즉흥", "#콤보", "#실전"],
+      traits: ["이론 설명보다 일단 손이 먼저 움직인다", "책상은 난장판인데 본인은 다 어디 있는지 안다", "이동·연계 타이밍을 몸으로 외우는 타입", "파고들수록 강해지는 고난도 덱에 끌린다", "위기 상황에서 오히려 침착해진다"],
+      deckId: "leesin", worstDeckId: "yi" },
+    ISFP: { code: "ISFP", nickname: "말없이 끝내는 순간의 검", hashtags: ["#감각", "#속도", "#과묵", "#한방"],
+      traits: ["말수는 적지만 결정적일 때 한순간에 끝낸다", "필요한 것만 남긴 미니멀한 덱을 좋아한다", "\"이게 제일 세니까\" — 설명은 짧게", "느낌이 오는 타이밍을 놓치지 않는다", "튀는 걸 원하진 않지만 실력은 확실하다"],
+      deckId: "yi", worstDeckId: "teemo" },
+    INFP: { code: "INFP", nickname: "내 취향대로 예쁘게 이긴다", hashtags: ["#낭만", "#취향", "#컨트롤", "#마이웨이"],
+      traits: ["승률보다 \"이 덱이 나답나\"가 먼저다", "남들이 안 쓰는 조합을 굳이 완성시킨다", "빛나는 주문 한 방의 그림을 좋아한다", "설명충 기질이 있어 콤보 해설이 길어진다", "이기는 방식에도 미학이 있다고 믿는다"],
+      deckId: "lux", worstDeckId: "kaisa" },
+    INTP: { code: "INTP", nickname: "상호작용을 실험하는 이론가", hashtags: ["#실험", "#변수", "#분석", "#상호작용"],
+      traits: ["\"이거 이렇게 되면 어떻게 되지?\"를 계속 시험한다", "매혹·바운스 같은 방해 상호작용을 좋아한다", "덱을 매 판 조금씩 계속 고친다", "정석보다 반례를 찾는 데 재미를 느낀다", "감정 싸움은 피하고 판 자체에 집중"],
+      deckId: "ahri", worstDeckId: "annie" },
+    ESTP: { code: "ESTP", nickname: "일단 지르고 보는 승부사", hashtags: ["#모험", "#즉행", "#변수", "#배짱"],
+      traits: ["인사도 없이 바로 달려든다", "\"재밌잖아?\"가 모든 플레이의 이유", "기절·반격으로 판을 뒤집는 변수 플레이를 즐긴다", "지고 있으면 더 크게 지른다", "계획보다 지금 이 순간의 판단을 믿는다"],
+      deckId: "yasuo", worstDeckId: "kaisa" },
+    ESFP: { code: "ESFP", nickname: "화려한 한 방, 관종력 만렙", hashtags: ["#화려함", "#한방", "#관종", "#피니시"],
+      traits: ["남들 안 쓰는 덱을 골라 기어이 유행시킨다", "한 방에 상대 체력을 증발시키는 피니시가 로망", "이겼을 때 리액션이 제일 크다", "밋밋한 정석 덱은 금방 질린다", "분위기 띄우는 데 진심"],
+      deckId: "jinx", worstDeckId: "yi" },
+    ENFP: { code: "ENFP", nickname: "사방에 장난을 깔아두는 개척자", hashtags: ["#창의", "#장난", "#견제", "#자유"],
+      traits: ["여기저기 함정처럼 수를 깔아두는 걸 좋아한다", "아이디어가 넘쳐서 덱 콘셉트가 자주 바뀐다", "상대를 약올리며 견제하는 지속 플레이", "정해진 틀보다 그때그때의 즉흥이 편하다", "새로운 조합 실험이 제일 재밌다"],
+      deckId: "teemo", worstDeckId: "annie" },
+    ENTP: { code: "ENTP", nickname: "도발하고 불을 지르는 변론가", hashtags: ["#도발", "#화력", "#속공", "#임기응변"],
+      traits: ["\"그거 왜 그렇게 함?\"에 논쟁으로 응수한다", "화력을 몰아쳐 초반부터 밀어붙인다", "상대 멘탈을 흔드는 플레이를 즐긴다", "계획이 틀어져도 그 자리에서 새 각을 만든다", "지루한 장기전보다 빠른 결판을 선호"],
+      deckId: "annie", worstDeckId: "jinx" },
+    ESTJ: { code: "ESTJ", nickname: "목표로 직진하는 관리감독자", hashtags: ["#현실", "#실용", "#추진력", "#처형"],
+      traits: ["화끈하고 솔직하며 직설적인 편이다", "효율 안 나오는 카드는 바로 정리한다", "\"이겼으니까 됐어\" — 과정보다 결과", "목표가 정해지면 곧장 상대 본체로 직진한다", "판을 주도하고 지휘하는 데 익숙하다"],
+      deckId: "darius", worstDeckId: "kaisa" },
+    ESFJ: { code: "ESFJ", nickname: "물량으로 판을 장악하는 리더", hashtags: ["#사교", "#물량", "#광역", "#장악"],
+      traits: ["혼자보다 여럿이서 압박하는 걸 좋아한다", "광역기로 판 전체를 정리하며 주도권을 쥔다", "상대가 아무것도 못 하게 만드는 존버형 압박", "분위기와 흐름을 읽는 감이 좋다", "안정적으로 판을 관리하는 걸 선호"],
+      deckId: "mf", worstDeckId: "yasuo" },
+    ENFJ: { code: "ENFJ", nickname: "앞장서서 부딪치는 주장", hashtags: ["#카리스마", "#몸싸움", "#리드", "#돌파"],
+      traits: ["큰 유닛을 앞세워 직접 몸으로 부딪친다", "판의 흐름을 앞에서 이끄는 걸 좋아한다", "\"더 세게 밀면 되잖아\" 정신", "우두머리 기질, 주변을 끌고 가는 힘이 있다", "정면 승부를 피하지 않는다"],
+      deckId: "sett", worstDeckId: "darius" },
+    ENTJ: { code: "ENTJ", nickname: "힘으로 찍어누르는 통솔자", hashtags: ["#지배", "#물리력", "#압도", "#통솔"],
+      traits: ["거대한 유닛으로 그냥 밟아버리는 게 제일 짜릿하다", "장비·수집품으로 벽을 채우는 축적형", "판을 지배권으로 완전히 눌러버린다", "계획대로 상대 선택지를 하나씩 지운다", "질질 끄는 걸 싫어하고 확실하게 끝낸다"],
+      deckId: "volibear", worstDeckId: "annie" }
+  };
+
+  /* ============================================================
+     덱 데이터 — tier-list.ts TIER_DECKS + Riot 공식 CDN 레전드 이미지.
+     legendEn = /decks?legend= 필터에 쓰는 레전드 영문명 (사이트 normLegend 로 매칭).
+     ============================================================ */
+  var CDN = "https://cmsassets.rgpub.io/sanity/images/dsfx7636/game_data_live/";
+  var IMG = function (h) { return CDN + h + ".png?accountingTag=RB"; };
+
+  var DECKS = {
+    yi:       { id: "yi",       name: "마스터 이",   keyCard: "마스터 이",   legendEn: "Master Yi - Wuju Bladesman (Starter)",    img: IMG("8231ced23eaf22ca3bf62ec8cb86b83a3e222da6-744x1039") },
+    kaisa:    { id: "kaisa",    name: "카이사",      keyCard: "카이사",      legendEn: "Kai'Sa - Daughter of the Void",           img: IMG("a576472c7bb00f475882ac814e1d8f9be233b402-744x1040") },
+    viktor:   { id: "viktor",   name: "빅토르",      keyCard: "빅토르",      legendEn: "Viktor - Herald of the Arcane",           img: IMG("913236dabf1e4f71650bbba46870fff8163e2eff-744x1039") },
+    annie:    { id: "annie",    name: "애니",        keyCard: "애니",        legendEn: "Annie - Dark Child (Starter)",            img: IMG("89963e1d1cffd69c620fb5d6b037f50d5c334463-744x1039") },
+    sett:     { id: "sett",     name: "세트",        keyCard: "세트",        legendEn: "Sett - The Boss",                         img: IMG("b132becb843b2cf418cb110ead64758f49f51554-744x1039") },
+    mf:       { id: "mf",       name: "미스 포츈",   keyCard: "미스 포츈",   legendEn: "Miss Fortune - Bounty Hunter",            img: IMG("cc11261fcdbf0851525030bd9e835b718efad3bc-744x1040") },
+    yasuo:    { id: "yasuo",    name: "야스오",      keyCard: "야스오",      legendEn: "Yasuo - Unforgiven",                      img: IMG("68e4d3230b785738ae9d86f780f7f5607ef11807-744x1040") },
+    darius:   { id: "darius",   name: "다리우스",    keyCard: "다리우스",    legendEn: "Darius - Hand of Noxus",                  img: IMG("5b9a904048b7fb936377844ec2d31564b7fedf81-744x1039") },
+    volibear: { id: "volibear", name: "볼리베어",    keyCard: "볼리베어",    legendEn: "Volibear - Relentless Storm",             img: IMG("f1842ef373434db3e8109d8959832f9d184866c3-744x1040") },
+    ahri:     { id: "ahri",     name: "아리",        keyCard: "아리",        legendEn: "Ahri - Nine-Tailed Fox",                  img: IMG("fbce641f5e4d8cdf2956e8ead5884b6cd3ccd90d-744x1040") },
+    leesin:   { id: "leesin",   name: "리 신",       keyCard: "리 신",       legendEn: "Lee Sin - Blind Monk",                    img: IMG("ffe064e002d3b9a366748eb85102a769b2545835-744x1039") },
+    leona:    { id: "leona",    name: "레오나",      keyCard: "레오나",      legendEn: "Leona - Radiant Dawn",                    img: IMG("822b8bc7987a47498550708b18ef166b121fd620-744x1039") },
+    jinx:     { id: "jinx",     name: "징크스",      keyCard: "징크스",      legendEn: "Jinx - Loose Cannon",                     img: IMG("f57c14381b126e9f5a7b5bc4913151cb24c14fc3-744x1039") },
+    lux:      { id: "lux",      name: "럭스",        keyCard: "럭스",        legendEn: "Lux - Lady of Luminosity (Starter)",      img: IMG("44885d811b70621b188d9813b2b10b5cff1b81e6-744x1039") },
+    teemo:    { id: "teemo",    name: "티모",        keyCard: "티모",        legendEn: "Teemo - Swift Scout",                     img: IMG("9723181e3392bb61c2aabc804a44f7b0558cedf1-744x1039") },
+    garen:    { id: "garen",    name: "가렌",        keyCard: "가렌",        legendEn: "Garen - Might of Demacia (Starter)",      img: IMG("e7185deb46f17770802d06aeddfe3b929afff880-744x1039") }
+  };
+
+  function deckHref(d) {
+    if (!d) return CONFIG.baseUrl + "/decks";
+    return CONFIG.decksUrl.replace("{legend}", encodeURIComponent(d.legendEn));
+  }
+
+  /* ============================================================
+     채점 — deck-quiz.ts scoreQuiz 와 동일.
+     ============================================================ */
+  function scoreQuiz(answers) {
+    var tally = {};
+    answers.forEach(function (optIdx, qi) {
+      if (optIdx == null) return;
+      var opt = QUIZ_QUESTIONS[qi] && QUIZ_QUESTIONS[qi].options[optIdx];
+      if (opt) tally[opt.letter] = (tally[opt.letter] || 0) + 1;
+    });
+
+    var code = AXIS_ORDER.map(function (axis) {
+      var pair = AXIS_PAIR[axis];
+      var na = tally[pair[0]] || 0;
+      var nb = tally[pair[1]] || 0;
+      if (na === nb) return TIE_DEFAULT[axis];
+      return na > nb ? pair[0] : pair[1];
+    }).join("");
+
+    var type = MBTI_TYPES[code] || MBTI_TYPES.ISTJ;
+    return { type: type, deckId: type.deckId, worstDeckId: type.worstDeckId };
+  }
+
+  /* ============================================================
+     DOM / 상태
+     ============================================================ */
+  var stage = document.getElementById("stage");
+  var progressWrap = document.getElementById("progressWrap");
+  var progressFill = document.getElementById("progressFill");
+  var progressCount = document.getElementById("progressCount");
+  var backBtn = document.getElementById("backBtn");
+  var blob1 = document.getElementById("blob1");
+  var blob2 = document.getElementById("blob2");
+
+  var total = QUIZ_QUESTIONS.length;
+  var state = { step: -1, answers: QUIZ_QUESTIONS.map(function () { return null; }) };
+
+  backBtn.addEventListener("click", function () {
+    if (state.step > 0) {
+      state.step--;
+      state.answers[state.step] = null;
+      renderQuestion(true);
+    } else if (state.step === 0) {
+      state.step = -1;
+      renderIntro();
+    }
+  });
+
+  function setScreen(node) {
+    stage.innerHTML = "";
+    node.classList.add("screen", "enter");
+    stage.appendChild(node);
+    stage.scrollTop = 0;
+  }
+  function setBlobs(c1, c2) { blob1.style.background = c1; blob2.style.background = c2; }
+  function esc(s) {
+    return String(s).replace(/[&<>"']/g, function (c) {
+      return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
+    });
+  }
+  function bindImg(root) {
+    root.querySelectorAll("img[data-lazy]").forEach(function (img) {
+      var pic = img.parentNode;
+      function ok() { img.classList.add("ready"); }
+      if (img.complete && img.naturalWidth) ok();
+      img.addEventListener("load", ok);
+      img.addEventListener("error", function () {
+        if (pic) pic.classList.add("failed");
+        img.remove();
+      });
+    });
+  }
+
+  /* ---------- 시작 ---------- */
+  function renderIntro() {
+    progressWrap.hidden = true;
+    backBtn.hidden = true;
+    setBlobs("#6a3cff", "#1f6bff");
+
+    var el = document.createElement("section");
+    el.className = "intro";
+    el.innerHTML =
+      '<div class="hero-glyph">MBTI</div>' +
+      '<div class="eyebrow">Riftbound Deck Test</div>' +
+      '<h1>내 <span class="grad">MBTI</span>에 맞는<br>리프트바운드 덱은?</h1>' +
+      '<p>8개의 질문으로 나의 MBTI를 알아보고, ' +
+      '16유형별로 딱 맞는 레전드 덱과 상극 덱까지 찾아드려요.</p>' +
+      '<div class="meta">' +
+        '<span class="chip">⏱ 약 1분</span>' +
+        '<span class="chip">8문항</span>' +
+        '<span class="chip">MBTI 16유형</span>' +
+      '</div>' +
+      '<div class="actions">' +
+        '<button class="btn btn-primary btn-block" id="startBtn">테스트 시작하기</button>' +
+      '</div>' +
+      '<div class="foot-note">문항·유형·덱 매핑은 리바지지 덱 티어리스트의 테스트와 동일합니다</div>';
+
+    setScreen(el);
+    document.getElementById("startBtn").addEventListener("click", function () {
+      state.step = 0;
+      renderQuestion(false);
+    });
+  }
+
+  /* ---------- 질문 ---------- */
+  var AXIS_LABEL = { EI: "에너지 방향  ·  E / I", SN: "인식 방식  ·  S / N", TF: "판단 기준  ·  T / F", JP: "생활 패턴  ·  J / P" };
+
+  function renderQuestion(isBack) {
+    progressWrap.hidden = false;
+    backBtn.hidden = false;
+    setBlobs("#6a3cff", "#1f6bff");
+
+    var idx = state.step;
+    var Q = QUIZ_QUESTIONS[idx];
+
+    progressFill.style.width = (idx / total) * 100 + "%";
+    progressCount.textContent = (idx + 1) + "/" + total;
+
+    var el = document.createElement("section");
+    el.className = "question";
+
+    var head = document.createElement("div");
+    head.className = "q-head";
+    head.innerHTML =
+      '<div class="q-index">QUESTION ' + (idx + 1) + '</div>' +
+      '<div class="q-axis">' + AXIS_LABEL[Q.axis] + '</div>' +
+      '<div class="q-text">' + esc(Q.question) + '</div>';
+    el.appendChild(head);
+
+    var list = document.createElement("div");
+    list.className = "options";
+
+    Q.options.forEach(function (opt, i) {
+      var b = document.createElement("button");
+      b.className = "option";
+      b.type = "button";
+      b.style.setProperty("--stagger", (isBack ? 0 : i * 70) + "ms");
+      b.textContent = opt.label;
+      b.addEventListener("click", function () {
+        if (list.classList.contains("locked")) return;
+        list.classList.add("locked");
+        b.classList.add("chosen");
+        state.answers[idx] = i;
+        setTimeout(function () {
+          if (state.step < total - 1) { state.step++; renderQuestion(false); }
+          else { state.step = total; renderResult(); }
+        }, 320);
+      });
+      list.appendChild(b);
+    });
+    el.appendChild(list);
+
+    if (idx > 0) {
+      var prev = document.createElement("button");
+      prev.className = "prev-link";
+      prev.type = "button";
+      prev.textContent = "← 이전";
+      prev.addEventListener("click", function () {
+        state.step--;
+        state.answers[state.step] = null;
+        renderQuestion(true);
+      });
+      el.appendChild(prev);
+    }
+
+    setScreen(el);
+  }
+
+  /* ---------- 결과 ---------- */
+  function picHtml(deck, cls) {
+    return '<span class="pic">' +
+      '<span class="fallback">' + esc(deck.keyCard) + '</span>' +
+      '<img data-lazy src="' + deck.img + '" alt="' + esc(deck.name) + '" />' +
+    '</span>';
+  }
+
+  function renderResult() {
+    progressWrap.hidden = true;
+    backBtn.hidden = true;
+    progressFill.style.width = "100%";
+
+    var res = scoreQuiz(state.answers);
+    var t = res.type;
+    var deck = DECKS[res.deckId];
+    var worst = DECKS[res.worstDeckId];
+
+    setBlobs("#6a3cff", "#1f6bff");
+
+    var el = document.createElement("section");
+    el.className = "result";
+
+    var hashHtml = t.hashtags.map(function (h) { return '<span>' + esc(h) + '</span>'; }).join("") +
+      '<span class="code">#' + esc(t.code) + '</span>';
+
+    var traitsHtml = t.traits.map(function (x) { return '<li>' + esc(x) + '</li>'; }).join("");
+
+    el.innerHTML =
+      '<div class="result-kicker">내 MBTI 덱</div>' +
+
+      '<div class="polaroid-wrap"><div class="polaroid">' +
+        '<span class="pic">' +
+          '<span class="fallback">' + esc(deck.keyCard) + '</span>' +
+          '<img data-lazy src="' + deck.img + '" alt="' + esc(deck.name) + '" />' +
+        '</span>' +
+        '<div class="name">' + esc(deck.name) + '</div>' +
+      '</div></div>' +
+
+      '<div class="type-title">' +
+        '<div class="lead">당신의 유형은…</div>' +
+        '<div class="name">' + esc(t.nickname) + ' ' + esc(deck.name) + '</div>' +
+        '<span class="rule"></span>' +
+      '</div>' +
+
+      '<div class="hashtags">' + hashHtml + '</div>' +
+
+      '<ul class="traits">' + traitsHtml + '</ul>' +
+
+      '<div class="match-grid">' +
+        '<a class="match good" href="' + deckHref(deck) + '" target="_blank" rel="noopener">' +
+          '<span class="tag">나와 잘 맞는 챔피언</span>' + picHtml(deck) +
+          '<span class="mname">' + esc(deck.name) + '</span>' +
+        '</a>' +
+        '<a class="match bad" href="' + deckHref(worst) + '" target="_blank" rel="noopener">' +
+          '<span class="tag">나와 잘 안 맞는 챔피언</span>' + picHtml(worst) +
+          '<span class="mname">' + esc(worst.name) + '</span>' +
+        '</a>' +
+      '</div>' +
+
+      '<div class="share-box">' +
+        '<div class="ico">📸</div>' +
+        '<p>내 결과를 캡처해서 <b>인스타그램 스토리에 공유</b>해보세요!<br>' +
+        '친구를 태그하고 <span class="mention">' + CONFIG.instaHandle + '</span> 를 멘션해 주세요.</p>' +
+      '</div>' +
+
+      '<div class="actions">' +
+        '<a class="btn btn-primary btn-block" href="' + deckHref(deck) + '" target="_blank" rel="noopener">' +
+          CONFIG.siteName + '에서 덱리스트 보기 →</a>' +
+        '<div class="cta-row">' +
+          '<button class="btn btn-ghost" id="shareBtn" type="button">결과 공유</button>' +
+          '<button class="btn btn-ghost" id="retryBtn" type="button">🔄 다시 하기</button>' +
+        '</div>' +
+      '</div>' +
+
+      '<div class="foot-note">재미로 보는 성향 테스트 · ' + CONFIG.siteName + ' (RIBA.GG)</div>';
+
+    setScreen(el);
+    bindImg(el);
+
+    document.getElementById("retryBtn").addEventListener("click", function () {
+      state = { step: -1, answers: QUIZ_QUESTIONS.map(function () { return null; }) };
+      renderIntro();
+    });
+
+    document.getElementById("shareBtn").addEventListener("click", function () {
+      var text = "내 MBTI 덱은 「" + t.nickname + " " + deck.name + "」 (#" + t.code + ")! " + CONFIG.instaHandle;
+      var url = CONFIG.baseUrl;
+      if (navigator.share) {
+        navigator.share({ title: "내 MBTI 덱 찾기", text: text, url: url }).catch(function () {});
+      } else if (navigator.clipboard) {
+        navigator.clipboard.writeText(text + " " + url).then(function () {
+          var b = document.getElementById("shareBtn");
+          var old = b.textContent;
+          b.textContent = "복사됨 ✓";
+          setTimeout(function () { b.textContent = old; }, 1600);
+        });
+      }
+    });
+  }
+
+  renderIntro();
+})();
+</script>
+</body>
+</html>
