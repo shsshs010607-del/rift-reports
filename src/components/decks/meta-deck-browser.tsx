@@ -13,11 +13,13 @@ import {
   Trophy,
 } from "lucide-react";
 
-import { CARD_DOMAINS } from "@/lib/constants";
+import { CARD_DOMAINS, CARD_SETS } from "@/lib/constants";
 import { normLegend } from "@/lib/legend-name";
-import type { MetaDeck } from "@/lib/meta-decks";
+import type { MetaDeckView } from "@/lib/meta-decks";
 import { deleteMetaDeck } from "@/app/admin/actions";
 import { cn } from "@/lib/utils";
+
+const SET_LABEL = Object.fromEntries(CARD_SETS.map((s) => [s.code, s.label]));
 
 const DOMAIN = Object.fromEntries(CARD_DOMAINS.map((d) => [d.slug, d]));
 const shortLegend = (name: string | null) => (name ?? "").split(/[,–-]/)[0].trim() || "레전드";
@@ -28,7 +30,7 @@ export function MetaDeckBrowser({
   initialLegend,
   isStaff = false,
 }: {
-  decks: MetaDeck[];
+  decks: MetaDeckView[];
   images: Record<string, string>;
   initialLegend?: string;
   isStaff?: boolean;
@@ -48,17 +50,28 @@ export function MetaDeckBrowser({
     return legends.find(([n]) => normLegend(n) === k || normLegend(n).startsWith(first2))?.[0] ?? null;
   }, [initialLegend, legends]);
 
+  // 덱들이 쓰는 확장팩 목록 (CARD_SETS 순서, 실제 등장하는 것만) + 각 개수
+  const setCounts = useMemo(() => {
+    const m = new Map<string, number>();
+    for (const d of list) for (const s of d.sets) m.set(s, (m.get(s) ?? 0) + 1);
+    return CARD_SETS.map((s) => [s.code, m.get(s.code) ?? 0] as const).filter(([, n]) => n > 0);
+  }, [list]);
+
   const [legend, setLegend] = useState<string | null>(matchedInitial);
+  const [set, setSet] = useState<string | null>(null);
   const [tourneyOnly, setTourneyOnly] = useState(false);
   const [deleting, startDelete] = useTransition();
   const [err, setErr] = useState<string | null>(null);
 
   const shown = list.filter(
-    (d) => (!legend || d.legend_name === legend) && (!tourneyOnly || d.is_tournament),
+    (d) =>
+      (!legend || d.legend_name === legend) &&
+      (!set || d.sets.includes(set)) &&
+      (!tourneyOnly || d.is_tournament),
   );
   const tourneyCount = list.filter((d) => d.is_tournament).length;
 
-  const onDelete = (deck: MetaDeck) => {
+  const onDelete = (deck: MetaDeckView) => {
     if (!confirm(`메타 덱 "${deck.name}" 을(를) 삭제할까요?`)) return;
     startDelete(async () => {
       const res = await deleteMetaDeck(deck.id);
@@ -99,17 +112,36 @@ export function MetaDeckBrowser({
         </div>
         {err && <p className="text-body-sm text-coral">{err}</p>}
 
+        {/* 확장팩 탭 */}
+        {setCounts.length > 1 && (
+          <FilterRow label="확장팩">
+            <LegendChip on={set === null} onClick={() => setSet(null)}>
+              전체
+            </LegendChip>
+            {setCounts.map(([code, n]) => (
+              <LegendChip key={code} on={set === code} onClick={() => setSet(set === code ? null : code)}>
+                {code} {SET_LABEL[code] ?? ""} {n}
+              </LegendChip>
+            ))}
+          </FilterRow>
+        )}
+
+        {/* 레전드 탭 */}
         {legends.length > 1 && (
-          <div className="-mx-1 flex gap-1.5 overflow-x-auto px-1 pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+          <FilterRow label="레전드">
             <LegendChip on={legend === null} onClick={() => setLegend(null)}>
               전체 {list.length}
             </LegendChip>
             {legends.map(([name, n]) => (
-              <LegendChip key={name} on={legend === name} onClick={() => setLegend(name)}>
+              <LegendChip
+                key={name}
+                on={legend === name}
+                onClick={() => setLegend(legend === name ? null : name)}
+              >
                 {shortLegend(name)} {n}
               </LegendChip>
             ))}
-          </div>
+          </FilterRow>
         )}
       </div>
 
@@ -128,6 +160,17 @@ export function MetaDeckBrowser({
           ))}
         </div>
       )}
+    </div>
+  );
+}
+
+function FilterRow({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <div className="flex items-center gap-2">
+      <span className="shrink-0 text-label-sm font-bold text-ink-soft">{label}</span>
+      <div className="-mx-1 flex min-w-0 flex-1 gap-1.5 overflow-x-auto px-1 pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+        {children}
+      </div>
     </div>
   );
 }
@@ -163,7 +206,7 @@ function DeckCard({
   onDelete,
   deleting,
 }: {
-  deck: MetaDeck;
+  deck: MetaDeckView;
   img?: string;
   onDelete?: () => void;
   deleting?: boolean;
