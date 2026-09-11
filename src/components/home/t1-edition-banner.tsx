@@ -53,7 +53,7 @@ export function T1EditionBanner() {
         <span className="inline-flex w-fit items-center gap-1 rounded-full bg-[#8a2733] px-2 py-0.5 text-[10px] font-black tracking-wide text-white shadow-lg">
           RIFTBOUND <span className="opacity-70">×</span> T1 · 리셀 시장가
         </span>
-        <h2 className="font-display text-title-lg font-black leading-tight drop-shadow sm:text-headline-sm">
+        <h2 className="font-display text-title-lg font-black leading-tight !text-white [text-shadow:0_2px_10px_rgba(0,0,0,0.7)] sm:text-headline-sm">
           T1 시그니처 에디션
         </h2>
         <p className="text-[11px] leading-snug text-white/70">
