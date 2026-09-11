@@ -130,6 +130,7 @@ const config: Config = {
         "headline-lg": ["32px", { lineHeight: "40px", letterSpacing: "-0.02em", fontWeight: "700" }],
         "headline-md": ["24px", { lineHeight: "32px", letterSpacing: "-0.01em", fontWeight: "700" }],
         "headline-sm": ["18px", { lineHeight: "26px", letterSpacing: "-0.005em", fontWeight: "600" }],
+        "title-lg": ["20px", { lineHeight: "28px", letterSpacing: "-0.005em", fontWeight: "700" }],
         "title-md": ["16px", { lineHeight: "24px", fontWeight: "600" }],
         "body-lg": ["16px", { lineHeight: "24px", letterSpacing: "-0.01em" }],
         "body-md": ["14px", { lineHeight: "22px" }],
