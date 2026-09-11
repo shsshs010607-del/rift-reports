@@ -167,22 +167,12 @@ export const PRICE = {
     "origins-proving-grounds-riftbound-league-of-legends-trading-card-game",
   ],
   /**
-   * OGN·OGS 세트 외에 개별로 편입할 카드 (한국 출시 프로모 등).
-   * `set` = JustTCG set id, `q` = 검색어(콜 절약), `names` = 편입할 카드명(정확히 일치).
-   * 각 항목은 검색 1콜.
+   * OGN·OGS 세트 외에 개별로 편입할 카드.
+   * (OP 프로모(OPP) 야스오·징크스는 JustTCG 이미지·시세가 부정확해서 뺌 —
+   *  야스오·징크스는 OGN 스탠다드판이 이미 시세표에 있음.)
+   * `set` = JustTCG set id, `q` = 검색어, `names` = 편입할 카드명(정확히 일치). 항목당 1콜.
    */
-  extraCards: [
-    {
-      set: "riftbound-organized-play-promotional-cards-riftbound-league-of-legends-trading-card-game",
-      q: "Yasuo",
-      names: ["Yasuo, Unforgiven"], // 한국 출시 프로모 ((Metal)·(Prize Wall) 변형은 제외)
-    },
-    {
-      set: "riftbound-organized-play-promotional-cards-riftbound-league-of-legends-trading-card-game",
-      q: "Jinx",
-      names: ["Jinx, Rebel"], // 한국 출시 프로모
-    },
-  ] as { set: string; q: string; names: string[] }[],
+  extraCards: [] as { set: string; q: string; names: string[] }[],
   /** 무료 플랜 페이지 크기 제한. */
   pageLimit: 20,
   /** 우리 DB 스냅샷 보관 기간(일). */
