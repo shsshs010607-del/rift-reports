@@ -3,6 +3,7 @@ import { Plus_Jakarta_Sans, Inter } from "next/font/google";
 import { SITE, ADSENSE } from "@/lib/constants";
 import { Navbar } from "@/components/layout/navbar";
 import { Footer } from "@/components/layout/footer";
+import { BackToTop } from "@/components/layout/back-to-top";
 import { AdSenseScript } from "@/components/ads/adsense-script";
 import "./globals.css";
 
@@ -107,6 +108,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <div className="mx-auto w-full max-w-[1280px] px-gutter-desktop py-space-xl">{children}</div>
         </main>
         <Footer />
+        <BackToTop />
       </body>
     </html>
   );
