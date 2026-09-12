@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
+<meta name="theme-color" content="#0a0b10" />
+<title>리프트바운드 오리진 언박싱 시뮬레이터</title>
+<meta name="description" content="리프트바운드 오리진(OGN) 부스터 팩·박스·카톤 개봉 시뮬레이터 — 실제 카드 데이터로 뽑아봅니다.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=Chakra+Petch:wght@500;600;700&family=Noto+Sans+KR:wght@400;500;700;900&display=swap">
+<style>
+  :root{
+    --bg:#0a0b10;
+    --surface:#171a22;
+    --surface-2:#1e222c;
+    --line:#2b2f3b;
+    --line-soft:#20232d;
+    --text:#f4f1ea;
+    --text-dim:#9298a8;
+    --text-faint:#5c6273;
+    --red:#e0243f;
+    --gold:#e8b84b;
+    --gold-bright:#ffe8a8;
+    --gold-dim:#5c4a20;
+    --c-common:#8a93a6;
+    --c-uncommon:#4fd18a;
+    --c-rare:#5aa7ff;
+    --c-epic:#b073ff;
+    --c-showcase:#f2b73a;
+    --c-hanbok:#ff5f8f;
+    --font-display:'Black Han Sans','Noto Sans KR',sans-serif;
+    --font-body:'Noto Sans KR',sans-serif;
+    --font-mono:'Chakra Petch',sans-serif;
+  }
+  *{box-sizing:border-box;}
+  html{color-scheme:dark;}
+  body{
+    margin:0;
+    background:
+      radial-gradient(ellipse 900px 500px at 50% -10%, #1c1424 0%, transparent 60%),
+      var(--bg);
+    color:var(--text);
+    font-family:var(--font-body);
+    -webkit-font-smoothing:antialiased;
+    min-height:100vh;
+  }
+  .wrap{max-width:1100px;margin:0 auto;padding:36px 20px 80px;display:flex;flex-direction:column;align-items:center;}
+
+  .top{width:100%;display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:30px;flex-wrap:wrap;}
+  .top-left{display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+  .riba-link{
+    font-family:var(--font-display);font-size:14px;color:#1a0507;
+    background:linear-gradient(180deg,var(--gold-bright),var(--gold));
+    padding:4px 12px;border-radius:999px;text-decoration:none;letter-spacing:.02em;
+    box-shadow:0 4px 12px -4px rgba(232,184,75,.5);transition:transform .15s ease;
+  }
+  .riba-link:hover{transform:translateY(-1px);}
+  .brand{font-family:var(--font-mono);font-weight:600;font-size:12px;letter-spacing:.18em;color:var(--text-faint);text-transform:uppercase;}
+  .brand b{color:var(--red);}
+
+  h1.title{font-family:var(--font-display);font-weight:400;font-size:clamp(28px,5vw,46px);line-height:1.1;margin:0 0 8px;text-align:center;text-wrap:balance;}
+  h1.title .em{color:var(--gold);}
+  .sub{font-size:14px;color:var(--text-dim);text-align:center;margin:0 0 34px;line-height:1.6;max-width:560px;}
+  .sub b{color:var(--text);font-weight:700;}
+
+  .picker{width:100%;max-width:640px;display:flex;flex-direction:column;gap:16px;margin-bottom:26px;}
+  .picker-row{display:flex;align-items:center;gap:10px;}
+  .picker-label{font-family:var(--font-mono);font-size:11px;letter-spacing:.14em;color:var(--text-faint);text-transform:uppercase;width:64px;flex:none;}
+  .picker-opts{display:flex;gap:8px;flex:1;flex-wrap:wrap;}
+  .opt-btn{
+    font-family:var(--font-mono);font-weight:600;font-size:13px;color:var(--text-dim);
+    background:var(--surface);border:1px solid var(--line-soft);border-radius:999px;
+    padding:9px 18px;cursor:pointer;transition:all .15s ease;
+  }
+  .opt-btn:hover{border-color:var(--gold-dim);color:var(--text);}
+  .opt-btn.active{background:linear-gradient(180deg,var(--gold-bright),var(--gold));color:#1a0507;border-color:transparent;}
+  .opt-btn .sc{display:block;font-size:10px;opacity:.75;margin-top:1px;}
+  .opt-btn.active .sc{opacity:.65;}
+
+  .open-btn{
+    font-family:var(--font-display);font-weight:400;font-size:20px;letter-spacing:.02em;color:#1a0507;
+    background:linear-gradient(180deg,var(--gold-bright),var(--gold));border:none;padding:16px 48px;
+    border-radius:999px;cursor:pointer;box-shadow:0 14px 30px -10px rgba(232,184,75,.5);
+    transition:transform .18s ease, box-shadow .18s ease;margin-bottom:34px;
+  }
+  .open-btn:hover{transform:translateY(-2px);box-shadow:0 18px 36px -10px rgba(232,184,75,.65);}
+  .open-btn:active{transform:translateY(0);}
+  .open-btn:disabled{opacity:.4;cursor:default;transform:none;box-shadow:none;}
+
+  .stage{width:100%;position:relative;min-height:60px;}
+  .empty-hint{text-align:center;color:var(--text-faint);font-size:13px;padding:40px 0;}
+
+  /* ---------- pack (interactive flip) ---------- */
+  .packrow{display:flex;flex-wrap:wrap;gap:16px;justify-content:center;perspective:1600px;margin-bottom:20px;}
+  .fcard{width:130px;height:181px;cursor:pointer;perspective:1000px;}
+  .fcard.locked{cursor:default;}
+  .fcard-inner{position:relative;width:100%;height:100%;transform-style:preserve-3d;transition:transform .7s cubic-bezier(.3,.6,.2,1);}
+  .fcard.flipped .fcard-inner{transform:rotateY(180deg);}
+  .fface{position:absolute;inset:0;border-radius:10px;backface-visibility:hidden;overflow:hidden;display:flex;flex-direction:column;align-items:center;justify-content:center;}
+  .fface-back{
+    background:linear-gradient(155deg,#1c1f2a,#12141b 60%);border:1px solid var(--line);
+    box-shadow:0 10px 22px -12px rgba(0,0,0,.6);transition:box-shadow .2s ease, transform .2s ease;
+  }
+  .fface-back svg{width:44px;height:44px;opacity:.55;}
+  .fcard:not(.flipped):hover .fface-back{box-shadow:0 0 0 1px var(--gold),0 0 24px 2px rgba(232,184,75,.3);transform:translateY(-3px);}
+  .fface-front{transform:rotateY(180deg);background:var(--surface);border:1px solid var(--r-color,var(--line));box-shadow:0 0 0 1px var(--r-color,transparent),0 0 22px -4px var(--r-glow,transparent);}
+  .fface-front img{width:100%;height:100%;object-fit:cover;}
+  .fface-front.hanbok{animation:hanbok-glow 1.8s ease-in-out infinite;}
+  @keyframes hanbok-glow{
+    0%,100%{box-shadow:0 0 0 1px var(--c-hanbok),0 0 20px -2px rgba(255,95,143,.5);}
+    50%{box-shadow:0 0 0 2px var(--c-hanbok),0 0 32px 2px rgba(255,95,143,.75);}
+  }
+
+  /* ---------- summary + bulk grid ---------- */
+  .summary{
+    width:100%;display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-bottom:22px;
+  }
+  .sum-chip{
+    font-family:var(--font-mono);font-size:12px;font-weight:600;padding:7px 14px;border-radius:999px;
+    background:var(--surface);border:1px solid var(--line-soft);color:var(--text-dim);
+  }
+  .sum-chip b{color:var(--chip-color,var(--text));font-weight:700;}
+
+  .highlights{width:100%;margin-bottom:26px;}
+  .highlights h2{font-family:var(--font-display);font-weight:400;font-size:17px;margin:0 0 12px;text-align:center;color:var(--gold-bright);}
+  .hl-grid{display:flex;flex-wrap:wrap;gap:12px;justify-content:center;}
+  .hl-card{
+    width:110px;border-radius:10px;overflow:hidden;background:var(--surface);
+    border:1px solid var(--r-color,var(--line));box-shadow:0 0 16px -4px var(--r-glow,transparent);
+    opacity:0;animation:pop-in .4s ease forwards;
+  }
+  .hl-card img{width:100%;display:block;}
+  .hl-card.hanbok{border-color:var(--c-hanbok);box-shadow:0 0 20px -2px rgba(255,95,143,.6);}
+  .hl-name{font-size:10px;padding:5px 6px 6px;line-height:1.3;color:var(--text-dim);}
+  .hl-ribbon{font-family:var(--font-mono);font-size:8px;font-weight:700;letter-spacing:.06em;padding:2px 6px;background:var(--c-hanbok);color:#1a0507;text-align:center;}
+
+  @keyframes pop-in{
+    0%{opacity:0;transform:scale(.85) translateY(6px);}
+    100%{opacity:1;transform:scale(1) translateY(0);}
+  }
+
+  .bulkwrap{width:100%;}
+  .bulkwrap h3{font-family:var(--font-mono);font-size:11px;letter-spacing:.12em;color:var(--text-faint);text-transform:uppercase;margin:0 0 10px;text-align:center;}
+  .bulk-grid{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;max-height:640px;overflow-y:auto;padding:4px;}
+  .chip{
+    font-family:var(--font-mono);font-size:10px;padding:6px 9px;border-radius:6px;
+    background:var(--surface);border-left:3px solid var(--r-color,var(--line));color:var(--text-dim);
+    opacity:0;animation:chip-in .3s ease forwards;white-space:nowrap;
+  }
+  @keyframes chip-in{0%{opacity:0;}100%{opacity:1;}}
+  .bulk-img{
+    width:64px;border-radius:6px;overflow:hidden;border:1px solid var(--r-color,var(--line));
+    box-shadow:0 0 10px -2px var(--r-glow,transparent);opacity:0;animation:pop-in .35s ease forwards;
+  }
+  .bulk-img img{width:100%;display:block;}
+
+  .again-row{margin-top:32px;}
+  .again-btn{
+    font-family:var(--font-mono);font-weight:600;font-size:13px;letter-spacing:.05em;color:var(--text);
+    background:var(--surface-2);border:1px solid var(--line-soft);padding:11px 26px;border-radius:999px;
+    cursor:pointer;transition:border-color .2s ease, transform .18s ease;
+  }
+  .again-btn:hover{border-color:var(--red);transform:translateY(-1px);}
+
+  .made-in{
+    display:inline-flex;align-items:center;gap:5px;margin-top:44px;padding:8px 18px;border-radius:999px;
+    background:var(--surface);border:1px solid var(--line-soft);color:var(--text-dim);
+    font-family:var(--font-mono);font-size:12px;text-decoration:none;transition:border-color .2s ease, color .2s ease;
+  }
+  .made-in b{color:var(--red);font-weight:700;}
+  .made-in:hover{border-color:var(--red);color:var(--text);}
+  footer.note{margin-top:20px;font-size:11.5px;color:var(--text-faint);text-align:center;line-height:1.7;max-width:520px;}
+
+  .loading{text-align:center;color:var(--text-faint);font-size:13px;padding:60px 0;}
+
+  @media (max-width:640px){
+    .picker-row{flex-direction:column;align-items:flex-start;gap:8px;}
+    .picker-label{width:auto;}
+    .fcard{width:100px;height:139px;}
+  }
+  @media (prefers-reduced-motion: reduce){
+    *{animation-duration:.01ms !important;animation-iteration-count:1 !important;transition-duration:.2s !important;}
+  }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <div class="top">
+    <div class="top-left">
+      <a href="/" class="riba-link" title="RIBA.GG 홈으로">RIBA.GG</a>
+      <div class="brand"><b>RIFTBOUND</b> · ORIGINS 언박싱</div>
+    </div>
+  </div>
+
+  <h1 class="title">오리진 <span class="em">언박싱</span> 시뮬레이터</h1>
+  <p class="sub">실제 오리진(OGN) 카드 데이터로 팩·박스·카톤을 까봅니다. <b>돈이나 인벤토리는 없고, 그냥 까는 재미</b>만 있습니다.</p>
+
+  <div class="picker">
+    <div class="picker-row">
+      <div class="picker-label">팩 종류</div>
+      <div class="picker-opts" id="productOpts">
+        <button class="opt-btn" data-product="5">5장 팩<span class="sc">미니 팩</span></button>
+        <button class="opt-btn" data-product="14">14장 팩<span class="sc">기본 부스터</span></button>
+      </div>
+    </div>
+    <div class="picker-row">
+      <div class="picker-label">단위</div>
+      <div class="picker-opts" id="tierOpts">
+        <button class="opt-btn" data-tier="pack">팩 <span class="sc">1개</span></button>
+        <button class="opt-btn" data-tier="box">박스 <span class="sc">24팩</span></button>
+        <button class="opt-btn" data-tier="carton">카톤 <span class="sc">6박스 · 144팩</span></button>
+      </div>
+    </div>
+  </div>
+
+  <button class="open-btn" id="openBtn" disabled>카드 불러오는 중…</button>
+
+  <div class="stage" id="stage">
+    <div class="empty-hint">위에서 종류를 고르고 버튼을 눌러 까보세요.</div>
+  </div>
+
+  <div class="again-row" id="againRow" style="display:none;">
+    <button class="again-btn" id="againBtn">다시 까기</button>
+  </div>
+
+  <a href="/" class="made-in">Made in <b>RIBA.GG</b></a>
+  <footer class="note">
+    실제 카드 데이터(이름·레어도·일러스트)는 오리진(OGN) 세트를 그대로 사용하지만, 팩 구성과 확률은 공식 확률이 아닌 임의로 설계한 시뮬레이션입니다.<br>
+    한국판 오리진 한정 "구미호(한복)" 아리는 기존 오버넘버·시그니처 아리를 대체해 표시됩니다(아트는 추후 교체 예정).
+  </footer>
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  var RARITY_COLOR = {
+    Common: 'var(--c-common)',
+    Uncommon: 'var(--c-uncommon)',
+    Rare: 'var(--c-rare)',
+    Epic: 'var(--c-epic)',
+    Showcase: 'var(--c-showcase)'
+  };
+  var RARITY_LABEL = { Common:'커먼', Uncommon:'언커먼', Rare:'레어', Epic:'에픽', Showcase:'쇼케이스' };
+  var RARITY_GLOW = {
+    Common: 'rgba(138,147,166,.35)',
+    Uncommon: 'rgba(79,209,138,.45)',
+    Rare: 'rgba(90,167,255,.5)',
+    Epic: 'rgba(176,115,255,.5)',
+    Showcase: 'rgba(242,183,58,.55)'
+  };
+  var HIT_TABLE = [['Rare',70],['Epic',22],['Showcase',8]];
+  var BOX_PACKS = 24;
+  var CARTON_BOXES = 6;
+
+  var stage = document.getElementById('stage');
+  var openBtn = document.getElementById('openBtn');
+  var productOpts = document.getElementById('productOpts');
+  var tierOpts = document.getElementById('tierOpts');
+  var againRow = document.getElementById('againRow');
+  var againBtn = document.getElementById('againBtn');
+
+  var POOLS = null;
+  var state = { product: '14', tier: 'pack' };
+
+  function setActive(container, attr, value){
+    Array.prototype.forEach.call(container.querySelectorAll('.opt-btn'), function(btn){
+      btn.classList.toggle('active', btn.dataset[attr] === value);
+    });
+  }
+  setActive(productOpts, 'product', state.product);
+  setActive(tierOpts, 'tier', state.tier);
+
+  productOpts.addEventListener('click', function(e){
+    var btn = e.target.closest('.opt-btn');
+    if(!btn) return;
+    state.product = btn.dataset.product;
+    setActive(productOpts, 'product', state.product);
+  });
+  tierOpts.addEventListener('click', function(e){
+    var btn = e.target.closest('.opt-btn');
+    if(!btn) return;
+    state.tier = btn.dataset.tier;
+    setActive(tierOpts, 'tier', state.tier);
+  });
+
+  fetch('/origins-cards.json').then(function(r){ return r.json(); }).then(function(cards){
+    POOLS = {};
+    cards.forEach(function(c){
+      (POOLS[c.rarity] = POOLS[c.rarity] || []).push(c);
+    });
+    openBtn.disabled = false;
+    openBtn.textContent = '까기';
+  }).catch(function(){
+    openBtn.textContent = '카드 데이터를 불러오지 못했습니다';
+  });
+
+  function weightedPick(table){
+    var total = table.reduce(function(s,e){ return s+e[1]; }, 0);
+    var r = Math.random() * total;
+    for(var i=0;i<table.length;i++){
+      r -= table[i][1];
+      if(r <= 0) return table[i][0];
+    }
+    return table[table.length-1][0];
+  }
+
+  function drawOne(rarity){
+    var pool = POOLS[rarity];
+    return pool[Math.floor(Math.random() * pool.length)];
+  }
+
+  function buildSlots(size){
+    if(size === '5') return ['Common','Common','Common','Uncommon','HIT'];
+    return ['Common','Common','Common','Common','Common','Common','Common','Uncommon','Uncommon','Uncommon','Uncommon','Rare','Rare','HIT'];
+  }
+
+  function openPack(size){
+    return buildSlots(size).map(function(code){
+      var rarity = code === 'HIT' ? weightedPick(HIT_TABLE) : code;
+      return drawOne(rarity);
+    });
+  }
+
+  function packsForTier(tier){
+    if(tier === 'pack') return 1;
+    if(tier === 'box') return BOX_PACKS;
+    return BOX_PACKS * CARTON_BOXES;
+  }
+
+  function cardVisual(card){
+    return {
+      color: RARITY_COLOR[card.rarity] || 'var(--line)',
+      glow: card.hanbok ? 'rgba(255,95,143,.55)' : (RARITY_GLOW[card.rarity] || 'transparent')
+    };
+  }
+
+  function renderPack(cards){
+    var html = '<div class="packrow" id="packRow"></div>';
+    stage.innerHTML = html;
+    var row = document.getElementById('packRow');
+    cards.forEach(function(card, idx){
+      var el = document.createElement('div');
+      el.className = 'fcard';
+      el.innerHTML =
+        '<div class="fcard-inner">' +
+          '<div class="fface fface-back">' +
+            '<svg viewBox="0 0 100 100"><path d="M50 10 C 65 20, 80 30, 78 50 C 76 68, 62 80, 50 90 C 38 80, 24 68, 22 50 C 20 30, 35 20, 50 10 Z" fill="none" stroke="#e8b84b" stroke-width="4"/><circle cx="50" cy="50" r="8" fill="#e8b84b"/></svg>' +
+          '</div>' +
+          '<div class="fface fface-front"></div>' +
+        '</div>';
+      el.addEventListener('click', function(){
+        if(el.classList.contains('flipped')) return;
+        el.classList.add('flipped');
+        var front = el.querySelector('.fface-front');
+        var v = cardVisual(card);
+        front.style.setProperty('--r-color', v.color);
+        front.style.setProperty('--r-glow', v.glow);
+        if(card.hanbok) front.classList.add('hanbok');
+        var img = document.createElement('img');
+        img.src = card.img;
+        img.alt = card.name;
+        front.appendChild(img);
+      });
+      row.appendChild(el);
+    });
+    againRow.style.display = 'block';
+  }
+
+  function renderBulk(cards){
+    var counts = {};
+    cards.forEach(function(c){ counts[c.rarity] = (counts[c.rarity]||0) + 1; });
+
+    var summaryHtml = Object.keys(RARITY_LABEL).map(function(r){
+      return '<span class="sum-chip" style="--chip-color:' + (RARITY_COLOR[r]) + '">' + RARITY_LABEL[r] + ' <b>' + (counts[r]||0) + '</b></span>';
+    }).join('');
+
+    var highlights = cards.filter(function(c){ return c.rarity === 'Rare' || c.rarity === 'Epic' || c.rarity === 'Showcase'; });
+
+    var hlHtml = '';
+    if(highlights.length){
+      hlHtml = '<div class="highlights"><h2>★ 하이라이트 (' + highlights.length + '장) ★</h2><div class="hl-grid">' +
+        highlights.map(function(c, i){
+          var v = cardVisual(c);
+          return '<div class="hl-card' + (c.hanbok?' hanbok':'') + '" style="--r-color:' + v.color + ';--r-glow:' + v.glow + ';animation-delay:' + Math.min(i*15,600) + 'ms">' +
+            (c.hanbok ? '<div class="hl-ribbon">한정</div>' : '') +
+            '<img src="' + c.img + '" alt="' + c.name + '" loading="lazy">' +
+            '<div class="hl-name">' + c.name + '</div>' +
+          '</div>';
+        }).join('') +
+      '</div></div>';
+    }
+
+    var bulkHtml = '<div class="bulkwrap"><h3>전체 ' + cards.length + '장</h3><div class="bulk-grid">' +
+      cards.map(function(c, i){
+        var v = cardVisual(c);
+        var delay = Math.min((i % 60) * 12, 700);
+        if(c.rarity === 'Rare' || c.rarity === 'Epic' || c.rarity === 'Showcase'){
+          return '<div class="bulk-img" style="--r-color:' + v.color + ';--r-glow:' + v.glow + ';animation-delay:' + delay + 'ms" title="' + c.name + '"><img src="' + c.img + '" alt="' + c.name + '" loading="lazy"></div>';
+        }
+        return '<span class="chip" style="--r-color:' + v.color + ';animation-delay:' + delay + 'ms">' + c.name + '</span>';
+      }).join('') +
+    '</div></div>';
+
+    stage.innerHTML = '<div class="summary">' + summaryHtml + '</div>' + hlHtml + bulkHtml;
+    againRow.style.display = 'block';
+  }
+
+  function doOpen(){
+    if(!POOLS) return;
+    var slotsPerPack = buildSlots(state.product).length;
+    var packs = packsForTier(state.tier);
+    var cards = [];
+    for(var i=0;i<packs;i++){
+      cards = cards.concat(openPack(state.product));
+    }
+
+    if(state.tier === 'pack'){
+      renderPack(cards);
+    } else {
+      renderBulk(cards);
+    }
+
+    productOpts.querySelectorAll('.opt-btn').forEach(function(b){ b.disabled = true; });
+    tierOpts.querySelectorAll('.opt-btn').forEach(function(b){ b.disabled = true; });
+    openBtn.style.display = 'none';
+  }
+
+  openBtn.addEventListener('click', doOpen);
+
+  againBtn.addEventListener('click', function(){
+    stage.innerHTML = '<div class="empty-hint">위에서 종류를 고르고 버튼을 눌러 까보세요.</div>';
+    againRow.style.display = 'none';
+    openBtn.style.display = '';
+    productOpts.querySelectorAll('.opt-btn').forEach(function(b){ b.disabled = false; });
+    tierOpts.querySelectorAll('.opt-btn').forEach(function(b){ b.disabled = false; });
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  });
+})();
+</script>
+</body>
+</html>
