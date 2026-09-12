@@ -74,14 +74,24 @@ export function T1EditionBanner() {
           ))}
         </dl>
 
-        <a
-          href={EBAY_URL}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="mt-1.5 inline-flex w-fit items-center gap-1 rounded-full bg-white px-3 py-1.5 text-label-sm font-bold text-[#1b0509] transition hover:bg-white/90"
-        >
-          eBay 실거래 보기 <ArrowUpRight className="h-3.5 w-3.5" />
-        </a>
+        <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
+          <a
+            href={EBAY_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex w-fit items-center gap-1 rounded-full bg-white px-3 py-1.5 text-label-sm font-bold text-[#1b0509] transition hover:bg-white/90"
+          >
+            eBay 실거래 보기 <ArrowUpRight className="h-3.5 w-3.5" />
+          </a>
+          <a
+            href="/box-sim.html"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex w-fit items-center gap-1 rounded-full border border-white/50 bg-white/10 px-3 py-1.5 text-label-sm font-bold text-white transition hover:bg-white/20"
+          >
+            박스깡 시뮬레이터 <ArrowUpRight className="h-3.5 w-3.5" />
+          </a>
+        </div>
         <p className="text-[10px] text-white/40">eBay 시세 {RESALE.updatedAt} 기준</p>
       </div>
     </section>

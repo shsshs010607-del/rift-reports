@@ -55,6 +55,7 @@ export function Navbar() {
               label={item.label}
               sub={item.children}
               active={isActive(item.href)}
+              external={item.external}
             />
           ))}
         </nav>
@@ -187,6 +188,9 @@ export function Navbar() {
                       ? "bg-surface-container-high font-bold text-primary"
                       : "text-on-surface-variant hover:bg-surface-container hover:text-on-surface",
                   )}
+                  {...("external" in item && item.external
+                    ? { target: "_blank", rel: "noopener noreferrer" }
+                    : {})}
                 >
                   {item.label}
                 </Link>
@@ -246,11 +250,13 @@ function NavPill({
   label,
   active,
   sub,
+  external,
 }: {
   href: string;
   label: string;
   active: boolean;
   sub?: readonly SubItem[];
+  external?: boolean;
 }) {
   const [open, setOpen] = useState(false);
   const closeTimer = useRef<ReturnType<typeof setTimeout>>();
@@ -272,7 +278,12 @@ function NavPill({
 
   if (!sub?.length) {
     return (
-      <Link href={href} aria-current={active ? "page" : undefined} className={pillCls}>
+      <Link
+        href={href}
+        aria-current={active ? "page" : undefined}
+        className={pillCls}
+        {...(external ? { target: "_blank", rel: "noopener noreferrer" } : {})}
+      >
         {label}
       </Link>
     );
