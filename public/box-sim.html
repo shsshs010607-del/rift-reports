@@ -1321,9 +1321,15 @@
     .recap-card .cn{font-size:10.5px;}
     .recap-card .price{font-size:9px;}
     .sell-btn{padding:5px 4px;font-size:9px;}
-    .earn-fab{right:12px;bottom:12px;padding:9px 14px 9px 12px;}
-    .earn-fab .etext{font-size:10px;}
-    .earn-fab .etext b{font-size:12px;}
+    .earn-fab{
+      right:14px;bottom:14px;
+      padding:0;
+      width:56px;height:56px;
+      border-radius:50%;
+      justify-content:center;
+    }
+    .earn-fab .etext{display:none;}
+    .earn-fab .coin{width:100%;height:100%;font-size:19px;}
   }
 
   @media (prefers-reduced-motion: reduce){
@@ -1570,10 +1576,10 @@
   var state = { pulls: [], revealedCount: 0, animating: false, serial: 1, cash: 0, soldOut: false };
 
   function loadCash(){
-    try{ return parseInt(localStorage.getItem('t1rb_cash')||'0',10) || 0; }catch(e){ return 0; }
+    try{ return parseInt(sessionStorage.getItem('t1rb_cash')||'0',10) || 0; }catch(e){ return 0; }
   }
   function saveCash(v){
-    try{ localStorage.setItem('t1rb_cash', String(v)); }catch(e){}
+    try{ sessionStorage.setItem('t1rb_cash', String(v)); }catch(e){}
   }
   function renderCash(bump){
     cashAmt.textContent = formatWon(state.cash);
@@ -1610,10 +1616,10 @@
   renderCash(false);
 
   function loadFreeBox(){
-    try{ return !localStorage.getItem('t1rb_freeBoxUsed'); }catch(e){ return true; }
+    try{ return !sessionStorage.getItem('t1rb_freeBoxUsed'); }catch(e){ return true; }
   }
   function markFreeBoxUsed(){
-    try{ localStorage.setItem('t1rb_freeBoxUsed','1'); }catch(e){}
+    try{ sessionStorage.setItem('t1rb_freeBoxUsed','1'); }catch(e){}
   }
   state.freeBox = loadFreeBox();
   function renderOpenLabel(){
@@ -1640,15 +1646,15 @@
   function loadStats(){
     try{
       return {
-        opens: parseInt(localStorage.getItem('t1rb_opens')||'0',10),
-        signed: parseInt(localStorage.getItem('t1rb_signed')||'0',10)
+        opens: parseInt(sessionStorage.getItem('t1rb_opens')||'0',10),
+        signed: parseInt(sessionStorage.getItem('t1rb_signed')||'0',10)
       };
     }catch(e){ return {opens:0, signed:0}; }
   }
   function saveStats(s){
     try{
-      localStorage.setItem('t1rb_opens', String(s.opens));
-      localStorage.setItem('t1rb_signed', String(s.signed));
+      sessionStorage.setItem('t1rb_opens', String(s.opens));
+      sessionStorage.setItem('t1rb_signed', String(s.signed));
     }catch(e){}
   }
   function renderStats(){
@@ -1658,10 +1664,10 @@
   renderStats();
 
   function loadRecords(){
-    try{ return JSON.parse(localStorage.getItem('t1rb_records') || '{}'); }catch(e){ return {}; }
+    try{ return JSON.parse(sessionStorage.getItem('t1rb_records') || '{}'); }catch(e){ return {}; }
   }
   function saveRecords(){
-    try{ localStorage.setItem('t1rb_records', JSON.stringify(state.records)); }catch(e){}
+    try{ sessionStorage.setItem('t1rb_records', JSON.stringify(state.records)); }catch(e){}
   }
   state.records = loadRecords();
 
@@ -2103,12 +2109,12 @@
 
   function loadUpgrades(){
     try{
-      var raw = JSON.parse(localStorage.getItem('t1rb_upgrades') || 'null');
+      var raw = JSON.parse(sessionStorage.getItem('t1rb_upgrades') || 'null');
       return raw || { clickLevel:0, autoLevel:0, discountLevel:0 };
     }catch(e){ return { clickLevel:0, autoLevel:0, discountLevel:0 }; }
   }
   function saveUpgrades(){
-    try{ localStorage.setItem('t1rb_upgrades', JSON.stringify(state.up)); }catch(e){}
+    try{ sessionStorage.setItem('t1rb_upgrades', JSON.stringify(state.up)); }catch(e){}
   }
   state.up = loadUpgrades();
 
@@ -2265,7 +2271,7 @@
     if(!window.confirm('정말 초기화할까요? 보유 금액, 박스 도감, 업그레이드가 모두 사라지고 처음부터 다시 시작합니다.')) return;
     try{
       ['t1rb_cash','t1rb_opens','t1rb_signed','t1rb_freeBoxUsed','t1rb_upgrades','t1rb_records'].forEach(function(k){
-        localStorage.removeItem(k);
+        sessionStorage.removeItem(k);
       });
     }catch(e){}
     location.reload();
