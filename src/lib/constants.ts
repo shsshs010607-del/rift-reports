@@ -99,7 +99,15 @@ export const NAV_PRIMARY: readonly {
   },
   { href: "/trading", label: "트레이딩" },
   { href: "/community", label: "커뮤니티" },
-  { href: "/box-sim.html", label: "박스깡 시뮬레이터", external: true },
+  {
+    href: "/box-sim.html",
+    label: "언박싱 시뮬레이터",
+    external: true,
+    children: [
+      { href: "/box-sim.html", label: "T1 박스깡" },
+      { href: "/origins-sim.html", label: "오리진 언박싱" },
+    ],
+  },
 ];
 
 /** 상단바 2행 — 룰·용어·지역 (레퍼런스/오프라인). */

@@ -242,6 +242,10 @@ function subHref(href: string): { url: string; external: boolean; disabled: bool
     const ready = SITE.discordReport && SITE.discordReport !== "#";
     return { url: ready ? SITE.discordReport : "#", external: true, disabled: !ready };
   }
+  // 정적 HTML 페이지(예: /box-sim.html)는 앱 라우터가 아니라 새 탭으로 연다.
+  if (href.endsWith(".html")) {
+    return { url: href, external: true, disabled: false };
+  }
   return { url: href, external: false, disabled: false };
 }
 
@@ -292,7 +296,12 @@ function NavPill({
   return (
     <div className="relative" onMouseEnter={openNow} onMouseLeave={closeSoon}>
       <div className={cn("flex items-center", pillCls, "gap-0.5 pr-2")}>
-        <Link href={href} aria-current={active ? "page" : undefined} className="hover:underline">
+        <Link
+          href={href}
+          aria-current={active ? "page" : undefined}
+          className="hover:underline"
+          {...(external ? { target: "_blank", rel: "noopener noreferrer" } : {})}
+        >
           {label}
         </Link>
         <button
