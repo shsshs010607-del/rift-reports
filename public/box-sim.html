@@ -1105,6 +1105,203 @@
   }
   .sellall-btn:focus-visible{outline:2px solid var(--gold-bright);outline-offset:2px;}
 
+  .share-btn{
+    font-family:var(--font-mono);
+    font-weight:600;
+    font-size:13px;
+    letter-spacing:.04em;
+    color:var(--text);
+    background:var(--surface-2);
+    border:1px solid var(--gold-dim);
+    padding:11px 22px;
+    border-radius:999px;
+    cursor:pointer;
+    transition:border-color .2s ease, transform .18s ease;
+  }
+  .share-btn:hover{border-color:var(--gold);transform:translateY(-1px);}
+  .share-btn:disabled{opacity:.4;cursor:default;transform:none;}
+  .share-btn:focus-visible{outline:2px solid var(--gold-bright);outline-offset:2px;}
+
+  /* ---------- 판매 / 장터에 올리기 ---------- */
+  .sell-actions{display:flex;flex-direction:column;gap:5px;width:100%;}
+  .market-btn{
+    font-family:var(--font-mono);
+    font-size:9.5px;
+    font-weight:600;
+    letter-spacing:.02em;
+    color:var(--gold);
+    background:transparent;
+    border:1px solid var(--gold-dim);
+    padding:5px 8px;
+    border-radius:999px;
+    cursor:pointer;
+    width:100%;
+    transition:background .15s ease, color .15s ease;
+  }
+  .market-btn:hover{background:rgba(232,184,75,.12);}
+  .market-btn:disabled{color:var(--text-faint);border-color:var(--line-soft);cursor:default;}
+  .recap-card.listed{animation:listed-pulse 1.4s ease-in-out infinite;}
+  @keyframes listed-pulse{
+    0%,100%{box-shadow:0 0 0 0 rgba(232,184,75,.25);}
+    50%{box-shadow:0 0 0 3px rgba(232,184,75,.18);}
+  }
+
+  /* ---------- 상단 리바지지 바로가기 / 하단 크레딧 / 초기화 ---------- */
+  .top-left{display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+  .riba-link{
+    font-family:var(--font-display);
+    font-size:14px;
+    color:#1a0507;
+    background:linear-gradient(180deg,var(--gold-bright),var(--gold));
+    padding:4px 12px;
+    border-radius:999px;
+    text-decoration:none;
+    letter-spacing:.02em;
+    box-shadow:0 4px 12px -4px rgba(232,184,75,.5);
+    transition:transform .15s ease;
+  }
+  .riba-link:hover{transform:translateY(-1px);}
+
+  .made-in{
+    display:inline-flex;
+    align-items:center;
+    gap:5px;
+    margin-top:44px;
+    padding:8px 18px;
+    border-radius:999px;
+    background:var(--surface);
+    border:1px solid var(--line-soft);
+    color:var(--text-dim);
+    font-family:var(--font-mono);
+    font-size:12px;
+    text-decoration:none;
+    transition:border-color .2s ease, color .2s ease;
+  }
+  .made-in b{color:var(--red);font-weight:700;}
+  .made-in:hover{border-color:var(--red);color:var(--text);}
+
+  .reset-link{
+    display:block;
+    margin:14px auto 0;
+    background:none;
+    border:none;
+    color:var(--text-faint);
+    font-size:11px;
+    text-decoration:underline;
+    text-underline-offset:2px;
+    cursor:pointer;
+  }
+  .reset-link:hover{color:var(--red);}
+
+  .dex-btn{cursor:pointer;}
+  .dex-btn:hover{border-color:var(--gold-dim);}
+  .dex-btn b{color:var(--gold);}
+
+  /* ---------- 모달 공통 ---------- */
+  .modal-backdrop{
+    position:fixed;inset:0;
+    background:rgba(4,4,6,.72);
+    z-index:60;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:20px;
+    opacity:0;
+    pointer-events:none;
+    transition:opacity .2s ease;
+  }
+  .modal-backdrop.show{opacity:1;pointer-events:auto;}
+  .modal-panel{
+    background:var(--bg-2);
+    border:1px solid var(--line-soft);
+    border-radius:18px;
+    width:100%;
+    max-width:560px;
+    max-height:82vh;
+    display:flex;
+    flex-direction:column;
+    box-shadow:0 40px 80px -24px rgba(0,0,0,.8);
+  }
+  .modal-head{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:16px 18px;
+    border-bottom:1px solid var(--line-soft);
+    flex:none;
+  }
+  .modal-head h3{
+    font-family:var(--font-display);
+    font-weight:400;
+    font-size:18px;
+    color:var(--text);
+    margin:0;
+  }
+  .modal-close{
+    background:none;
+    border:none;
+    color:var(--text-dim);
+    font-size:16px;
+    cursor:pointer;
+    padding:6px;
+    line-height:1;
+  }
+  .modal-close:hover{color:var(--text);}
+  .modal-body{overflow-y:auto;padding:14px 16px;}
+
+  /* ---------- 박스 도감 ---------- */
+  .dex-detail{
+    flex:none;
+    margin:0 16px;
+    margin-top:14px;
+    padding:10px 14px;
+    border-radius:10px;
+    background:var(--surface);
+    border:1px solid var(--line-soft);
+    font-family:var(--font-mono);
+    font-size:12px;
+    color:var(--text-dim);
+    line-height:1.6;
+  }
+  .dex-detail b{color:var(--gold);}
+  .dex-detail .dd-name{font-family:var(--font-display);font-size:16px;color:var(--text);display:block;margin-bottom:2px;}
+  .dex-grid{
+    display:grid;
+    grid-template-columns:repeat(45,1fr);
+    gap:2px;
+  }
+  .dex-cell{
+    aspect-ratio:1;
+    border-radius:2px;
+    background:#000;
+    border:none;
+    padding:0;
+    cursor:default;
+    min-width:0;
+  }
+  .dex-cell.filled{
+    cursor:pointer;
+    background:var(--c1,var(--gold));
+  }
+  .dex-cell.filled:hover{outline:1px solid #fff;outline-offset:1px;}
+  .dex-cell.jackpot{box-shadow:0 0 0 1px var(--gold-bright) inset;}
+  .dex-cell.active{outline:2px solid #fff;outline-offset:1px;}
+
+  @media (max-width:640px){
+    .dex-grid{grid-template-columns:repeat(27,1fr);}
+  }
+
+  /* ---------- 공유 이미지 ---------- */
+  .share-body{display:flex;flex-direction:column;align-items:center;gap:12px;}
+  #shareCanvas{
+    width:100%;
+    max-width:340px;
+    border-radius:12px;
+    border:1px solid var(--line-soft);
+  }
+  .share-hint{font-size:11.5px;color:var(--text-faint);text-align:center;}
+  .share-actions{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;}
+
   footer.note{
     margin-top:52px;
     font-size:11.5px;
@@ -1138,7 +1335,10 @@
 
 <div class="wrap">
   <div class="top">
-    <div class="brand"><b>RIFTBOUND</b> · T1 TOGETHER AS 1</div>
+    <div class="top-left">
+      <a href="/" class="riba-link" title="RIBA.GG 홈으로">RIBA.GG</a>
+      <div class="brand"><b>RIFTBOUND</b> · T1 TOGETHER AS 1</div>
+    </div>
     <div>
       <div class="wallet"><span class="wl">보유 금액</span><b id="cashAmt">0원</b></div>
       <div class="income-rate" id="incomeRate"></div>
@@ -1150,6 +1350,7 @@
   <div class="meta-row">
     <div class="serial-bar"><span class="dot"></span> SERIAL NO. <b id="serialNum">0001</b> / 2025</div>
     <div class="stats-tag" id="statsTag">누적 개봉 0회 · 사인카드 <b>0</b>회</div>
+    <button class="stats-tag dex-btn" id="dexBtn">박스 도감 <b id="dexCount">0</b>/2025</button>
   </div>
 
   <div class="shop">
@@ -1193,13 +1394,17 @@
     <div class="recap" id="recap"></div>
     <div class="done-actions">
       <button class="sellall-btn" id="sellAllBtn">전체 판매</button>
+      <button class="share-btn" id="shareBtn" disabled>공유 이미지 만들기</button>
       <button class="again-btn" id="againBtn">다음 박스로</button>
     </div>
   </div>
 
+  <a href="/" class="made-in">Made in <b>RIBA.GG</b></a>
+
   <footer class="note">
     실제 카드 데이터가 아닌 가상 시뮬레이션이며, 챔피언–선수 매칭과 판매 시세는 임의로 구성했습니다.<br>
     확률 및 결과는 매 개봉마다 무작위로 생성됩니다.
+    <button class="reset-link" id="resetBtn">게임 초기화</button>
   </footer>
 </div>
 
@@ -1207,6 +1412,36 @@
   <span class="coin">₩</span>
   <span class="etext">클릭해서 벌기<b id="clickValueLabel">+1,000원</b></span>
 </button>
+
+<div class="modal-backdrop" id="dexBackdrop">
+  <div class="modal-panel dex-panel">
+    <div class="modal-head">
+      <h3>박스 도감</h3>
+      <button class="modal-close" id="dexClose" aria-label="닫기">✕</button>
+    </div>
+    <div class="dex-detail" id="dexDetail">번호를 클릭하면 상세 정보가 여기에 표시됩니다.</div>
+    <div class="modal-body dex-body">
+      <div class="dex-grid" id="dexGrid"></div>
+    </div>
+  </div>
+</div>
+
+<div class="modal-backdrop" id="shareBackdrop">
+  <div class="modal-panel share-panel">
+    <div class="modal-head">
+      <h3>공유 이미지</h3>
+      <button class="modal-close" id="shareClose" aria-label="닫기">✕</button>
+    </div>
+    <div class="modal-body share-body">
+      <canvas id="shareCanvas" width="1000" height="1400"></canvas>
+      <div class="share-hint" id="shareHint">이미지를 길게 눌러 저장하거나 아래 버튼으로 다운로드하세요.</div>
+      <div class="share-actions">
+        <button class="sellall-btn" id="shareDownloadBtn">이미지 저장</button>
+        <button class="again-btn" id="shareNativeBtn">공유하기</button>
+      </div>
+    </div>
+  </div>
+</div>
 <div class="float-layer" id="floatLayer"></div>
 <div class="toast" id="toast"></div>
 
@@ -1222,9 +1457,9 @@
   var ICONS = {
     ambessa: '<defs><linearGradient id="g-ambessa" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ff5a72"/><stop offset="1" stop-color="#7a1e3a"/></linearGradient></defs><path d="M50 6 L62 40 L94 44 L68 64 L78 96 L50 78 L22 96 L32 64 L6 44 L38 40 Z" fill="url(#g-ambessa)"/>',
     xinzhao: '<defs><linearGradient id="g-xinzhao" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#bcd4ff"/><stop offset="1" stop-color="#2c4f86"/></linearGradient></defs><path d="M50 4 L58 40 L94 50 L58 60 L50 96 L42 60 L6 50 L42 40 Z" fill="url(#g-xinzhao)"/><circle cx="50" cy="50" r="9" fill="#eaf2ff"/>',
-    ahri: '<defs><radialGradient id="g-ahri"><stop offset="0" stop-color="#ffd4f0"/><stop offset="1" stop-color="#9a2f9e"/></radialGradient></defs><circle cx="50" cy="50" r="16" fill="url(#g-ahri)"/><path d="M50 50 C70 34,86 40,92 26 C84 44,78 50,66 52 Z" fill="#c463c9"/><path d="M50 50 C30 34,14 40,8 26 C16 44,22 50,34 52 Z" fill="#c463c9"/><path d="M50 50 C70 66,86 60,92 74 C84 56,78 50,66 48 Z" fill="#e08adf"/><path d="M50 50 C30 66,14 60,8 74 C16 56,22 50,34 48 Z" fill="#e08adf"/>',
-    jinx: '<defs><linearGradient id="g-jinx" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ff6bd6"/><stop offset="1" stop-color="#3fc7ff"/></linearGradient></defs><path d="M58 4 L30 52 L48 52 L38 96 L76 46 L56 46 Z" fill="url(#g-jinx)"/>',
-    rakan: '<defs><linearGradient id="g-rakan" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ffb168"/><stop offset="1" stop-color="#1fae8e"/></linearGradient></defs><path d="M50 4 C68 18 78 40 70 62 C64 80 54 92 50 96 C46 92 36 80 30 62 C22 40 32 18 50 4 Z" fill="url(#g-rakan)"/><path d="M50 20 C58 32 60 48 50 70 C40 48 42 32 50 20 Z" fill="rgba(255,255,255,.35)"/>'
+    galio: '<defs><linearGradient id="g-galio" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#cdeffa"/><stop offset="1" stop-color="#355b66"/></linearGradient></defs><path d="M50 6 L86 26 L86 74 L50 94 L14 74 L14 26 Z" fill="url(#g-galio)"/><path d="M50 30 L64 50 L50 70 L36 50 Z" fill="rgba(255,255,255,.55)"/>',
+    missfortune: '<defs><linearGradient id="g-mf" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ffcf8a"/><stop offset="1" stop-color="#8a1e1e"/></linearGradient></defs><path d="M50 10 L50 58 M34 30 L66 30 M50 58 C30 58 20 72 25 90 M50 58 C70 58 80 72 75 90" stroke="url(#g-mf)" stroke-width="9" stroke-linecap="round" fill="none"/><circle cx="50" cy="17" r="11" fill="url(#g-mf)"/>',
+    seraphine: '<defs><linearGradient id="g-sera" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ffc2f2"/><stop offset="1" stop-color="#3fd6c9"/></linearGradient></defs><path d="M50 88 C20 62 10 40 26 26 C38 16 50 24 50 38 C50 24 62 16 74 26 C90 40 80 62 50 88 Z" fill="url(#g-sera)"/>'
   };
 
   var SWIRL_BACK = '<path d="M50 10 C 65 20, 80 30, 78 50 C 76 68, 62 80, 50 90 C 38 80, 24 68, 22 50 C 20 30, 35 20, 50 10 Z" fill="none" stroke="#e8b84b" stroke-width="4"/><circle cx="50" cy="50" r="8" fill="#e8b84b"/>';
@@ -1232,17 +1467,17 @@
   var CRESTS = {
     ambessa: '<path d="M50 6 L62 40 L94 44 L68 64 L78 96 L50 78 L22 96 L32 64 L6 44 L38 40 Z" fill="currentColor"/>',
     xinzhao: '<path d="M50 4 L58 40 L94 50 L58 60 L50 96 L42 60 L6 50 L42 40 Z" fill="currentColor"/>',
-    ahri: '<circle cx="50" cy="50" r="34" fill="none" stroke="currentColor" stroke-width="3"/><circle cx="50" cy="50" r="18" fill="currentColor"/>',
-    jinx: '<path d="M58 4 L30 52 L48 52 L38 96 L76 46 L56 46 Z" fill="currentColor"/>',
-    rakan: '<path d="M50 4 C68 18 78 40 70 62 C64 80 54 92 50 96 C46 92 36 80 30 62 C22 40 32 18 50 4 Z" fill="currentColor"/>'
+    galio: '<path d="M50 6 L86 26 L86 74 L50 94 L14 74 L14 26 Z" fill="currentColor"/>',
+    missfortune: '<path d="M50 6 C58 6 64 12 64 20 C64 26 60 31 54 33 L54 46 L70 46 C70 46 74 74 50 94 C26 74 30 46 30 46 L46 46 L46 33 C40 31 36 26 36 20 C36 12 42 6 50 6 Z" fill="currentColor"/>',
+    seraphine: '<path d="M50 88 C20 62 10 40 26 26 C38 16 50 24 50 38 C50 24 62 16 74 26 C90 40 80 62 50 88 Z" fill="currentColor"/>'
   };
 
   var ROSTER = [
     { champ:"Ambessa", player:"DORAN", role:"TOP", icon:ICONS.ambessa, crest:CRESTS.ambessa, c1:"#ff5a72", c2:"#3a1420", line:"#5a2230" },
     { champ:"Xin Zhao", player:"ONER", role:"JGL", icon:ICONS.xinzhao, crest:CRESTS.xinzhao, c1:"#8fb4ff", c2:"#101c30", line:"#28405f" },
-    { champ:"Ahri", player:"FAKER", role:"MID", icon:ICONS.ahri, crest:CRESTS.ahri, c1:"#e08adf", c2:"#2a1030", line:"#4a2058" },
-    { champ:"Jinx", player:"GUMAYUSI", role:"ADC", icon:ICONS.jinx, crest:CRESTS.jinx, c1:"#7fd6ff", c2:"#101f2c", line:"#255066" },
-    { champ:"Rakan", player:"KERIA", role:"SUP", icon:ICONS.rakan, crest:CRESTS.rakan, c1:"#7de0bf", c2:"#0f2622", line:"#1f4a3d" }
+    { champ:"Galio", player:"FAKER", role:"MID", icon:ICONS.galio, crest:CRESTS.galio, c1:"#8fe0f2", c2:"#122a30", line:"#28545f" },
+    { champ:"Miss Fortune", player:"GUMAYUSI", role:"ADC", icon:ICONS.missfortune, crest:CRESTS.missfortune, c1:"#ffb15c", c2:"#331210", line:"#5a2a1f" },
+    { champ:"Seraphine", player:"KERIA", role:"SUP", icon:ICONS.seraphine, crest:CRESTS.seraphine, c1:"#ff9eea", c2:"#2a1330", line:"#552a52" }
   ];
 
   var BOX_PRICE = 1500000;
@@ -1251,10 +1486,37 @@
   var SIGNED_PRICE = { DORAN:100000, ONER:100000, FAKER:5000000, KERIA:2000000, GUMAYUSI:2000000 };
   var FIXED_FAKER_SERIALS = { 1:5000000, 1000:10000000, 1557:9999990000, 2025:5000000 };
 
+  function isRepdigit(n){
+    var s = String(n);
+    return s.length >= 3 && s.split('').every(function(c){ return c === s[0]; });
+  }
+  function isSequential(n){
+    var s = String(n);
+    if(s.length < 3) return false;
+    for(var i=1;i<s.length;i++){
+      if(+s[i] !== +s[i-1] + 1) return false;
+    }
+    return true;
+  }
+  function serialFlavor(serial){
+    if(FIXED_FAKER_SERIALS[serial]) return null;
+    if(isRepdigit(serial)) return 'repdigit';
+    if(isSequential(serial)) return 'sequential';
+    return null;
+  }
+  function serialWeight(serial){
+    var flavor = serialFlavor(serial);
+    var w = flavor === 'repdigit' ? 3 : flavor === 'sequential' ? 2 : 1;
+    w *= 0.85 + Math.random() * 0.4; // 매 박스마다 가격이 살짝씩 다르게
+    return w;
+  }
+
   function sellPrice(pull){
     if(pull.priceOverride) return pull.priceOverride;
     if(!pull.signed) return UNSIGNED_PRICE;
-    return SIGNED_PRICE[pull.player] || 100000;
+    var base = SIGNED_PRICE[pull.player] || 100000;
+    var weight = pull.priceWeight || 1;
+    return Math.max(1000, Math.round(base * weight / 1000) * 1000);
   }
   function formatWon(n){
     return '₩' + n.toLocaleString('ko-KR');
@@ -1290,6 +1552,20 @@
   var incomeRate = document.getElementById('incomeRate');
   var shopGrid = document.getElementById('shopGrid');
   var clickValueLabel = document.getElementById('clickValueLabel');
+  var dexBtn = document.getElementById('dexBtn');
+  var dexCount = document.getElementById('dexCount');
+  var dexBackdrop = document.getElementById('dexBackdrop');
+  var dexClose = document.getElementById('dexClose');
+  var dexGrid = document.getElementById('dexGrid');
+  var dexDetail = document.getElementById('dexDetail');
+  var resetBtn = document.getElementById('resetBtn');
+  var shareBtn = document.getElementById('shareBtn');
+  var shareBackdrop = document.getElementById('shareBackdrop');
+  var shareClose = document.getElementById('shareClose');
+  var shareCanvas = document.getElementById('shareCanvas');
+  var shareHint = document.getElementById('shareHint');
+  var shareDownloadBtn = document.getElementById('shareDownloadBtn');
+  var shareNativeBtn = document.getElementById('shareNativeBtn');
 
   var state = { pulls: [], revealedCount: 0, animating: false, serial: 1, cash: 0, soldOut: false };
 
@@ -1347,7 +1623,7 @@
       openCost.textContent = '증정';
     } else {
       openLabel.textContent = '박스 구매하기';
-      openCost.textContent = formatWon(BOX_PRICE);
+      openCost.textContent = formatWon(getBoxPrice());
     }
   }
   renderOpenLabel();
@@ -1381,27 +1657,38 @@
   }
   renderStats();
 
-  function loadUsedSerials(){
-    try{ return JSON.parse(localStorage.getItem('t1rb_usedSerials') || '[]'); }catch(e){ return []; }
+  function loadRecords(){
+    try{ return JSON.parse(localStorage.getItem('t1rb_records') || '{}'); }catch(e){ return {}; }
   }
-  function saveUsedSerials(arr){
-    try{ localStorage.setItem('t1rb_usedSerials', JSON.stringify(arr)); }catch(e){}
+  function saveRecords(){
+    try{ localStorage.setItem('t1rb_records', JSON.stringify(state.records)); }catch(e){}
   }
-  state.usedSerials = loadUsedSerials();
+  state.records = loadRecords();
 
+  function recordCount(){
+    return Object.keys(state.records).length;
+  }
   function pickAvailableSerial(){
-    var used = {};
-    state.usedSerials.forEach(function(n){ used[n] = true; });
     var pool = [];
-    for(var i=1;i<=2025;i++){ if(!used[i]) pool.push(i); }
+    for(var i=1;i<=2025;i++){ if(!state.records[i]) pool.push(i); }
     if(pool.length === 0) return null;
     return pool[Math.floor(Math.random()*pool.length)];
   }
-  function markSerialUsed(n){
-    if(state.usedSerials.indexOf(n) === -1){
-      state.usedSerials.push(n);
-      saveUsedSerials(state.usedSerials);
-    }
+  function recordBox(serial, signedPull){
+    if(state.records[serial]) return;
+    state.records[serial] = {
+      champ: signedPull.champ,
+      player: signedPull.player,
+      role: signedPull.role,
+      c1: signedPull.c1,
+      c2: signedPull.c2,
+      price: sellPrice(signedPull),
+      jackpot: !!signedPull.priceOverride,
+      flavor: serialFlavor(serial),
+      ts: Date.now()
+    };
+    saveRecords();
+    renderDexButton();
   }
 
   function newBox(){
@@ -1409,7 +1696,7 @@
     if(candidate === null){
       state.soldOut = true;
       openLabel.textContent = '전 박스 매진';
-      openCost.textContent = String(state.usedSerials.length) + ' / 2025';
+      openCost.textContent = String(recordCount()) + ' / 2025';
       openBtn.disabled = true;
       boxScene.classList.remove('hidden');
       reveal.classList.remove('show');
@@ -1426,9 +1713,13 @@
     var signedIdx = fixedPrice
       ? order.findIndex(function(c){ return c.player === 'FAKER'; })
       : Math.floor(Math.random()*5);
+    var weight = serialWeight(state.serial);
     state.pulls = order.map(function(c, i){
       var p = { champ:c.champ, player:c.player, role:c.role, icon:c.icon, crest:c.crest, c1:c.c1, c2:c.c2, line:c.line, signed:(i===signedIdx), flipped:false };
-      if(p.signed && fixedPrice) p.priceOverride = fixedPrice;
+      if(p.signed){
+        if(fixedPrice) p.priceOverride = fixedPrice;
+        else p.priceWeight = weight;
+      }
       return p;
     });
 
@@ -1667,17 +1958,39 @@
         '<div class="pn">' + pull.player + '</div>' +
         '<div class="rc">' + pull.role + (pull.signed ? ' · SIGNED' : '') + '</div>' +
         '<div class="price">' + formatWon(price) + '</div>' +
-        '<button class="sell-btn" data-idx="' + idx + '">판매</button>';
+        '<div class="sell-actions">' +
+          '<button class="sell-btn" data-idx="' + idx + '">판매</button>' +
+          '<button class="market-btn" data-idx="' + idx + '">장터에 올리기</button>' +
+        '</div>';
       recap.appendChild(el);
     });
 
     Array.prototype.forEach.call(recap.querySelectorAll('.sell-btn'), function(btn){
       btn.addEventListener('click', function(){ sellCard(parseInt(btn.dataset.idx,10)); });
     });
+    Array.prototype.forEach.call(recap.querySelectorAll('.market-btn'), function(btn){
+      btn.addEventListener('click', function(){ listOnMarket(parseInt(btn.dataset.idx,10)); });
+    });
     sellAllBtn.disabled = false;
+    shareBtn.disabled = false;
 
     reveal.classList.remove('show');
     donePanel.classList.add('show');
+  }
+
+  function cardEls(idx){
+    var card = recap.querySelector('.recap-card[data-idx="' + idx + '"]');
+    return {
+      card: card,
+      sellBtn: card ? card.querySelector('.sell-btn') : null,
+      marketBtn: card ? card.querySelector('.market-btn') : null
+    };
+  }
+
+  function checkAllSold(){
+    if(state.pulls.every(function(p){ return p.sold; })){
+      sellAllBtn.disabled = true;
+    }
   }
 
   function sellCard(idx){
@@ -1685,16 +1998,61 @@
     if(pull.sold) return;
     pull.sold = true;
     addCash(sellPrice(pull));
-    var card = recap.querySelector('.recap-card[data-idx="' + idx + '"]');
-    if(card){
-      card.classList.add('sold');
-      var btn = card.querySelector('.sell-btn');
-      btn.disabled = true;
-      btn.textContent = '판매완료';
+    var els = cardEls(idx);
+    if(els.card){
+      els.card.classList.add('sold');
+      if(els.sellBtn){ els.sellBtn.disabled = true; els.sellBtn.textContent = '판매완료'; }
+      if(els.marketBtn){ els.marketBtn.disabled = true; els.marketBtn.style.display = 'none'; }
     }
-    if(state.pulls.every(function(p){ return p.sold; })){
-      sellAllBtn.disabled = true;
-    }
+    checkAllSold();
+  }
+
+  /* 장터에 올리기 — 30초 뒤 60~130% 랜덤가로 낙찰(가끔 대박/쪽박). "판매"는 정가 즉시지급, 이건 도박. */
+  var MARKET_WAIT_MS = 30000;
+  function rollMarketOutcome(){
+    var r = Math.random() * 100;
+    if(r < 1) return { mult:10.0, tier:'jackpot', quip:'미쳤다... 장터 전설 등극! 1000%에 낙찰됐습니다 🔥' };
+    if(r < 4) return { mult:2.0, tier:'great', quip:'완판 대박! 경쟁 붙어서 200%에 팔렸어요' };
+    if(r < 10) return { mult:1.5, tier:'good', quip:'생각보다 잘 쳐주네요, 150%에 낙찰!' };
+    if(r < 92) return { mult:0.6 + Math.random()*0.7, tier:'normal', quip:'적당한 가격에 무사히 팔렸습니다' };
+    if(r < 97) return { mult:0.5, tier:'bad', quip:'그냥저냥... 50%밖에 못 받았어요' };
+    return { mult:0.01, tier:'disaster', quip:'헐값에 후려쳐졌습니다... 장터 인심 무엇 😭' };
+  }
+
+  function listOnMarket(idx){
+    var pull = state.pulls[idx];
+    if(pull.sold) return;
+    pull.sold = true;
+    var base = sellPrice(pull);
+    var els = cardEls(idx);
+    if(els.card) els.card.classList.add('listed');
+    if(els.sellBtn){ els.sellBtn.disabled = true; els.sellBtn.style.display = 'none'; }
+    if(els.marketBtn){ els.marketBtn.disabled = true; els.marketBtn.textContent = '경매 진행 중… (30초)'; }
+    checkAllSold();
+
+    setTimeout(function(){
+      var outcome = rollMarketOutcome();
+      var finalPrice = Math.max(1, Math.round(base * outcome.mult));
+      addCash(finalPrice);
+      showToast(outcome.quip + ' · ' + formatWon(finalPrice));
+
+      var els2 = cardEls(idx);
+      if(els2.card){
+        els2.card.classList.remove('listed');
+        els2.card.classList.add('sold');
+      }
+      if(els2.marketBtn){
+        els2.marketBtn.style.display = '';
+        els2.marketBtn.textContent = '낙찰 ' + formatWon(finalPrice);
+      }
+      if(outcome.tier === 'jackpot' && window.confetti){
+        confetti({ particleCount:150, spread:100, startVelocity:45, origin:{y:.6}, colors:['#e8b84b','#ffe8a8','#ffffff'] });
+      }
+      if(outcome.tier === 'disaster'){
+        document.body.classList.remove('shake'); void document.body.offsetWidth; document.body.classList.add('shake');
+        setTimeout(function(){ document.body.classList.remove('shake'); }, 520);
+      }
+    }, MARKET_WAIT_MS);
   }
 
   sellAllBtn.addEventListener('click', function(){
@@ -1707,13 +2065,20 @@
       state.freeBox = false;
       markFreeBoxUsed();
       renderOpenLabel();
-    } else if(!spendCash(BOX_PRICE)){
-      showToast('자금이 부족합니다 · ' + formatWon(BOX_PRICE - state.cash) + ' 더 필요');
+    } else if(!spendCash(getBoxPrice())){
+      showToast('자금이 부족합니다 · ' + formatWon(getBoxPrice() - state.cash) + ' 더 필요');
       openBtn.classList.remove('insufficient'); void openBtn.offsetWidth; openBtn.classList.add('insufficient');
       return;
     }
-    markSerialUsed(state.serial);
+    var signedPull = state.pulls.filter(function(p){ return p.signed; })[0];
+    recordBox(state.serial, signedPull);
     serialNum.textContent = String(state.serial).padStart(4,'0');
+    var flavor = serialFlavor(state.serial);
+    if(flavor === 'repdigit'){
+      showToast('행운의 번호를 뽑았습니다 · #' + String(state.serial).padStart(4,'0') + ' — 사인카드 시세 UP');
+    } else if(flavor === 'sequential'){
+      showToast('연번 시리얼 발견 · #' + String(state.serial).padStart(4,'0') + ' — 사인카드 시세 살짝 UP');
+    }
     boxEl.classList.add('opening');
     setTimeout(function(){
       flashEl.classList.add('go');
@@ -1731,19 +2096,16 @@
     newBox();
   });
 
-  /* ---------- upgrades / idle income ---------- */
-  var GENS = [
-    { key:'trainee', tag:'GEN · 1', name:'연습생 고용', unit:'명', baseCost:5000, growth:1.15, rate:20 },
-    { key:'coach', tag:'GEN · 2', name:'코치 영입', unit:'명', baseCost:60000, growth:1.15, rate:250 },
-    { key:'sponsor', tag:'GEN · 3', name:'스폰서 계약', unit:'건', baseCost:800000, growth:1.15, rate:3500 }
-  ];
+  /* ---------- upgrades / idle income (세 가지 서로 다른 효과) ---------- */
   var CLICK_UPGRADE = { baseCost:8000, growth:1.7, step:1000 };
+  var AUTO_UPGRADE = { baseCost:6000, growth:1.13, rate:40 };
+  var DISCOUNT_UPGRADE = { baseCost:20000, growth:2.0, step:0.05, maxLevel:10 };
 
   function loadUpgrades(){
     try{
       var raw = JSON.parse(localStorage.getItem('t1rb_upgrades') || 'null');
-      return raw || { clickLevel:0, trainee:0, coach:0, sponsor:0 };
-    }catch(e){ return { clickLevel:0, trainee:0, coach:0, sponsor:0 }; }
+      return raw || { clickLevel:0, autoLevel:0, discountLevel:0 };
+    }catch(e){ return { clickLevel:0, autoLevel:0, discountLevel:0 }; }
   }
   function saveUpgrades(){
     try{ localStorage.setItem('t1rb_upgrades', JSON.stringify(state.up)); }catch(e){}
@@ -1757,38 +2119,50 @@
     return Math.round(baseCost * Math.pow(growth, owned));
   }
   function incomePerSec(){
-    var total = 0;
-    GENS.forEach(function(g){ total += g.rate * (state.up[g.key] || 0); });
-    return total;
+    return (state.up.autoLevel || 0) * AUTO_UPGRADE.rate;
+  }
+  function getDiscountLevel(){
+    var lvl = (state.up && state.up.discountLevel) || 0;
+    return Math.min(lvl, DISCOUNT_UPGRADE.maxLevel);
+  }
+  function getBoxPrice(){
+    return Math.round(BOX_PRICE * (1 - getDiscountLevel() * DISCOUNT_UPGRADE.step));
   }
 
   function renderShop(){
-    var html = '';
     var clickCost = costFor(CLICK_UPGRADE.baseCost, CLICK_UPGRADE.growth, state.up.clickLevel);
-    html +=
+    var autoOwned = state.up.autoLevel || 0;
+    var autoCost = costFor(AUTO_UPGRADE.baseCost, AUTO_UPGRADE.growth, autoOwned);
+    var discLevel = getDiscountLevel();
+    var discMaxed = discLevel >= DISCOUNT_UPGRADE.maxLevel;
+    var discCost = costFor(DISCOUNT_UPGRADE.baseCost, DISCOUNT_UPGRADE.growth, discLevel);
+
+    shopGrid.innerHTML =
       '<div class="shop-card">' +
         '<span class="sc-tag">CLICK</span>' +
         '<div class="sc-name">클릭 강화</div>' +
-        '<div class="sc-effect">클릭당 ' + formatWon(getClickValue()) + '</div>' +
-        '<div class="sc-owned">레벨 ' + state.up.clickLevel + '</div>' +
+        '<div class="sc-effect">클릭당 수익 증가</div>' +
+        '<div class="sc-owned">레벨 ' + state.up.clickLevel + ' · 클릭당 ' + formatWon(getClickValue()) + '</div>' +
         '<button class="buy-btn" data-buy="click">' + formatWon(clickCost) + '</button>' +
+      '</div>' +
+      '<div class="shop-card">' +
+        '<span class="sc-tag">AUTO</span>' +
+        '<div class="sc-name">스트리밍 후원</div>' +
+        '<div class="sc-effect">클릭 없이 자동으로 들어오는 수익</div>' +
+        '<div class="sc-owned">레벨 ' + autoOwned + ' · 자동 ' + formatWon(incomePerSec()) + '/초</div>' +
+        '<button class="buy-btn" data-buy="auto">' + formatWon(autoCost) + '</button>' +
+      '</div>' +
+      '<div class="shop-card">' +
+        '<span class="sc-tag">DEAL</span>' +
+        '<div class="sc-name">박스 단가 협상</div>' +
+        '<div class="sc-effect">박스 구매가를 영구적으로 낮춤</div>' +
+        '<div class="sc-owned">' + discLevel + ' / ' + DISCOUNT_UPGRADE.maxLevel + '단계 · 현재가 ' + formatWon(getBoxPrice()) + '</div>' +
+        (discMaxed
+          ? '<button class="buy-btn" data-buy="discount" disabled>MAX</button>'
+          : '<button class="buy-btn" data-buy="discount">' + formatWon(discCost) + '</button>') +
       '</div>';
 
-    GENS.forEach(function(g){
-      var owned = state.up[g.key] || 0;
-      var cost = costFor(g.baseCost, g.growth, owned);
-      html +=
-        '<div class="shop-card">' +
-          '<span class="sc-tag">' + g.tag + '</span>' +
-          '<div class="sc-name">' + g.name + '</div>' +
-          '<div class="sc-effect">초당 ' + formatWon(g.rate) + ' / ' + g.unit + '</div>' +
-          '<div class="sc-owned">보유 ' + owned + g.unit + ' · 자동 ' + formatWon(g.rate*owned) + '/초</div>' +
-          '<button class="buy-btn" data-buy="' + g.key + '">' + formatWon(cost) + '</button>' +
-        '</div>';
-    });
-
-    shopGrid.innerHTML = html;
-    Array.prototype.forEach.call(shopGrid.querySelectorAll('.buy-btn'), function(btn){
+    Array.prototype.forEach.call(shopGrid.querySelectorAll('.buy-btn:not(:disabled)'), function(btn){
       btn.addEventListener('click', function(){ buyUpgrade(btn.dataset.buy, btn); });
     });
   }
@@ -1799,15 +2173,21 @@
       cost = costFor(CLICK_UPGRADE.baseCost, CLICK_UPGRADE.growth, state.up.clickLevel);
       if(!spendCash(cost)){ showToast(formatWon(cost) + ' 필요 · 자금 부족'); return; }
       state.up.clickLevel += 1;
-    } else {
-      var g = GENS.filter(function(x){ return x.key === key; })[0];
-      cost = costFor(g.baseCost, g.growth, state.up[key] || 0);
+      clickValueLabel.textContent = '+' + getClickValue().toLocaleString('ko-KR') + '원';
+    } else if(key === 'auto'){
+      cost = costFor(AUTO_UPGRADE.baseCost, AUTO_UPGRADE.growth, state.up.autoLevel || 0);
       if(!spendCash(cost)){ showToast(formatWon(cost) + ' 필요 · 자금 부족'); return; }
-      state.up[key] = (state.up[key] || 0) + 1;
+      state.up.autoLevel = (state.up.autoLevel || 0) + 1;
+    } else if(key === 'discount'){
+      var lvl = getDiscountLevel();
+      if(lvl >= DISCOUNT_UPGRADE.maxLevel) return;
+      cost = costFor(DISCOUNT_UPGRADE.baseCost, DISCOUNT_UPGRADE.growth, lvl);
+      if(!spendCash(cost)){ showToast(formatWon(cost) + ' 필요 · 자금 부족'); return; }
+      state.up.discountLevel = lvl + 1;
+      renderOpenLabel();
     }
     saveUpgrades();
     renderShop();
-    clickValueLabel.textContent = '+' + getClickValue().toLocaleString('ko-KR') + '원';
     if(btn){ btn.classList.remove('bought'); void btn.offsetWidth; btn.classList.add('bought'); }
   }
 
@@ -1830,6 +2210,223 @@
     addCash(getClickValue());
     var rect = earnBtn.getBoundingClientRect();
     spawnFloatPlus(rect.left + rect.width/2, rect.top, '+' + getClickValue().toLocaleString('ko-KR') + '원');
+  });
+
+  /* ---------- 박스 도감 ---------- */
+  function renderDexButton(){
+    dexCount.textContent = recordCount();
+  }
+  renderDexButton();
+
+  function openModal(backdrop){ backdrop.classList.add('show'); }
+  function closeModal(backdrop){ backdrop.classList.remove('show'); }
+
+  function buildDexGrid(){
+    var html = '';
+    for(var i=1;i<=2025;i++){
+      var rec = state.records[i];
+      if(rec){
+        html += '<button class="dex-cell filled' + (rec.jackpot ? ' jackpot' : '') +
+          '" data-serial="' + i + '" style="--c1:' + rec.c1 + '" aria-label="No.' + String(i).padStart(4,'0') + ' · ' + rec.player + '"></button>';
+      } else {
+        html += '<div class="dex-cell"></div>';
+      }
+    }
+    dexGrid.innerHTML = html;
+    Array.prototype.forEach.call(dexGrid.querySelectorAll('.dex-cell.filled'), function(cell){
+      cell.addEventListener('click', function(){ showDexDetail(parseInt(cell.dataset.serial,10), cell); });
+    });
+  }
+
+  function showDexDetail(serial, cell){
+    var rec = state.records[serial];
+    if(!rec) return;
+    Array.prototype.forEach.call(dexGrid.querySelectorAll('.dex-cell.active'), function(c){ c.classList.remove('active'); });
+    if(cell) cell.classList.add('active');
+    var d = new Date(rec.ts);
+    var dateStr = d.getFullYear() + '.' + String(d.getMonth()+1).padStart(2,'0') + '.' + String(d.getDate()).padStart(2,'0');
+    dexDetail.innerHTML =
+      'SERIAL NO. <b>' + String(serial).padStart(4,'0') + '</b> / 2025' +
+      (rec.jackpot ? ' · <b>JACKPOT</b>' : (rec.flavor ? ' · <b>특별 번호</b>' : '')) + '<br>' +
+      '<span class="dd-name">' + rec.champ + ' · ' + rec.player + ' (' + rec.role + ')</span>' +
+      formatWon(rec.price) + ' · ' + dateStr + ' 개봉';
+  }
+
+  dexBtn.addEventListener('click', function(){
+    buildDexGrid();
+    dexDetail.textContent = '번호를 클릭하면 상세 정보가 여기에 표시됩니다.';
+    openModal(dexBackdrop);
+  });
+  dexClose.addEventListener('click', function(){ closeModal(dexBackdrop); });
+  dexBackdrop.addEventListener('click', function(e){ if(e.target === dexBackdrop) closeModal(dexBackdrop); });
+
+  /* ---------- 게임 초기화 ---------- */
+  resetBtn.addEventListener('click', function(){
+    if(!window.confirm('정말 초기화할까요? 보유 금액, 박스 도감, 업그레이드가 모두 사라지고 처음부터 다시 시작합니다.')) return;
+    try{
+      ['t1rb_cash','t1rb_opens','t1rb_signed','t1rb_freeBoxUsed','t1rb_upgrades','t1rb_records'].forEach(function(k){
+        localStorage.removeItem(k);
+      });
+    }catch(e){}
+    location.reload();
+  });
+
+  /* ---------- 공유 이미지 ---------- */
+  function roundRect(ctx, x, y, w, h, r){
+    ctx.beginPath();
+    ctx.moveTo(x+r,y);
+    ctx.arcTo(x+w,y,x+w,y+h,r);
+    ctx.arcTo(x+w,y+h,x,y+h,r);
+    ctx.arcTo(x,y+h,x,y,r);
+    ctx.arcTo(x,y,x+w,y,r);
+    ctx.closePath();
+  }
+  function svgToImage(svgInner, viewBox){
+    return new Promise(function(resolve){
+      var svg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="' + viewBox + '">' + svgInner + '</svg>';
+      var img = new Image();
+      img.onload = function(){ resolve(img); };
+      img.onerror = function(){ resolve(null); };
+      img.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg);
+    });
+  }
+
+  function buildShareImage(){
+    var pull = state.pulls.filter(function(p){ return p.signed; })[0];
+    if(!pull) return Promise.resolve();
+    return document.fonts.ready.then(function(){
+      return svgToImage(pull.icon, '0 0 100 100').then(function(iconImg){
+        var ctx = shareCanvas.getContext('2d');
+        var W = shareCanvas.width, H = shareCanvas.height;
+        ctx.clearRect(0,0,W,H);
+        ctx.textAlign = 'center';
+
+        var bg = ctx.createLinearGradient(0,0,0,H);
+        bg.addColorStop(0,'#141019');
+        bg.addColorStop(1,'#0a0b10');
+        ctx.fillStyle = bg;
+        ctx.fillRect(0,0,W,H);
+        var glow = ctx.createRadialGradient(W/2,320,40,W/2,320,520);
+        glow.addColorStop(0,'rgba(255,232,168,.16)');
+        glow.addColorStop(1,'rgba(255,232,168,0)');
+        ctx.fillStyle = glow;
+        ctx.fillRect(0,0,W,H);
+
+        ctx.fillStyle = 'rgba(240,235,225,.55)';
+        ctx.font = '600 22px "Chakra Petch", sans-serif';
+        ctx.fillText('RIFTBOUND · T1 TOGETHER AS 1', W/2, 90);
+
+        ctx.fillStyle = '#f4f1ea';
+        ctx.font = '400 62px "Black Han Sans", "Noto Sans KR", sans-serif';
+        ctx.fillText('박스깡 시뮬레이터', W/2, 168);
+
+        var pad = String(state.serial).padStart(4,'0');
+        ctx.fillStyle = '#e8b84b';
+        ctx.font = '600 26px "Chakra Petch", sans-serif';
+        ctx.fillText('SERIAL NO. ' + pad + ' / 2025', W/2, 218);
+
+        var panelX = 100, panelY = 268, panelW = W-200, panelH = 620;
+        var pg = ctx.createLinearGradient(panelX,panelY,panelX,panelY+panelH);
+        pg.addColorStop(0, pull.c1);
+        pg.addColorStop(1, pull.c2);
+        roundRect(ctx, panelX, panelY, panelW, panelH, 28);
+        ctx.fillStyle = pg;
+        ctx.fill();
+        ctx.lineWidth = 4;
+        ctx.strokeStyle = pull.priceOverride ? '#ffe8a8' : 'rgba(255,255,255,.25)';
+        ctx.stroke();
+
+        if(pull.priceOverride){
+          ctx.fillStyle = '#ffe8a8';
+          ctx.font = '600 30px "Chakra Petch", sans-serif';
+          ctx.fillText('★ JACKPOT ★', W/2, panelY+66);
+        } else {
+          ctx.fillStyle = 'rgba(255,255,255,.85)';
+          ctx.font = '600 26px "Chakra Petch", sans-serif';
+          ctx.fillText('SIGNED CARD', W/2, panelY+62);
+        }
+
+        if(iconImg){
+          var iw = 220, ih = 220;
+          ctx.drawImage(iconImg, W/2-iw/2, panelY+100, iw, ih);
+        }
+
+        ctx.fillStyle = '#ffffff';
+        ctx.font = '400 56px "Black Han Sans", "Noto Sans KR", sans-serif';
+        ctx.fillText(pull.champ, W/2, panelY+400);
+
+        ctx.font = '700 30px "Chakra Petch", sans-serif';
+        ctx.fillStyle = 'rgba(255,255,255,.9)';
+        ctx.fillText(pull.player + ' · ' + pull.role, W/2, panelY+448);
+
+        var priceText = formatWon(sellPrice(pull));
+        ctx.font = '700 52px "Chakra Petch", sans-serif';
+        var ptw = ctx.measureText(priceText).width + 60;
+        roundRect(ctx, W/2-ptw/2, panelY+488, ptw, 82, 41);
+        ctx.fillStyle = '#ffe8a8';
+        ctx.fill();
+        ctx.fillStyle = '#1a0507';
+        ctx.fillText(priceText, W/2, panelY+542);
+
+        var rY = panelY+panelH+70;
+        ctx.font = '600 20px "Chakra Petch", sans-serif';
+        var names = state.pulls.map(function(p){ return p.signed ? ('[' + p.player + ']') : p.player; }).join('   ');
+        ctx.fillStyle = 'rgba(240,235,225,.7)';
+        ctx.fillText(names, W/2, rY);
+
+        ctx.font = '400 30px "Black Han Sans", "Noto Sans KR", sans-serif';
+        ctx.fillStyle = 'rgba(255,232,168,.9)';
+        ctx.fillText('나도 박스깡 해보기 →', W/2, rY+70);
+
+        var footY = H-190;
+        ctx.fillStyle = '#8a2733';
+        ctx.fillRect(0, footY, W, 190);
+        ctx.fillStyle = '#ffffff';
+        ctx.font = '400 50px "Black Han Sans", "Noto Sans KR", sans-serif';
+        ctx.fillText('RIBA.GG', W/2, footY+78);
+        ctx.font = '500 23px "Chakra Petch", sans-serif';
+        ctx.fillStyle = 'rgba(255,255,255,.85)';
+        ctx.fillText('리프트바운드 정보 허브', W/2, footY+118);
+        ctx.fillText('riba.gg/box-sim.html', W/2, footY+150);
+      });
+    });
+  }
+
+  shareBtn.addEventListener('click', function(){
+    buildShareImage().then(function(){ openModal(shareBackdrop); });
+  });
+  shareClose.addEventListener('click', function(){ closeModal(shareBackdrop); });
+  shareBackdrop.addEventListener('click', function(e){ if(e.target === shareBackdrop) closeModal(shareBackdrop); });
+
+  shareDownloadBtn.addEventListener('click', function(){
+    shareCanvas.toBlob(function(blob){
+      if(!blob) return;
+      var url = URL.createObjectURL(blob);
+      var a = document.createElement('a');
+      a.href = url;
+      a.download = 't1-boxsim-' + String(state.serial).padStart(4,'0') + '.png';
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      setTimeout(function(){ URL.revokeObjectURL(url); }, 2000);
+      showToast('이미지를 저장했습니다');
+    });
+  });
+
+  shareNativeBtn.addEventListener('click', function(){
+    shareCanvas.toBlob(function(blob){
+      if(!blob) return;
+      var file = new File([blob], 't1-boxsim.png', { type:'image/png' });
+      if(navigator.canShare && navigator.canShare({ files:[file] })){
+        navigator.share({
+          files:[file],
+          title:'T1 박스깡 시뮬레이터',
+          text:'리바지지 박스깡 시뮬레이터에서 뽑은 카드! riba.gg/box-sim.html'
+        }).catch(function(){});
+      } else {
+        shareDownloadBtn.click();
+      }
+    });
   });
 
   newBox();
