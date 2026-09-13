@@ -8,6 +8,7 @@ import {
   MessagesSquare,
   ArrowUpDown,
   BookOpen,
+  Library,
 } from "lucide-react";
 
 import { HomeHeroCarousel } from "@/components/home/home-hero-carousel";
@@ -25,6 +26,7 @@ export const revalidate = 60;
 const SECTIONS = [
   { href: "/community", label: "커뮤니티", icon: MessagesSquare },
   { href: "/cards", label: "카드 정보", icon: LayoutGrid },
+  { href: "/me#collection", label: "내 컬렉션", icon: Library },
   { href: "/deck-simulator", label: "덱 시뮬레이터", icon: Layers },
   { href: "/trading", label: "트레이딩", icon: ArrowUpDown },
   { href: "/tiers", label: "덱 티어리스트", icon: Layers },

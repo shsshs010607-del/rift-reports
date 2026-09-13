@@ -68,7 +68,7 @@ export function CollectionEditor({ initial }: { initial: Initial }) {
   }
 
   return (
-    <section className="mt-8">
+    <section id="collection" className="mt-8 scroll-mt-24">
       <h2 className="mb-3 flex items-center gap-1.5 text-title-md font-bold text-ink">
         <Layers className="h-4 w-4 text-primary" />
         내 컬렉션
