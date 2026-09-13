@@ -242,7 +242,7 @@ function subHref(href: string): { url: string; external: boolean; disabled: bool
     const ready = SITE.discordReport && SITE.discordReport !== "#";
     return { url: ready ? SITE.discordReport : "#", external: true, disabled: !ready };
   }
-  // 정적 HTML 페이지(예: /box-sim.html)는 앱 라우터가 아니라 새 탭으로 연다.
+  // 정적 HTML 페이지(예: /origins-sim.html)는 앱 라우터가 아니라 새 탭으로 연다.
   if (href.endsWith(".html")) {
     return { url: href, external: true, disabled: false };
   }

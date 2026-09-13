@@ -118,13 +118,9 @@ export const NAV_PRIMARY: readonly {
   { href: "/trading", label: "트레이딩" },
   { href: "/community", label: "커뮤니티" },
   {
-    href: "/box-sim.html",
+    href: "/origins-sim.html",
     label: "언박싱 시뮬레이터",
     external: true,
-    children: [
-      { href: "/box-sim.html", label: "T1 박스깡" },
-      { href: "/origins-sim.html", label: "오리진 언박싱" },
-    ],
   },
 ];
 
