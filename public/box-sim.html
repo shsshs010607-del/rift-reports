@@ -1432,7 +1432,7 @@
   <a href="/" class="made-in">Made in <b>RIBA.GG</b></a>
 
   <footer class="note">
-    실제 카드 데이터가 아닌 가상 시뮬레이션이며, 챔피언–선수 매칭과 판매 시세는 임의로 구성했습니다.<br>
+    실제 카드 데이터가 아닌 가상 시뮬레이션입니다. 사인카드 판매 시세는 eBay 호가·시세 기사를 참고해 추정한 값이며 공식 가격이 아닙니다.<br>
     확률 및 결과는 매 개봉마다 무작위로 생성됩니다.
     <button class="reset-link" id="resetBtn">게임 초기화</button>
   </footer>
@@ -1513,7 +1513,8 @@
   var BOX_PRICE = 1500000;
   var CLICK_VALUE = 1000;
   var UNSIGNED_PRICE = { FAKER:8000, GUMAYUSI:5000, KERIA:5000, ONER:3000, DORAN:3000 };
-  var SIGNED_PRICE = { DORAN:100000, ONER:100000, FAKER:5000000, KERIA:2000000, GUMAYUSI:2000000 };
+  /* eBay 실거래/호가 기반 추정치 (미개봉 세트 평균 $4,000~6,000, 개별 사인카드는 완료판매가 확인 불가해 추정) */
+  var SIGNED_PRICE = { DORAN:2500000, ONER:2500000, FAKER:8000000, KERIA:4000000, GUMAYUSI:4000000 };
   var FIXED_FAKER_SERIALS = { 1:5000000, 1000:10000000, 1557:9999990000, 2025:5000000 };
 
   function isRepdigit(n){
