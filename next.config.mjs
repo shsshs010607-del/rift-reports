@@ -23,6 +23,8 @@ const nextConfig = {
       { protocol: "https", hostname: "cmsassets.rgpub.io" },
       // YouTube 썸네일
       { protocol: "https", hostname: "i.ytimg.com" },
+      // 구글 OAuth 프로필 사진 (구글 로그인 유저 아바타)
+      { protocol: "https", hostname: "lh3.googleusercontent.com" },
     ],
   },
   // 기본 보안 헤더. CSP 는 AdSense/폰트/OAuth 조합을 실제 배포에서 검증 없이

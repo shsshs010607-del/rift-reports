@@ -4,7 +4,7 @@ import { ChevronLeft } from "lucide-react";
 import { fmtKstShort } from "@/lib/datetime";
 import { createClient } from "@/lib/supabase/server";
 import { getPost, getComments, getLikedPostIds } from "@/lib/community";
-import { COMMUNITY_CATEGORIES } from "@/lib/constants";
+import { COMMUNITY_CATEGORIES, SITE } from "@/lib/constants";
 import { cn } from "@/lib/utils";
 import { LikeButton } from "@/components/community/like-button";
 import { ViewCounter } from "@/components/community/view-counter";
@@ -13,6 +13,7 @@ import { PostActions } from "@/components/community/post-actions";
 import { PostBody } from "@/components/community/post-body";
 import { Avatar } from "@/components/community/avatar";
 import { CategoryBadge, metaFor } from "@/components/community/category-meta";
+import { CommunityCafeCrossPost } from "@/components/community/community-cafe-cross-post";
 
 export const dynamic = "force-dynamic";
 
@@ -95,6 +96,17 @@ export default async function PostDetailPage({ params }: { params: { id: string 
       <div className="mt-6 px-1 sm:px-2">
         <PostBody text={post.body} />
       </div>
+
+      {isOwner && (
+        <div className="mt-6 px-1 sm:px-2">
+          <CommunityCafeCrossPost
+            title={post.title}
+            categoryLabel={cat?.label ?? post.category}
+            body={post.body}
+            permalink={`${SITE.url}/community/post/${post.id}`}
+          />
+        </div>
+      )}
 
       <div className="mt-10 flex justify-center">
         <LikeButton
