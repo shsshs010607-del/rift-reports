@@ -5,7 +5,7 @@ import { ExternalLink, MessagesSquare, AlertTriangle } from "lucide-react";
 import { fmtKstRelative } from "@/lib/datetime";
 import { getPrintWithPrice, getPrintVariants, getPrintGroup, isStale } from "@/lib/prices";
 import { getUsdKrw } from "@/lib/fx";
-import { fmtKrw, fmtUsd } from "@/lib/money";
+import { fmtKrw, fmtPct, fmtUsd } from "@/lib/money";
 import { PRINT_LANGUAGES, CARD_CONDITIONS } from "@/lib/constants";
 import { cn } from "@/lib/utils";
 import { PriceSparkline } from "@/components/trading/price-sparkline";
@@ -15,7 +15,7 @@ export const revalidate = 900;
 
 const langLabel = (s: string) => PRINT_LANGUAGES.find((l) => l.slug === s)?.label ?? s.toUpperCase();
 const condLabel = (s: string) => CARD_CONDITIONS.find((c) => c.slug === s)?.label ?? s;
-const pct = (n: number | null | undefined) => (n == null ? "" : `${n > 0 ? "+" : ""}${n}%`);
+const pct = fmtPct;
 
 export default async function PrintPricePage({ params }: { params: { printId: string } }) {
   const res = await getPrintWithPrice(params.printId);

@@ -4,7 +4,7 @@ import { TrendingUp, TrendingDown } from "lucide-react";
 import type { PriceRow } from "@/lib/prices";
 import type { FxRate } from "@/lib/fx";
 import { PRINT_LANGUAGES } from "@/lib/constants";
-import { deltaUsd, fmtKrwSigned, fmtUsdSigned } from "@/lib/money";
+import { deltaUsd, fmtKrwSigned, fmtPct, fmtUsdSigned } from "@/lib/money";
 import { cn } from "@/lib/utils";
 import { FxNote } from "@/components/trading/fx-note";
 
@@ -68,6 +68,9 @@ function MoverList({
                       )}
                     >
                       {fmtKrwSigned(d, fx.usdKrw)}
+                      {r.change_7d != null && (
+                        <span className="ml-1 font-semibold opacity-80">({fmtPct(r.change_7d)})</span>
+                      )}
                     </span>
                     <span className="block text-body-sm text-ink-soft">{fmtUsdSigned(d)}</span>
                   </span>

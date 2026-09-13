@@ -39,3 +39,9 @@ export function fmtUsdSigned(v: number | null | undefined): string {
     maximumFractionDigits: 2,
   })}`;
 }
+
+/** 변동률(%) — 부호 항상 표시(+/-), 소수점 1자리. 금액과 나란히 붙여쓰는 용도. */
+export function fmtPct(n: number | null | undefined): string {
+  if (n == null) return "";
+  return `${n > 0 ? "+" : n < 0 ? "-" : ""}${Math.abs(n).toFixed(1)}%`;
+}

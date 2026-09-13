@@ -7,14 +7,13 @@ import { Search, ArrowUp, ArrowDown, ChevronLeft, ChevronRight } from "lucide-re
 import type { PriceRow } from "@/lib/prices";
 import type { FxRate } from "@/lib/fx";
 import { PRINT_LANGUAGES } from "@/lib/constants";
-import { deltaUsd, fmtKrw, fmtKrwSigned, fmtUsd } from "@/lib/money";
+import { deltaUsd, fmtKrw, fmtKrwSigned, fmtPct, fmtUsd } from "@/lib/money";
 import { cn } from "@/lib/utils";
 
 const langLabel = (s: string) =>
   PRINT_LANGUAGES.find((l) => l.slug === s)?.label ?? s.toUpperCase();
 
-const pct = (n: number | null | undefined) =>
-  n == null ? "" : `${n > 0 ? "+" : ""}${n.toFixed(1)}%`;
+const pct = fmtPct;
 
 type SortKey = "price" | "change" | "changePct";
 
