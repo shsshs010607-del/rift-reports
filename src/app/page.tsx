@@ -13,6 +13,7 @@ import {
 
 import { HomeHeroCarousel } from "@/components/home/home-hero-carousel";
 import { HomeQuickBar } from "@/components/home/home-quick-bar";
+import { HomeBeginnerGuide } from "@/components/home/home-beginner-guide";
 import { SnsChannels } from "@/components/home/sns-channels";
 import { MetaSnapshot } from "@/components/home/meta-snapshot";
 import { OfficialLinks } from "@/components/home/official-links";
@@ -42,6 +43,8 @@ export default function HomePage() {
       <HomeHeroCarousel />
 
       <HomeQuickBar />
+
+      <HomeBeginnerGuide />
 
       {/* 좌: 추천덱(압축) + 커뮤니티 최신글 / 우: 인기글 + 시세 */}
       <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_340px] xl:items-start">
