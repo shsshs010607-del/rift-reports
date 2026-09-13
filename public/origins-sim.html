@@ -120,6 +120,31 @@
     background:var(--surface);border:1px solid var(--line-soft);color:var(--text-dim);
   }
   .sum-chip b{color:var(--chip-color,var(--text));font-weight:700;}
+  .sum-chip.total{border-color:var(--gold-dim);}
+  .sum-chip.total b{color:var(--gold-bright);font-variant-numeric:tabular-nums;}
+
+  /* ---------- 뽑을 때 시세 표시 ---------- */
+  .pack-total{
+    font-family:var(--font-mono);font-size:13px;color:var(--text-dim);
+    background:var(--surface);border:1px solid var(--line-soft);
+    padding:8px 20px;border-radius:999px;margin-bottom:20px;
+  }
+  .pack-total b{color:var(--gold-bright);font-variant-numeric:tabular-nums;display:inline-block;}
+  .pack-total b.bump{animation:price-bump .35s ease;}
+  @keyframes price-bump{
+    0%{transform:scale(1);}
+    40%{transform:scale(1.18);color:#fff;}
+    100%{transform:scale(1);}
+  }
+  .fprice{
+    position:absolute;left:0;right:0;bottom:0;
+    background:rgba(10,11,16,.72);
+    color:var(--gold-bright);
+    font-family:var(--font-mono);font-weight:700;font-size:11px;
+    text-align:center;padding:3px 4px;letter-spacing:.02em;
+    font-variant-numeric:tabular-nums;
+  }
+  .chip b{color:var(--gold);font-weight:700;font-variant-numeric:tabular-nums;}
 
   .highlights{width:100%;margin-bottom:26px;}
   .highlights h2{font-family:var(--font-display);font-weight:400;font-size:17px;margin:0 0 12px;text-align:center;color:var(--gold-bright);}
@@ -132,6 +157,7 @@
   .hl-card img{width:100%;display:block;}
   .hl-card.hanbok{border-color:var(--c-hanbok);box-shadow:0 0 20px -2px rgba(255,95,143,.6);}
   .hl-name{font-size:10px;padding:5px 6px 6px;line-height:1.3;color:var(--text-dim);}
+  .hl-price{display:block;margin-top:2px;color:var(--gold-bright);font-weight:700;font-variant-numeric:tabular-nums;}
   .hl-ribbon{font-family:var(--font-mono);font-size:8px;font-weight:700;letter-spacing:.06em;padding:2px 6px;background:var(--c-hanbok);color:#1a0507;text-align:center;}
 
   @keyframes pop-in{
@@ -227,7 +253,8 @@
   <a href="/" class="made-in">Made in <b>RIBA.GG</b></a>
   <footer class="note">
     실제 카드 데이터(이름·레어도·일러스트)는 오리진(OGN) 세트를 그대로 사용하지만, 팩 구성과 확률은 공식 확률이 아닌 임의로 설계한 시뮬레이션입니다.<br>
-    한국판 오리진 한정 "구미호(한복)" 아리는 기존 오버넘버·시그니처 아리를 대체해 표시됩니다(아트는 추후 교체 예정).
+    한국판 오리진 한정 "구미호(한복)" 아리는 기존 오버넘버·시그니처 아리를 대체해 표시됩니다(아트는 추후 교체 예정).<br>
+    카드별 시세는 리바지지 실시간 시세(<span id="priceAsOf">-</span> 기준)를 참고한 추정가이며, 실제 거래가와 다를 수 있습니다.
   </footer>
 </div>
 
@@ -285,11 +312,21 @@
     setActive(tierOpts, 'tier', state.tier);
   });
 
-  fetch('/origins-cards.json').then(function(r){ return r.json(); }).then(function(cards){
+  function formatWon(n){
+    return '₩' + n.toLocaleString('ko-KR');
+  }
+  function cardPrice(c){
+    return typeof c.price === 'number' ? c.price : null;
+  }
+
+  fetch('/origins-cards.json').then(function(r){ return r.json(); }).then(function(payload){
+    var cards = payload.cards || payload; // 구버전(순수 배열) 폴백
     POOLS = {};
     cards.forEach(function(c){
       (POOLS[c.rarity] = POOLS[c.rarity] || []).push(c);
     });
+    var priceAsOf = document.getElementById('priceAsOf');
+    if(priceAsOf && payload.updatedAt) priceAsOf.textContent = payload.updatedAt;
     openBtn.disabled = false;
     openBtn.textContent = '까기';
   }).catch(function(){
@@ -337,9 +374,13 @@
   }
 
   function renderPack(cards){
-    var html = '<div class="packrow" id="packRow"></div>';
+    var html =
+      '<div class="pack-total">합산 시세 <b id="packTotalAmt">₩0</b></div>' +
+      '<div class="packrow" id="packRow"></div>';
     stage.innerHTML = html;
     var row = document.getElementById('packRow');
+    var totalAmt = document.getElementById('packTotalAmt');
+    var total = 0;
     cards.forEach(function(card, idx){
       var el = document.createElement('div');
       el.className = 'fcard';
@@ -362,6 +403,16 @@
         img.src = card.img;
         img.alt = card.name;
         front.appendChild(img);
+        var price = cardPrice(card);
+        if(price != null){
+          var badge = document.createElement('div');
+          badge.className = 'fprice';
+          badge.textContent = formatWon(price);
+          front.appendChild(badge);
+          total += price;
+          totalAmt.textContent = formatWon(total);
+          totalAmt.classList.remove('bump'); void totalAmt.offsetWidth; totalAmt.classList.add('bump');
+        }
       });
       row.appendChild(el);
     });
@@ -370,11 +421,16 @@
 
   function renderBulk(cards){
     var counts = {};
-    cards.forEach(function(c){ counts[c.rarity] = (counts[c.rarity]||0) + 1; });
+    var total = 0;
+    cards.forEach(function(c){
+      counts[c.rarity] = (counts[c.rarity]||0) + 1;
+      var price = cardPrice(c);
+      if(price != null) total += price;
+    });
 
     var summaryHtml = Object.keys(RARITY_LABEL).map(function(r){
       return '<span class="sum-chip" style="--chip-color:' + (RARITY_COLOR[r]) + '">' + RARITY_LABEL[r] + ' <b>' + (counts[r]||0) + '</b></span>';
-    }).join('');
+    }).join('') + '<span class="sum-chip total">합산 시세 <b>' + formatWon(total) + '</b></span>';
 
     var highlights = cards.filter(function(c){ return c.rarity === 'Rare' || c.rarity === 'Epic' || c.rarity === 'Showcase'; });
 
@@ -383,10 +439,11 @@
       hlHtml = '<div class="highlights"><h2>★ 하이라이트 (' + highlights.length + '장) ★</h2><div class="hl-grid">' +
         highlights.map(function(c, i){
           var v = cardVisual(c);
+          var price = cardPrice(c);
           return '<div class="hl-card' + (c.hanbok?' hanbok':'') + '" style="--r-color:' + v.color + ';--r-glow:' + v.glow + ';animation-delay:' + Math.min(i*15,600) + 'ms">' +
             (c.hanbok ? '<div class="hl-ribbon">한정</div>' : '') +
             '<img src="' + c.img + '" alt="' + c.name + '" loading="lazy">' +
-            '<div class="hl-name">' + c.name + '</div>' +
+            '<div class="hl-name">' + c.name + (price != null ? '<span class="hl-price">' + formatWon(price) + '</span>' : '') + '</div>' +
           '</div>';
         }).join('') +
       '</div></div>';
@@ -396,10 +453,11 @@
       cards.map(function(c, i){
         var v = cardVisual(c);
         var delay = Math.min((i % 60) * 12, 700);
+        var price = cardPrice(c);
         if(c.rarity === 'Rare' || c.rarity === 'Epic' || c.rarity === 'Showcase'){
-          return '<div class="bulk-img" style="--r-color:' + v.color + ';--r-glow:' + v.glow + ';animation-delay:' + delay + 'ms" title="' + c.name + '"><img src="' + c.img + '" alt="' + c.name + '" loading="lazy"></div>';
+          return '<div class="bulk-img" style="--r-color:' + v.color + ';--r-glow:' + v.glow + ';animation-delay:' + delay + 'ms" title="' + c.name + (price != null ? ' · ' + formatWon(price) : '') + '"><img src="' + c.img + '" alt="' + c.name + '" loading="lazy"></div>';
         }
-        return '<span class="chip" style="--r-color:' + v.color + ';animation-delay:' + delay + 'ms">' + c.name + '</span>';
+        return '<span class="chip" style="--r-color:' + v.color + ';animation-delay:' + delay + 'ms">' + c.name + (price != null ? ' <b>' + formatWon(price) + '</b>' : '') + '</span>';
       }).join('') +
     '</div></div>';
 
