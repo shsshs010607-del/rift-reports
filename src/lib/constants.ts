@@ -26,19 +26,44 @@ export const SITE = {
 } as const;
 
 /**
- * 홈에 노출할 리프트바운드 영상 (수동 큐레이션).
- * id = YouTube videoId. titleKo = 한글 번역 제목. 새 영상은 여기 맨 위에 추가.
+ * 홈에 노출할 리프트바운드 공식 새소식 요약 (수동 큐레이션, playriftbound.com 기준).
+ * 새 소식은 여기 맨 위에 추가. date 는 "YYYY-MM-DD".
  */
-export const RIFTBOUND_VIDEOS = [
+export const RIFTBOUND_NEWS = [
   {
-    id: "2koNsAKsipc",
-    titleKo: "11분 만에 배우는 리프트바운드 룰",
-    channel: "Good Time Society",
+    tag: "공지",
+    title: "새 단장한 PlayRiftbound.com 공개",
+    summary: "대회 찾기·참가 신청을 위한 새 플랫폼이 9월 14일 정식 오픈합니다.",
+    date: "2026-09-04",
+    url: "https://www.riotgames.com/en-us/news/announcements/introducing-the-new-playriftboundcom",
   },
   {
-    id: "BSr32eiUeyU",
-    titleKo: "리프트바운드 공개 트레일러",
-    channel: "Riftbound (공식)",
+    tag: "공지",
+    title: "벤데타 2.0 추첨 안내 (FAQ)",
+    summary: "벤데타 제품 2차 추첨 방식에 대한 공식 안내입니다.",
+    date: "2026-09-04",
+    url: "https://www.riotgames.com/en-us/news/announcements/product-drawing-faq/",
+  },
+  {
+    tag: "대회",
+    title: "싱가포르 대회 top 8 덱 정리",
+    summary: "케넨 위주였던 top 8을 아칼리 덱이 뚫고 우승했습니다.",
+    date: "2026-09-09",
+    url: "https://www.riotgames.com/en-us/news/organizedplay/singapores-top-decks",
+  },
+  {
+    tag: "이벤트",
+    title: "시크릿 가든 번들 오프라인 이벤트",
+    summary: "연말까지 시크릿 가든 번들을 만나볼 수 있는 매장·행사 안내.",
+    date: "2026-09-11",
+    url: "https://www.riotgames.com/en-us/news/announcements/secret-garden-bundle-events",
+  },
+  {
+    tag: "대회",
+    title: "LA, 올해 마지막 지역 예선",
+    summary: "2026 시즌 마지막 지역 예선(Regional Qualifier)이 로스앤젤레스에서 열립니다.",
+    date: "2026-09-11",
+    url: "https://www.riotgames.com/en-us/news/organizedplay/all-eyes-on-los-angeles",
   },
 ] as const;
 
