@@ -120,22 +120,31 @@
     background:var(--surface);border:1px solid var(--line-soft);color:var(--text-dim);
   }
   .sum-chip b{color:var(--chip-color,var(--text));font-weight:700;}
-  .sum-chip.total{border-color:var(--gold-dim);}
-  .sum-chip.total b{color:var(--gold-bright);font-variant-numeric:tabular-nums;}
 
-  /* ---------- 뽑을 때 시세 표시 ---------- */
-  .pack-total{
-    font-family:var(--font-mono);font-size:13px;color:var(--text-dim);
-    background:var(--surface);border:1px solid var(--line-soft);
-    padding:8px 20px;border-radius:999px;margin-bottom:20px;
+  /* ---------- 구매가 / 획득 시세 / 손익 ---------- */
+  .result-stats{
+    display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin-bottom:22px;
   }
-  .pack-total b{color:var(--gold-bright);font-variant-numeric:tabular-nums;display:inline-block;}
-  .pack-total b.bump{animation:price-bump .35s ease;}
+  .rs-item{
+    display:flex;flex-direction:column;align-items:center;gap:3px;
+    background:var(--surface);border:1px solid var(--line-soft);
+    padding:10px 22px;border-radius:14px;min-width:110px;
+  }
+  .rs-label{font-family:var(--font-mono);font-size:10px;letter-spacing:.1em;color:var(--text-faint);text-transform:uppercase;}
+  .rs-item b{
+    font-family:var(--font-mono);font-size:16px;font-weight:700;color:var(--text);
+    font-variant-numeric:tabular-nums;display:inline-block;
+  }
+  .rs-item b.bump{animation:price-bump .35s ease;}
   @keyframes price-bump{
     0%{transform:scale(1);}
     40%{transform:scale(1.18);color:#fff;}
     100%{transform:scale(1);}
   }
+  .rs-pl.profit{border-color:rgba(79,209,138,.5);}
+  .rs-pl.profit b{color:var(--c-uncommon);}
+  .rs-pl.loss{border-color:rgba(224,36,63,.55);}
+  .rs-pl.loss b{color:var(--red);}
   .fprice{
     position:absolute;left:0;right:0;bottom:0;
     background:rgba(10,11,16,.72);
@@ -252,9 +261,13 @@
 
   <a href="/" class="made-in">Made in <b>RIBA.GG</b></a>
   <footer class="note">
-    실제 카드 데이터(이름·레어도·일러스트)는 오리진(OGN) 세트를 그대로 사용하지만, 팩 구성과 확률은 공식 확률이 아닌 임의로 설계한 시뮬레이션입니다.<br>
+    실제 카드 데이터(이름·레어도·일러스트)는 오리진(OGN) 세트를 그대로 사용합니다. 팩 봉입 확률은 중국 정식 유통사
+    Shining Soul 공개 팩 구성(7 커먼·3 언커먼·포일 1·룬 1·레어 이상 2)과 해외 개봉 통계(에픽 1/4팩, 이색아트
+    1/12팩, 초편 1/72팩, 시그니처 1/700+팩)를 참고한 추정치이며, 공식 확률표가 아닙니다.<br>
     한국판 오리진 한정 "구미호(한복)" 아리는 기존 오버넘버·시그니처 아리를 대체해 표시됩니다(아트는 추후 교체 예정).<br>
-    카드별 시세는 리바지지 실시간 시세(<span id="priceAsOf">-</span> 기준)를 참고한 추정가이며, 실제 거래가와 다를 수 있습니다.
+    카드별 시세는 리바지지 실시간 시세(<span id="priceAsOf">-</span> 기준, 원화 환산)를 참고한 추정가이며, 실제
+    거래가와 다를 수 있습니다. 부스터팩 구매가 역시 한국 정식 가격 발표 전 잠정 추정치(1팩 기준)로, 손익 계산은
+    참고용입니다.
   </footer>
 </div>
 
@@ -277,9 +290,22 @@
     Epic: 'rgba(176,115,255,.5)',
     Showcase: 'rgba(242,183,58,.55)'
   };
-  var HIT_TABLE = [['Rare',70],['Epic',22],['Showcase',8]];
   var BOX_PACKS = 24;
   var CARTON_BOXES = 6;
+
+  /**
+   * 봉입 확률 — 정부 공시(중국 실물카드 확률표기 의무) 수준의 정확한 %표는 공개돼 있지 않아,
+   * 중국 정식 유통사 Shining Soul 이 공개한 "起源(오리진)" 팩 구성(7 普通/3 不凡/포일 1/룬 1/레어 이상 2)과
+   * 해외 커뮤니티 개봉 통계(카드게이머 등 — 에픽 1/4팩, 이색아트 1/12팩, 초편(오버넘버) 1/72팩,
+   * 서명 초편(시그니처) 1/700+팩)를 조합한 추정치입니다. 실제 확률과 다를 수 있습니다.
+   */
+  var HIT_EPIC_RATE = 1 / 4;
+  var HIT_ALTART_RATE = 1 / 12;
+  var HIT_OVERNUMBERED_RATE = 1 / 72;
+  var HIT_SIGNATURE_RATE = 1 / 700;
+
+  /** 오리진 부스터팩 추정 정가(원) — 한국 정식 가격 공개 전 잠정치. 확정되면 갱신 필요. */
+  var PACK_PRICE_KRW = { '5': 2300, '14': 6500 };
 
   var stage = document.getElementById('stage');
   var openBtn = document.getElementById('openBtn');
@@ -315,8 +341,37 @@
   function formatWon(n){
     return '₩' + n.toLocaleString('ko-KR');
   }
+  function formatWonSigned(n){
+    var sign = n > 0 ? '+' : n < 0 ? '-' : '';
+    return sign + '₩' + Math.abs(n).toLocaleString('ko-KR');
+  }
   function cardPrice(c){
     return typeof c.price === 'number' ? c.price : null;
+  }
+
+  /** 구매가 / 획득 시세 / 손익 3단 요약. id 를 붙여둬서 팩 모드에서 실시간 갱신 가능. */
+  function resultStatsHtml(purchase, total){
+    var pl = total - purchase;
+    var plClass = pl > 0 ? 'profit' : pl < 0 ? 'loss' : '';
+    return '' +
+      '<div class="result-stats">' +
+        '<div class="rs-item"><span class="rs-label">구매가</span><b>' + formatWon(purchase) + '</b></div>' +
+        '<div class="rs-item"><span class="rs-label">획득 시세</span><b id="rsTotal">' + formatWon(total) + '</b></div>' +
+        '<div class="rs-item rs-pl ' + plClass + '" id="rsPlWrap"><span class="rs-label">손익</span><b id="rsPl">' + formatWonSigned(pl) + '</b></div>' +
+      '</div>';
+  }
+
+  var RUNE_POOL = [];
+  var ALTART_POOL = [];
+  var OVERNUMBERED_POOL = [];
+  var SIGNATURE_POOL = [];
+
+  /** 쇼케이스 카드를 세부 등급으로 분류 — 번호에 "*" 있으면 시그니처, 299 이상이면 초편(오버넘버). */
+  function showcaseBucket(c){
+    var num = c.id.split('-')[1] || '';
+    if(num.indexOf('*') !== -1) return 'signature';
+    if(parseInt(num, 10) >= 299) return 'overnumbered';
+    return 'altart';
   }
 
   fetch('/origins-cards.json').then(function(r){ return r.json(); }).then(function(payload){
@@ -324,6 +379,13 @@
     POOLS = {};
     cards.forEach(function(c){
       (POOLS[c.rarity] = POOLS[c.rarity] || []).push(c);
+      if(c.type === 'Rune') RUNE_POOL.push(c);
+    });
+    (POOLS.Showcase || []).forEach(function(c){
+      var b = showcaseBucket(c);
+      if(b === 'signature') SIGNATURE_POOL.push(c);
+      else if(b === 'overnumbered') OVERNUMBERED_POOL.push(c);
+      else ALTART_POOL.push(c);
     });
     var priceAsOf = document.getElementById('priceAsOf');
     if(priceAsOf && payload.updatedAt) priceAsOf.textContent = payload.updatedAt;
@@ -333,37 +395,59 @@
     openBtn.textContent = '카드 데이터를 불러오지 못했습니다';
   });
 
-  function weightedPick(table){
-    var total = table.reduce(function(s,e){ return s+e[1]; }, 0);
-    var r = Math.random() * total;
-    for(var i=0;i<table.length;i++){
-      r -= table[i][1];
-      if(r <= 0) return table[i][0];
-    }
-    return table[table.length-1][0];
+  function pick(arr){
+    return arr[Math.floor(Math.random() * arr.length)];
   }
 
   function drawOne(rarity){
-    var pool = POOLS[rarity];
-    return pool[Math.floor(Math.random() * pool.length)];
+    return pick(POOLS[rarity]);
   }
 
-  function buildSlots(size){
-    if(size === '5') return ['Common','Common','Common','Uncommon','HIT'];
-    return ['Common','Common','Common','Common','Common','Common','Common','Uncommon','Uncommon','Uncommon','Uncommon','Rare','Rare','HIT'];
+  /** 레어 이상 "히트" 슬롯 — 등급이 높을수록 드문 순서로 순차 판정(중복 방지). */
+  function drawHit(){
+    var r = Math.random();
+    if(r < HIT_SIGNATURE_RATE && SIGNATURE_POOL.length) return pick(SIGNATURE_POOL);
+    if(r < HIT_OVERNUMBERED_RATE && OVERNUMBERED_POOL.length) return pick(OVERNUMBERED_POOL);
+    if(r < HIT_ALTART_RATE && ALTART_POOL.length) return pick(ALTART_POOL);
+    if(r < HIT_EPIC_RATE) return drawOne('Epic');
+    return drawOne('Rare');
   }
 
+  /** 포일 슬롯 — 등급은 랜덤(보통 커먼·언커먼 위주). */
+  function drawFoil(){
+    return Math.random() < 0.7 ? drawOne('Common') : drawOne('Uncommon');
+  }
+
+  function drawRune(){
+    return RUNE_POOL.length ? pick(RUNE_POOL) : drawOne('Common');
+  }
+
+  /** 팩 구성 — 14장 기본 부스터: 7 커먼 · 3 언커먼 · 포일 1 · 룬 1 · 레어 이상 2(그중 1장이 히트 슬롯). */
   function openPack(size){
-    return buildSlots(size).map(function(code){
-      var rarity = code === 'HIT' ? weightedPick(HIT_TABLE) : code;
-      return drawOne(rarity);
-    });
+    if(size === '5'){
+      return [drawOne('Common'), drawOne('Common'), drawOne('Common'), drawOne('Uncommon'), drawHit()];
+    }
+    var cards = [];
+    for(var i=0;i<7;i++) cards.push(drawOne('Common'));
+    for(var j=0;j<3;j++) cards.push(drawOne('Uncommon'));
+    cards.push(drawFoil());
+    cards.push(drawRune());
+    cards.push(drawHit());
+    cards.push(drawOne('Rare'));
+    return cards;
   }
 
   function packsForTier(tier){
     if(tier === 'pack') return 1;
     if(tier === 'box') return BOX_PACKS;
     return BOX_PACKS * CARTON_BOXES;
+  }
+
+  function packPrice(product){
+    return PACK_PRICE_KRW[product] || 0;
+  }
+  function purchasePrice(product, tier){
+    return packPrice(product) * packsForTier(tier);
   }
 
   function cardVisual(card){
@@ -373,13 +457,13 @@
     };
   }
 
-  function renderPack(cards){
-    var html =
-      '<div class="pack-total">합산 시세 <b id="packTotalAmt">₩0</b></div>' +
-      '<div class="packrow" id="packRow"></div>';
+  function renderPack(cards, purchase){
+    var html = resultStatsHtml(purchase, 0) + '<div class="packrow" id="packRow"></div>';
     stage.innerHTML = html;
     var row = document.getElementById('packRow');
-    var totalAmt = document.getElementById('packTotalAmt');
+    var totalAmt = document.getElementById('rsTotal');
+    var plAmt = document.getElementById('rsPl');
+    var plWrap = document.getElementById('rsPlWrap');
     var total = 0;
     cards.forEach(function(card, idx){
       var el = document.createElement('div');
@@ -412,6 +496,11 @@
           total += price;
           totalAmt.textContent = formatWon(total);
           totalAmt.classList.remove('bump'); void totalAmt.offsetWidth; totalAmt.classList.add('bump');
+          var pl = total - purchase;
+          plAmt.textContent = formatWonSigned(pl);
+          plAmt.classList.remove('bump'); void plAmt.offsetWidth; plAmt.classList.add('bump');
+          plWrap.classList.toggle('profit', pl > 0);
+          plWrap.classList.toggle('loss', pl < 0);
         }
       });
       row.appendChild(el);
@@ -419,7 +508,7 @@
     againRow.style.display = 'block';
   }
 
-  function renderBulk(cards){
+  function renderBulk(cards, purchase){
     var counts = {};
     var total = 0;
     cards.forEach(function(c){
@@ -430,7 +519,7 @@
 
     var summaryHtml = Object.keys(RARITY_LABEL).map(function(r){
       return '<span class="sum-chip" style="--chip-color:' + (RARITY_COLOR[r]) + '">' + RARITY_LABEL[r] + ' <b>' + (counts[r]||0) + '</b></span>';
-    }).join('') + '<span class="sum-chip total">합산 시세 <b>' + formatWon(total) + '</b></span>';
+    }).join('');
 
     var highlights = cards.filter(function(c){ return c.rarity === 'Rare' || c.rarity === 'Epic' || c.rarity === 'Showcase'; });
 
@@ -461,23 +550,23 @@
       }).join('') +
     '</div></div>';
 
-    stage.innerHTML = '<div class="summary">' + summaryHtml + '</div>' + hlHtml + bulkHtml;
+    stage.innerHTML = resultStatsHtml(purchase, total) + '<div class="summary">' + summaryHtml + '</div>' + hlHtml + bulkHtml;
     againRow.style.display = 'block';
   }
 
   function doOpen(){
     if(!POOLS) return;
-    var slotsPerPack = buildSlots(state.product).length;
     var packs = packsForTier(state.tier);
     var cards = [];
     for(var i=0;i<packs;i++){
       cards = cards.concat(openPack(state.product));
     }
+    var purchase = purchasePrice(state.product, state.tier);
 
     if(state.tier === 'pack'){
-      renderPack(cards);
+      renderPack(cards, purchase);
     } else {
-      renderBulk(cards);
+      renderBulk(cards, purchase);
     }
 
     productOpts.querySelectorAll('.opt-btn').forEach(function(b){ b.disabled = true; });
