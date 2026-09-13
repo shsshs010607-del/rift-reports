@@ -28,6 +28,7 @@ type EventSeed = {
   organizer: string;
   status: "upcoming" | "ongoing" | "finished";
   category: "official" | "shop" | "community";
+  prize_pool?: string;
 };
 
 const EVENTS: EventSeed[] = [
@@ -82,6 +83,56 @@ const EVENTS: EventSeed[] = [
     status: "upcoming",
     category: "shop",
   },
+  {
+    name: "스토어 예선 (Store Qualifiers)",
+    slug: "riftbound-store-qualifiers",
+    description: [
+      "라이엇 게임즈 공식 인정 매장에서 진행되는 경쟁 이벤트.",
+      "3판 2선승제 1대1 대전, 스위스 라운드 후 결선 토너먼트로 진행된다.",
+      "상위 32인에게 프로모 카드가 지급되며, 각 매장 예선 상위 2명에게 코리아 메이저 참가권이 주어진다.",
+      "참여 매장·일정은 playriftbound.com '매장 찾기'에서 확인.",
+    ].join(" "),
+    format: "매장 예선 · 스위스 + 결선 토너먼트 · 상위 2명 코리아 메이저 진출",
+    starts_at: "2026-09-18T00:00:00+09:00",
+    ends_at: "2026-11-30T22:00:00+09:00",
+    location: "전국 공인 매장 (매장별 공지)",
+    organizer: "라이엇 게임즈 (매장 운영)",
+    status: "upcoming",
+    category: "shop",
+  },
+  {
+    name: "오픈 예선 (Open Qualifier)",
+    slug: "riftbound-open-qualifier-2026-10",
+    description: [
+      "리프트바운드 '오리진' 코리아 메이저 진출을 건 오픈 예선.",
+      "최대 200명 규모로 진행되며 총 500만 원 상당의 상금·상품이 걸려 있고, 상위 입상자에게 코리아 메이저 참가권이 주어진다.",
+    ].join(" "),
+    format: "오픈 예선 · 최대 200명 · 코리아 메이저 진출권",
+    starts_at: "2026-10-17T00:00:00+09:00",
+    ends_at: "2026-10-18T22:00:00+09:00",
+    location: "스페이스쉐어 중부센터 (서울)",
+    organizer: "라이엇 게임즈",
+    status: "upcoming",
+    category: "official",
+    prize_pool: "총 500만 원 상당 (상금·상품)",
+  },
+  {
+    name: "코리아 메이저 (Korea Major)",
+    slug: "riftbound-korea-major-2026-12",
+    description: [
+      "리프트바운드 '오리진' 시즌 한국 최상위 오프라인 대회.",
+      "500명 이상 규모로 진행되며 총 1,000만 원 상금과 Standard Plated Legends가 걸려 있고,",
+      "우승자에게는 글로벌 대회 참가권이 주어진다.",
+    ].join(" "),
+    format: "코리아 메이저 · 500명+ · 글로벌 대회 진출권",
+    starts_at: "2026-12-05T00:00:00+09:00",
+    ends_at: "2026-12-06T22:00:00+09:00",
+    location: "양재 aT센터 (서울)",
+    organizer: "라이엇 게임즈",
+    status: "upcoming",
+    category: "official",
+    prize_pool: "총 1,000만 원 + Standard Plated Legends",
+  },
 ];
 
 async function main() {
@@ -107,7 +158,7 @@ async function main() {
       is_online: false,
       organizer: e.organizer,
       registration_url: null,
-      prize_pool: null,
+      prize_pool: e.prize_pool ?? null,
       banner_url: null,
     };
 

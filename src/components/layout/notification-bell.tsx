@@ -33,8 +33,17 @@ export function NotificationBell() {
 
   useEffect(() => {
     load();
-    const t = setInterval(load, 120_000);
-    return () => clearInterval(t);
+    const t = setInterval(() => {
+      if (document.visibilityState === "visible") load();
+    }, 300_000);
+    const onVisible = () => {
+      if (document.visibilityState === "visible") load();
+    };
+    document.addEventListener("visibilitychange", onVisible);
+    return () => {
+      clearInterval(t);
+      document.removeEventListener("visibilitychange", onVisible);
+    };
   }, [load]);
 
   // 바깥 클릭 닫기

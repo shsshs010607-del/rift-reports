@@ -110,8 +110,9 @@ export const NAV_PRIMARY: readonly {
   },
 ];
 
-/** 상단바 2행 — 룰·용어·지역 (레퍼런스/오프라인). */
+/** 상단바 2행 — 소식·룰·용어·지역 (레퍼런스/오프라인). */
 export const NAV_SECONDARY = [
+  { href: "/reports", label: "소식" },
   { href: "/rules/reference", label: "상세 룰" },
   { href: "/glossary", label: "용어" },
   { href: "/shops", label: "주변 매장" },
