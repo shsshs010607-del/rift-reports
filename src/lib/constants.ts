@@ -62,6 +62,24 @@ export const ADSENSE = {
     .filter(Boolean),
 } as const;
 
+/**
+ * Google Analytics 4 (gtag.js). 측정 ID는 비밀값이 아니라(모든 페이지 소스에 그대로
+ * 노출) 기본값으로 박아둔다. env 로 덮어쓰기 가능.
+ *   NEXT_PUBLIC_GA_ID = "G-XXXXXXXXXX"
+ */
+export const GA = {
+  id: process.env.NEXT_PUBLIC_GA_ID ?? "G-YRZTJHB12X",
+  /**
+   * 실측정을 내보낼 호스트 화이트리스트 — AdSense 와 동일 취지.
+   * 로컬 개발·Vercel 프리뷰 트래픽이 실 분석 데이터에 섞이는 걸 막는다.
+   * 쉼표로 구분. 미설정 시 riba.gg 만 허용.
+   */
+  hosts: (process.env.NEXT_PUBLIC_GA_HOSTS ?? "riba.gg,www.riba.gg")
+    .split(",")
+    .map((h) => h.trim().toLowerCase())
+    .filter(Boolean),
+} as const;
+
 /** Kakao Map JavaScript 키. 없으면 지도 대신 목록만. (콘솔에서 웹 도메인 등록 필수) */
 export const KAKAO_MAP_KEY = process.env.NEXT_PUBLIC_KAKAO_MAP_KEY ?? "";
 
