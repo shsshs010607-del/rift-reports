@@ -14,20 +14,20 @@ const BOX_IMG = (() => {
   return hit ? `/brand/${hit}` : null;
 })();
 
-/** eBay 검색 (판매 완료). */
-const EBAY_URL =
-  "https://www.ebay.com/sch/i.html?_nkw=Riftbound+T1+Signature+Edition&LH_Sold=1&LH_Complete=1";
+/** 크림(KREAM) 상품 페이지 — 국내 정식 응모 판매처. */
+const KREAM_URL = "https://kream.co.kr/products/1046670";
 
-/** eBay 실거래가(해외 리셀). 수동 갱신 — updatedAt 이 기준일. */
+/**
+ * 크림 응모가. 수동 갱신 — updatedAt 이 기준일.
+ * 크림은 이 상품을 추첨 응모 방식으로만 팔아서(2026-08-14~18 응모, 08-21 당첨자 발표)
+ * 실시간 매수/매도 시세가 따로 없다 — 응모가 = 사실상 정가.
+ */
 const RESALE = {
-  updatedAt: "2026-09-11",
-  rows: [
-    { name: "정가 (라이엇)", sub: "언어별 10,125세트 한정", price: "₩500,000" },
-    { name: "eBay 실거래", sub: "미개봉 세트 · 편차 큼", price: "$4,000~6,000" },
-  ],
+  updatedAt: "2026-09-14",
+  rows: [{ name: "정가 (크림 응모가)", sub: "언어별 10,125세트 한정", price: "₩500,000" }],
 };
 
-/** 홈 상단 유입 프로모 — 리프트바운드 × T1 시그니처 에디션 + eBay 실거래가. */
+/** 홈 상단 유입 프로모 — 리프트바운드 × T1 시그니처 에디션 + 크림 응모가. */
 export function T1EditionBanner() {
   return (
     <section className="relative flex h-full min-h-[168px] overflow-hidden rounded-2xl border border-[#8a2733]/40 bg-[#0a0708] text-white">
@@ -51,7 +51,7 @@ export function T1EditionBanner() {
       {/* 내용 */}
       <div className="relative z-10 flex max-w-[62%] flex-col justify-center gap-1.5 p-4 sm:max-w-[54%] sm:p-5">
         <span className="inline-flex w-fit items-center gap-1 rounded-full bg-[#8a2733] px-2 py-0.5 text-[10px] font-black tracking-wide text-white shadow-lg">
-          RIFTBOUND <span className="opacity-70">×</span> T1 · 리셀 시장가
+          RIFTBOUND <span className="opacity-70">×</span> T1 · 크림 응모가
         </span>
         <h2 className="font-display text-title-lg font-black leading-tight !text-white [text-shadow:0_2px_10px_rgba(0,0,0,0.7)] sm:text-headline-sm">
           T1 시그니처 에디션
@@ -76,15 +76,15 @@ export function T1EditionBanner() {
 
         <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
           <a
-            href={EBAY_URL}
+            href={KREAM_URL}
             target="_blank"
             rel="noopener noreferrer"
             className="inline-flex w-fit items-center gap-1 rounded-full bg-white px-3 py-1.5 text-label-sm font-bold text-[#1b0509] transition hover:bg-white/90"
           >
-            eBay 실거래 보기 <ArrowUpRight className="h-3.5 w-3.5" />
+            크림에서 보기 <ArrowUpRight className="h-3.5 w-3.5" />
           </a>
         </div>
-        <p className="text-[10px] text-white/40">eBay 시세 {RESALE.updatedAt} 기준</p>
+        <p className="text-[10px] text-white/40">크림 응모가 {RESALE.updatedAt} 기준</p>
       </div>
     </section>
   );
