@@ -15,6 +15,8 @@ import { Avatar } from "@/components/community/avatar";
 import { CategoryBadge, metaFor } from "@/components/community/category-meta";
 import { CommunityCafeCrossPost } from "@/components/community/community-cafe-cross-post";
 
+// getPost/getComments/getLikedPostIds 가 cookies() 를 try/catch(safe()) 로
+// 감싸고 있어서 force-dynamic 없이는 빌드 시 정적 생성 시도가 타임아웃난다 — 지우지 말 것.
 export const dynamic = "force-dynamic";
 
 export default async function PostDetailPage({ params }: { params: { id: string } }) {

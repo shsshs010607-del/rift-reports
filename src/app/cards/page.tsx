@@ -20,8 +20,9 @@ import {
 
 export const metadata: Metadata = { title: "카드 정보" };
 
-// searchParams 기반 필터 + useSearchParams 클라이언트 필터바 → 동적 렌더.
-export const dynamic = "force-dynamic";
+// searchParams 를 직접 읽으므로 Next.js 가 이미 동적 렌더로 처리한다.
+// (force-dynamic 은 여기서 카드 데이터 fetch 캐시까지 꺼버려 매 요청마다
+// 카드 서비스를 다시 호출하게 만들므로 일부러 넣지 않는다.)
 
 /**
  * 카드 검색 계약:

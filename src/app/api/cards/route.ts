@@ -25,8 +25,8 @@ import {
  * 데이터 소스는 NEXT_PUBLIC_DATA_SOURCE 로 결정된다(라우트 코드는 무관).
  */
 
-// 카드 데이터는 빌드타임에 알 수 없으므로 요청 시 처리.
-export const dynamic = "force-dynamic";
+// request.url(쿼리스트링)을 읽으므로 이미 요청 시 처리된다.
+// (force-dynamic 을 두면 카드 서비스의 fetch 캐시까지 꺼지므로 넣지 않는다.)
 
 const QuerySchema = z.object({
   q: z.string().trim().min(1).optional(),

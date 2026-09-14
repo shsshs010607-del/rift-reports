@@ -15,7 +15,9 @@ import type { Card } from "@/lib/types/card";
 
 export const metadata: Metadata = { title: "덱 시뮬레이터" };
 
-export const dynamic = "force-dynamic";
+// searchParams 를 직접 읽으므로 이미 동적 렌더로 처리된다.
+// (force-dynamic 을 두면 전체 카드 목록 fetch 캐시까지 꺼져 방문마다
+// 카드 서비스를 다시 호출하게 되므로 넣지 않는다.)
 
 /**
  * 덱 시뮬레이터 = 덱 빌더 + 오프닝 핸드 4장 드로우/멀리건.

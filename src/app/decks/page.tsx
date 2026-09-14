@@ -14,6 +14,8 @@ export const metadata: Metadata = {
   description: "한국 스탠다드(OGN·OGS) 카드풀 대회 덱리스트 모음. 덱 시뮬레이터로 바로 열어볼 수 있습니다.",
 };
 // 로그인/역할에 따라 삭제 버튼을 노출하므로 동적 렌더.
+// (getMetaDecks/viewerIsStaff 가 cookies() 를 try/catch 로 감싸고 있어서
+// force-dynamic 없이는 빌드 시 정적 생성 시도가 타임아웃난다 — 지우지 말 것.)
 export const dynamic = "force-dynamic";
 
 /** 현재 사용자가 운영진(editor·admin)인지. */

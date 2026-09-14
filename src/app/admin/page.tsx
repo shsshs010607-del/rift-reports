@@ -13,7 +13,7 @@ import {
 } from "@/components/admin/admin-forms";
 
 export const metadata: Metadata = { title: "운영" };
-export const dynamic = "force-dynamic";
+// createClient() 가 쿠키를 읽어 이미 동적 렌더로 처리된다 (force-dynamic 불필요).
 
 export default async function AdminPage() {
   if (!hasSupabaseEnv) redirect("/login?next=/admin");

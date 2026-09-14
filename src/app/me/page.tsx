@@ -21,6 +21,8 @@ import { getUsdKrw } from "@/lib/fx";
 import { COMMUNITY_CATEGORIES } from "@/lib/constants";
 
 export const metadata: Metadata = { title: "내 프로필" };
+// getMyPosts() 가 cookies() 를 try/catch 로 감싸고 있어서 force-dynamic 없이는
+// 빌드 시 정적 생성 시도가 타임아웃난다 — 지우지 말 것.
 export const dynamic = "force-dynamic";
 
 const CAT = new Map(COMMUNITY_CATEGORIES.map((c) => [c.slug, c.label]));

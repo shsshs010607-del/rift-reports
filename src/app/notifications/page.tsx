@@ -6,6 +6,8 @@ import { NotificationCenter } from "@/components/notifications/notification-cent
 import { getNotificationFeed } from "@/lib/notifications";
 
 export const metadata: Metadata = { title: "알림" };
+// getNotificationFeed() 가 cookies() 를 try/catch 로 감싸고 있어서 force-dynamic
+// 없이는 빌드 시 정적 생성 시도가 타임아웃난다 — 지우지 말 것.
 export const dynamic = "force-dynamic";
 
 export default async function NotificationsPage() {
