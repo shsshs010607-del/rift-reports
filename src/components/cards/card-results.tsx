@@ -3,6 +3,8 @@ import type { Card, CardSearchQuery } from "@/lib/types/card";
 import type { CardSortKey } from "@/components/cards/card-sort-bar";
 import { Pagination } from "@/components/community/pagination";
 import { CardGrid } from "@/components/cards/card-grid";
+import { getPriceIndex } from "@/lib/prices";
+import { getUsdKrw } from "@/lib/fx";
 
 const collator = new Intl.Collator("ko-KR", { numeric: true, sensitivity: "base" });
 
@@ -75,12 +77,16 @@ export async function CardResults({
   const pageItems = sorted.slice(start, start + perPage);
   const pages = Math.ceil(sorted.length / perPage);
 
+  const [priceIndex, fx] = await Promise.all([getPriceIndex(), getUsdKrw()]);
+  const priceByNumber: Record<string, number> = {};
+  for (const [num, p] of priceIndex) priceByNumber[num] = Math.round(p.usd * fx.usdKrw);
+
   return (
     <>
       <p className="mb-3 text-body-sm text-ink-soft">
         총 {all.length.toLocaleString("ko-KR")}장{pages > 1 && ` · ${page}/${pages} 페이지`}
       </p>
-      <CardGrid cards={pageItems} />
+      <CardGrid cards={pageItems} priceByNumber={priceByNumber} />
       <Pagination page={page} total={all.length} perPage={perPage} hrefFor={hrefForPage} />
     </>
   );

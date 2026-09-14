@@ -7,6 +7,7 @@ import { resolveCardText, cardNumber } from "@/lib/types/card";
 import { CARD_DOMAINS, CARD_TYPES } from "@/lib/constants";
 import { domainGradient, rarityStyle } from "@/lib/card-style";
 import { BAN_TAG } from "@/lib/cards/banned";
+import { fmtWon } from "@/lib/money";
 import { CardModal } from "@/components/cards/card-modal";
 import { LocalizedCard } from "@/components/cards/localized-card";
 
@@ -17,7 +18,14 @@ const TYPE_LABEL = new Map(CARD_TYPES.map((t) => [t.slug, t.label]));
  * 카드 그리드 (클라이언트). 카드를 누르면 페이지 이동 없이 비교 모달을 연다.
  * 변형 인쇄판(얼터아트·프로모 등)은 별도 타일이 아니라 기본 카드 모달 안에서 비교한다.
  */
-export function CardGrid({ cards }: { cards: Card[] }) {
+export function CardGrid({
+  cards,
+  priceByNumber,
+}: {
+  cards: Card[];
+  /** "OGN-039" 형식 카드 번호 → 원화 시세. 없으면 가격 배지 생략. */
+  priceByNumber?: Record<string, number>;
+}) {
   const [index, setIndex] = useState<number | null>(null);
   const selected = index != null ? cards[index] : null;
 
@@ -26,7 +34,7 @@ export function CardGrid({ cards }: { cards: Card[] }) {
       <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
         {cards.map((card, i) => (
           <li key={card.id}>
-            <CardTile card={card} onOpen={() => setIndex(i)} />
+            <CardTile card={card} onOpen={() => setIndex(i)} priceByNumber={priceByNumber} />
           </li>
         ))}
       </ul>
@@ -43,11 +51,21 @@ export function CardGrid({ cards }: { cards: Card[] }) {
   );
 }
 
-function CardTile({ card, onOpen }: { card: Card; onOpen: () => void }) {
+function CardTile({
+  card,
+  onOpen,
+  priceByNumber,
+}: {
+  card: Card;
+  onOpen: () => void;
+  priceByNumber?: Record<string, number>;
+}) {
   const ko = resolveCardText(card, "ko");
   const variants = card.printings.length - 1;
   const accent = domainGradient(card.domains);
   const rarity = rarityStyle(card.rarity);
+  const num = cardNumber(card);
+  const price = num && priceByNumber && num in priceByNumber ? priceByNumber[num] : null;
 
   return (
     <button
@@ -123,12 +141,15 @@ function CardTile({ card, onOpen }: { card: Card; onOpen: () => void }) {
             {ko.name}
           </span>
           <span className="block truncate text-label-sm text-ink-soft">
-            {cardNumber(card) ?? card.setCode}
+            {num ?? card.setCode}
             {" · "}
             {TYPE_LABEL.get(card.type) ?? card.type}
             {typeof card.power === "number" && ` · ⚔ ${card.power}`}
           </span>
         </span>
+        {price != null && (
+          <span className="shrink-0 text-label-sm font-bold text-primary-strong">{fmtWon(price)}</span>
+        )}
       </div>
     </button>
   );
