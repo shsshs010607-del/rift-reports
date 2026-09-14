@@ -1,9 +1,12 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, ArrowUpRight, Gamepad2 } from "lucide-react";
 import { BeginnerGuide } from "@/components/rules/beginner-guide";
+import { DiscordCta } from "@/components/community/discord-cta";
 import { getCardService, CardServiceError } from "@/lib/services/cardService";
 import type { Card } from "@/lib/types/card";
+
+const RIFT_ATLAS_URL = "https://play.riftatlas.com/";
 
 export const metadata: Metadata = {
   title: "초보자 가이드",
@@ -39,6 +42,32 @@ export default async function RulesPage() {
           Riftbound Core Rules(2025-12-01) 요약. 정확한 판정은 최신 공식 룰을 따르세요.
         </p>
       </header>
+
+      <div className="mb-8 grid gap-3 sm:grid-cols-2">
+        <div className="surface flex flex-col justify-between gap-3 p-5">
+          <div>
+            <p className="inline-flex items-center gap-1.5 text-label-sm font-bold uppercase tracking-wide text-primary-strong">
+              <Gamepad2 className="h-4 w-4" />
+              TCG가 처음이신가요?
+            </p>
+            <p className="mt-1.5 text-body-sm leading-relaxed text-ink-soft">
+              카드가 없어도 괜찮아요 — Rift Atlas에서 브라우저로 바로 룰을 연습하고 게임을
+              시뮬레이션해볼 수 있어요.
+            </p>
+          </div>
+          <a
+            href={RIFT_ATLAS_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex w-fit items-center gap-1.5 rounded-full bg-primary px-4 py-2 text-label-md font-bold text-white transition hover:bg-primary-container"
+          >
+            Rift Atlas에서 연습하기
+            <ArrowUpRight className="h-4 w-4" />
+          </a>
+        </div>
+
+        <DiscordCta />
+      </div>
 
       <BeginnerGuide exampleCard={exampleCard} />
 
