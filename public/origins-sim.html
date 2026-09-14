@@ -814,12 +814,14 @@
       return '<span class="sum-chip" style="--chip-color:' + (RARITY_COLOR[r]) + '">' + RARITY_LABEL[r] + ' <b>' + (counts[r]||0) + '</b></span>';
     }).join('');
 
-    // 한번에 모아볼 땐 비싼 카드부터 — 없는 가격은 맨 뒤로.
+    // 한번에 모아볼 땐 비싼 카드부터, 같은 카드는 항상 붙여서 — 없는 가격은 맨 뒤로.
     var sorted = cards.slice().sort(function(a, b){
+      if(a.id === b.id) return 0;
       var pa = cardPrice(a), pb = cardPrice(b);
       if(pa == null) pa = -1;
       if(pb == null) pb = -1;
-      return pb - pa;
+      if(pa !== pb) return pb - pa;
+      return a.id < b.id ? -1 : a.id > b.id ? 1 : 0;
     });
     cards = sorted;
 
