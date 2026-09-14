@@ -65,6 +65,14 @@
   .sub{font-size:14px;color:var(--text-dim);text-align:center;margin:0 0 34px;line-height:1.6;max-width:560px;}
   .sub b{color:var(--text);font-weight:700;}
 
+  .cafe-banner{display:flex;align-items:center;gap:10px;max-width:560px;width:100%;margin:0 0 28px;padding:12px 16px;border-radius:12px;background:var(--surface-2);border:1px solid var(--gold-dim);text-decoration:none;transition:border-color .15s,transform .15s;}
+  .cafe-banner:hover{border-color:var(--gold);transform:translateY(-1px);}
+  .cafe-banner .cb-emoji{font-size:20px;flex-shrink:0;}
+  .cafe-banner .cb-text{flex:1;min-width:0;}
+  .cafe-banner .cb-title{font-size:13px;font-weight:700;color:var(--gold-bright);}
+  .cafe-banner .cb-desc{font-size:12px;color:var(--text-faint);margin-top:1px;}
+  .cafe-banner .cb-arrow{font-size:14px;color:var(--gold);flex-shrink:0;}
+
   .rarity-guide{width:100%;max-width:760px;margin-bottom:30px;}
   .rarity-guide h2{font-family:var(--font-display);font-weight:400;font-size:16px;margin:0 0 3px;text-align:center;color:var(--gold-bright);}
   .rarity-guide .rg-sub{font-size:11.5px;color:var(--text-faint);text-align:center;margin:0 0 14px;line-height:1.6;}
@@ -302,6 +310,15 @@
 
   <h1 class="title">오리진 <span class="em">언박싱</span> 시뮬레이터</h1>
   <p class="sub">실제 오리진(OGN) 카드 데이터로 팩·박스·카톤을 까봅니다. <b>돈이나 인벤토리는 없고, 그냥 까는 재미</b>만 있습니다.</p>
+
+  <a href="https://cafe.naver.com/riftboundmarketplace" target="_blank" rel="noopener noreferrer" class="cafe-banner">
+    <span class="cb-emoji">🃏</span>
+    <span class="cb-text">
+      <span class="cb-title">여기서 깐 카드, 실제로 거래해보세요</span>
+      <span class="cb-desc">리바지지 네이버 카페에서 카드 매물·시세 정보를 확인할 수 있어요</span>
+    </span>
+    <span class="cb-arrow">→</span>
+  </a>
 
   <div class="rarity-guide" id="rarityGuide" style="display:none;">
     <h2>레어도 안내</h2>
