@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
-import { ArrowUpRight, ExternalLink, Gamepad2 } from "lucide-react";
+import Link from "next/link";
+import { ArrowUpRight, ExternalLink, Gamepad2, GraduationCap, MapPin, Printer } from "lucide-react";
 import { BeginnerGuide } from "@/components/rules/beginner-guide";
 import { DiscordCta } from "@/components/community/discord-cta";
 import { getCardService, CardServiceError } from "@/lib/services/cardService";
@@ -53,7 +54,7 @@ export default async function RulesPage() {
         </a>
       </header>
 
-      <div className="mb-8 grid gap-3 sm:grid-cols-2">
+      <div className="mb-8 grid gap-3">
         <div className="surface flex flex-col justify-between gap-3 p-5">
           <div>
             <p className="inline-flex items-center gap-1.5 text-label-sm font-bold uppercase tracking-wide text-primary-strong">
@@ -61,8 +62,8 @@ export default async function RulesPage() {
               TCG가 처음이신가요?
             </p>
             <p className="mt-1.5 text-body-sm leading-relaxed text-ink-soft">
-              카드가 없어도 괜찮아요 — Rift Atlas에서 브라우저로 바로 룰을 연습하고 게임을
-              시뮬레이션해볼 수 있어요.
+              카드가 없어도 괜찮아요 — Rift Atlas 시뮬레이터에서 브라우저로 바로 룰을 연습하고
+              게임을 시뮬레이션해볼 수 있어요.
             </p>
           </div>
           <a
@@ -71,12 +72,53 @@ export default async function RulesPage() {
             rel="noopener noreferrer"
             className="inline-flex w-fit items-center gap-1.5 rounded-full bg-primary px-4 py-2 text-label-md font-bold text-white transition hover:bg-primary-container"
           >
-            Rift Atlas에서 연습하기
+            Rift Atlas 시뮬레이터에서 연습하기
             <ArrowUpRight className="h-4 w-4" />
           </a>
         </div>
 
-        <DiscordCta title="RIFT ATLAS 사용법 및 대전 상대 찾기" />
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          <DiscordCta title="디스코드에서 사용법 물어보고 대전 상대 찾기" />
+
+          <Link
+            href="/cards/proxy"
+            className="flex items-center gap-3 rounded-2xl border border-line/70 bg-card px-4 py-3 transition hover:bg-surface-container"
+          >
+            <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-primary/10 text-primary-strong">
+              <Printer className="h-5 w-5" />
+            </span>
+            <div className="min-w-0 flex-1">
+              <p className="text-body-md font-bold text-ink">프록시 인쇄하기</p>
+              <p className="text-body-sm text-ink-soft">카드 없이 집에서 바로 뽑아 연습하세요</p>
+            </div>
+          </Link>
+
+          <Link
+            href="/community/recruit"
+            className="flex items-center gap-3 rounded-2xl border border-line/70 bg-card px-4 py-3 transition hover:bg-surface-container"
+          >
+            <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-primary/10 text-primary-strong">
+              <GraduationCap className="h-5 w-5" />
+            </span>
+            <div className="min-w-0 flex-1">
+              <p className="text-body-md font-bold text-ink">초보자 강습회 참여하기</p>
+              <p className="text-body-sm text-ink-soft">구인구직 게시판에서 모집 글을 찾아보세요</p>
+            </div>
+          </Link>
+
+          <Link
+            href="/shops"
+            className="flex items-center gap-3 rounded-2xl border border-line/70 bg-card px-4 py-3 transition hover:bg-surface-container"
+          >
+            <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-primary/10 text-primary-strong">
+              <MapPin className="h-5 w-5" />
+            </span>
+            <div className="min-w-0 flex-1">
+              <p className="text-body-md font-bold text-ink">내 주변 매장 찾기</p>
+              <p className="text-body-sm text-ink-soft">근처에서 플레이할 매장을 찾아보세요</p>
+            </div>
+          </Link>
+        </div>
       </div>
 
       <BeginnerGuide exampleCard={exampleCard} />
