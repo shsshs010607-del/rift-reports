@@ -76,7 +76,7 @@ export default async function RulesPage() {
           </a>
         </div>
 
-        <DiscordCta />
+        <DiscordCta title="RIFT ATLAS 사용법 및 대전 상대 찾기" />
       </div>
 
       <BeginnerGuide exampleCard={exampleCard} />

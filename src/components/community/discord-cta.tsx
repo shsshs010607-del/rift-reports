@@ -11,7 +11,13 @@ export function DiscordIcon({ className }: { className?: string }) {
 }
 
 /** 커뮤니티 디스코드 바로가기 배너. SITE.discord 가 설정되면 활성화. */
-export function DiscordCta({ className }: { className?: string }) {
+export function DiscordCta({
+  className,
+  title = "1:1 대전 상대, 디스코드에서 찾기",
+}: {
+  className?: string;
+  title?: string;
+}) {
   const ready = SITE.discord && SITE.discord !== "#";
   const Wrapper = ready ? "a" : "div";
   return (
@@ -29,7 +35,7 @@ export function DiscordCta({ className }: { className?: string }) {
         <DiscordIcon className="h-5 w-5" />
       </span>
       <div className="min-w-0 flex-1">
-        <p className="text-body-md font-bold text-ink">1:1 대전 상대, 디스코드에서 찾기</p>
+        <p className="text-body-md font-bold text-ink">{title}</p>
         <p className="text-body-sm text-ink-soft">
           {ready
             ? "리바지지 디스코드에서 실시간으로 상대를 구하고 대전하세요"
