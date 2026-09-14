@@ -94,6 +94,41 @@ export function getPriceBoard(limit = 600) {
   }, []);
 }
 
+/**
+ * 카드 DB 쪽 카드 번호("OGN-039" 형식, {@link cardNumber})로 찾는 시세 인덱스.
+ * card_prints.number 는 "039a/298" 처럼 총 장수·이색아트 접미사가 붙어 있어, 숫자만 남겨
+ * cardNumber() 와 같은 형식으로 정규화한다. 같은 번호에 이색아트/오버넘버 변형이 여럿이면
+ * 접미사 없는(기본) 인쇄판을 우선한다 — "내가 보유한 평범한 카드" 기준 시세.
+ */
+export function getPriceIndex() {
+  return safe<Map<string, { usd: number; printId: string }>>(async () => {
+    const supabase = createClient();
+    const { data, error } = await supabase
+      .from("price_snapshots")
+      .select("market_price, print:card_prints(id, set_code, number)")
+      .eq("is_current", true)
+      .eq("is_headline", true)
+      .not("market_price", "is", null);
+    if (error) throw error;
+
+    const isBaseByKey = new Map<string, boolean>();
+    const map = new Map<string, { usd: number; printId: string }>();
+    for (const row of (data as unknown as { market_price: number; print: CardPrint | null }[]) ?? []) {
+      const print = row.print;
+      if (!print?.set_code || !print.number) continue;
+      const raw = print.number.split("/")[0]?.trim() ?? "";
+      const digits = raw.replace(/\D+/g, "");
+      if (!digits) continue;
+      const key = `${print.set_code}-${digits.padStart(3, "0")}`;
+      const isBase = !/[^0-9]/.test(raw);
+      if (isBaseByKey.get(key)) continue; // 이미 기본 인쇄판을 찾았으면 유지
+      isBaseByKey.set(key, isBase);
+      map.set(key, { usd: row.market_price, printId: print.id });
+    }
+    return map;
+  }, new Map());
+}
+
 /** 프린트 + 현재 대표 시세 */
 export function getPrintWithPrice(printId: string) {
   return safe<{ print: PrintWithKo; price: PriceSnapshot | null } | null>(async () => {

@@ -16,6 +16,8 @@ import { PagedRows } from "@/components/me/paged-rows";
 import { getMyPosts, getMyListings } from "@/lib/me";
 import { getMyCollection } from "@/lib/collection";
 import { listMyDecks } from "@/lib/actions/decks";
+import { getPriceIndex } from "@/lib/prices";
+import { getUsdKrw } from "@/lib/fx";
 import { COMMUNITY_CATEGORIES, TRADING_CATEGORIES, TRADE_STATUS } from "@/lib/constants";
 
 export const metadata: Metadata = { title: "내 프로필" };
@@ -35,19 +37,24 @@ export default async function MePage() {
   const supabase = createClient();
   const { data } = await supabase.auth.getUser();
   if (!data.user) redirect("/login?next=/me");
+  const user = data.user;
 
   const { data: profile } = await supabase
     .from("profiles")
     .select("*")
-    .eq("id", data.user.id)
+    .eq("id", user.id)
     .single();
 
-  const [posts, listings, decks, collection] = await Promise.all([
-    getMyPosts(data.user.id),
-    getMyListings(data.user.id),
+  const [posts, listings, decks, collection, priceIndex, fx] = await Promise.all([
+    getMyPosts(user.id),
+    getMyListings(user.id),
     listMyDecks(),
     getMyCollection(),
+    getPriceIndex(),
+    getUsdKrw(),
   ]);
+  const priceByNumber: Record<string, number> = {};
+  for (const [num, p] of priceIndex) priceByNumber[num] = Math.round(p.usd * fx.usdKrw);
 
   const username = profile?.username ?? "내 프로필";
   const role = profile?.role ?? "user";
@@ -88,7 +95,7 @@ export default async function MePage() {
                 )}
               </div>
               <p className="mt-0.5 truncate text-body-sm text-ink-soft">
-                {data.user.email}
+                {user.email}
                 {profile?.created_at && ` · ${fmtKstDate(profile.created_at)} 가입`}
               </p>
             </div>
@@ -121,7 +128,7 @@ export default async function MePage() {
         </div>
       </div>
 
-      <CollectionEditor initial={collection} />
+      <CollectionEditor initial={collection} priceByNumber={priceByNumber} />
 
       <ListSection
         title="내가 쓴 글"

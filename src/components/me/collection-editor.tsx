@@ -6,11 +6,20 @@ import { Search, Plus, Minus, X, Layers } from "lucide-react";
 import type { Card } from "@/lib/types/card";
 import { resolveCardText, cardNumber } from "@/lib/types/card";
 import { setCollectionQty } from "@/app/me/collection-actions";
+import { LocalizedCard } from "@/components/cards/localized-card";
+import { fmtWon } from "@/lib/money";
 import { cn } from "@/lib/utils";
 
 type Initial = { card_id: string; quantity: number }[];
 
-export function CollectionEditor({ initial }: { initial: Initial }) {
+export function CollectionEditor({
+  initial,
+  priceByNumber,
+}: {
+  initial: Initial;
+  /** "OGN-039" 형식 카드 번호 → 원화 시세. 시세 없는 카드는 키가 없다. */
+  priceByNumber: Record<string, number>;
+}) {
   const [all, setAll] = useState<Card[]>([]);
   const [q, setQ] = useState("");
   const [qty, setQty] = useState<Record<string, number>>(
@@ -43,6 +52,12 @@ export function CollectionEditor({ initial }: { initial: Initial }) {
       .slice(0, 24);
   }, [q, all]);
 
+  const priceFor = (card?: Card): number | null => {
+    if (!card) return null;
+    const num = cardNumber(card);
+    return num && num in priceByNumber ? priceByNumber[num] : null;
+  };
+
   const owned = useMemo(
     () =>
       Object.entries(qty)
@@ -53,6 +68,11 @@ export function CollectionEditor({ initial }: { initial: Initial }) {
   );
   const totalCards = owned.reduce((s, o) => s + o.n, 0);
   const distinct = owned.length;
+  const pricedCount = owned.filter((o) => priceFor(o.card) != null).length;
+  const totalValue = owned.reduce((s, o) => {
+    const p = priceFor(o.card);
+    return p != null ? s + p * o.n : s;
+  }, 0);
 
   function save(id: string, next: number) {
     const clamped = Math.max(0, Math.min(999, next));
@@ -69,14 +89,29 @@ export function CollectionEditor({ initial }: { initial: Initial }) {
 
   return (
     <section id="collection" className="mt-8 scroll-mt-24">
-      <h2 className="mb-3 flex items-center gap-1.5 text-title-md font-bold text-ink">
-        <Layers className="h-4 w-4 text-primary" />
-        내 컬렉션
-        <span className="text-body-sm font-normal text-ink-soft">
-          {distinct}종 · {totalCards}장
-        </span>
-        {pending && <span className="text-label-sm font-normal text-ink-soft">저장 중…</span>}
-      </h2>
+      <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+        <h2 className="flex items-center gap-1.5 text-title-md font-bold text-ink">
+          <Layers className="h-4 w-4 text-primary" />
+          내 컬렉션
+          <span className="text-body-sm font-normal text-ink-soft">
+            {distinct}종 · {totalCards}장
+          </span>
+          {pending && <span className="text-label-sm font-normal text-ink-soft">저장 중…</span>}
+        </h2>
+        {totalCards > 0 && (
+          <p className="text-body-sm text-ink-soft">
+            추정 시세 합계{" "}
+            <span className="font-display text-title-md font-black text-primary-strong">
+              {fmtWon(totalValue)}
+            </span>
+            {pricedCount < distinct && (
+              <span className="ml-1 text-label-sm text-ink-soft/70">
+                (시세 확인된 {pricedCount}/{distinct}종 기준)
+              </span>
+            )}
+          </p>
+        )}
+      </div>
 
       <div className="note-card p-4 pr-6">
         {/* 검색 */}
@@ -107,19 +142,24 @@ export function CollectionEditor({ initial }: { initial: Initial }) {
             ) : results.length === 0 ? (
               <li className="py-3 text-center text-body-sm text-ink-soft">검색 결과가 없습니다.</li>
             ) : (
-              results.map((c) => (
-                <li key={c.id} className="flex items-center gap-2 py-2">
-                  <span className="min-w-0 flex-1">
-                    <span className="block truncate text-body-md text-ink">
-                      {resolveCardText(c, "ko").name}
+              results.map((c) => {
+                const price = priceFor(c);
+                return (
+                  <li key={c.id} className="flex items-center gap-2.5 py-2">
+                    <LocalizedCard card={c} className="w-10 shrink-0" sizes="40px" />
+                    <span className="min-w-0 flex-1">
+                      <span className="block truncate text-body-md text-ink">
+                        {resolveCardText(c, "ko").name}
+                      </span>
+                      <span className="block text-label-sm text-ink-soft">
+                        {cardNumber(c) ?? c.setCode}
+                        {price != null && <span className="ml-1.5 font-bold text-primary-strong">{fmtWon(price)}</span>}
+                      </span>
                     </span>
-                    <span className="block text-label-sm text-ink-soft">
-                      {cardNumber(c) ?? c.setCode}
-                    </span>
-                  </span>
-                  <Stepper n={qty[c.id] ?? 0} onChange={(v) => save(c.id, v)} />
-                </li>
-              ))
+                    <Stepper n={qty[c.id] ?? 0} onChange={(v) => save(c.id, v)} />
+                  </li>
+                );
+              })
             )}
           </ul>
         )}
@@ -133,14 +173,34 @@ export function CollectionEditor({ initial }: { initial: Initial }) {
             </p>
           ) : (
             <ul className="flex max-h-[52vh] flex-col divide-y divide-line/40 overflow-y-auto">
-              {owned.map((o) => (
-                <li key={o.id} className="flex items-center gap-2 py-2">
-                  <span className="min-w-0 flex-1 truncate text-body-md text-ink">
-                    {o.card ? resolveCardText(o.card, "ko").name : o.id}
-                  </span>
-                  <Stepper n={o.n} onChange={(v) => save(o.id, v)} />
-                </li>
-              ))}
+              {owned.map((o) => {
+                const price = o.card ? priceFor(o.card) : null;
+                return (
+                  <li key={o.id} className="flex items-center gap-2.5 py-2">
+                    {o.card ? (
+                      <LocalizedCard card={o.card} className="w-10 shrink-0" sizes="40px" />
+                    ) : (
+                      <span className="aspect-[744/1039] w-10 shrink-0 rounded-[4.5%] bg-subcanvas" />
+                    )}
+                    <span className="min-w-0 flex-1">
+                      <span className="block truncate text-body-md text-ink">
+                        {o.card ? resolveCardText(o.card, "ko").name : o.id}
+                      </span>
+                      {price != null && (
+                        <span className="block text-label-sm font-bold text-primary-strong">
+                          {fmtWon(price)}
+                          {o.n > 1 && (
+                            <span className="ml-1 font-normal text-ink-soft">
+                              · {o.n}장 = {fmtWon(price * o.n)}
+                            </span>
+                          )}
+                        </span>
+                      )}
+                    </span>
+                    <Stepper n={o.n} onChange={(v) => save(o.id, v)} />
+                  </li>
+                );
+              })}
             </ul>
           )}
         </div>

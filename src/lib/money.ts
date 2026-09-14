@@ -13,6 +13,11 @@ export function toKrw(usd: number, rate: number): number {
   return Math.round(usd * rate);
 }
 
+/** 이미 원화로 계산된 정수 금액 표시 (₩12,345). */
+export function fmtWon(krw: number): string {
+  return `₩${Math.round(krw).toLocaleString("ko-KR")}`;
+}
+
 export function fmtKrw(usd: number | null | undefined, rate: number): string {
   if (usd == null) return "—";
   return `₩${toKrw(usd, rate).toLocaleString("ko-KR")}`;
