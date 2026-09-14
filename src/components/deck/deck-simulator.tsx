@@ -187,6 +187,22 @@ export function DeckSimulator({
     setDeck((d) => addEntry(d, id, delta));
   }, []);
 
+  // 카드 풀의 "-" — 레전드/리더 챔피언 카드면 슬롯을 비우고, 그 외는 일반 엔트리 -1.
+  const handlePoolRemove = useCallback(
+    (card: Card) => {
+      if (rd.legend?.id === card.id) {
+        setDeck((d) => fillRunes(setLegend(d, null), undefined, runesByDomain.current));
+        return;
+      }
+      if (rd.champion?.id === card.id) {
+        setDeck((d) => setChampion(d, null));
+        return;
+      }
+      changeEntry(card.id, -1);
+    },
+    [rd.legend, rd.champion, changeEntry],
+  );
+
   async function copyShareLink() {
     try {
       await navigator.clipboard.writeText(window.location.href);
@@ -274,7 +290,7 @@ export function DeckSimulator({
           rd={rd}
           deck={deck}
           onPick={handlePick}
-          onRemove={(card) => changeEntry(card.id, -1)}
+          onRemove={handlePoolRemove}
           onResults={registerCards}
         />
 

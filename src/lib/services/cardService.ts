@@ -10,6 +10,7 @@ import {
   type CardPrinting,
   type CardRarity,
   type CardSearchQuery,
+  type CardSupertype,
   type CardType,
   CARD_DOMAIN_SLUGS,
   CARD_RARITY_SLUGS,
@@ -206,6 +207,14 @@ function normalizeType(type: string | undefined, supertype: string | undefined):
   if (s.includes("legend")) return "legend";
   if ((supertype ?? "").toLowerCase() === "champion") return "champion";
   return CARD_TYPE_SLUGS.find((slug) => s.includes(slug)) ?? "unit";
+}
+
+function normalizeSupertype(supertype: string | undefined): CardSupertype {
+  const s = (supertype ?? "").toLowerCase();
+  if (s === "champion") return "champion";
+  if (s === "signature") return "signature";
+  if (s === "token") return "token";
+  return null;
 }
 
 function normalizeRarity(rarity: string | undefined): CardRarity {
@@ -433,6 +442,7 @@ function mapRiftcodexCard(raw: RiftcodexCard, ko?: Map<string, KoEntry>): Card {
     power: raw.attributes?.might ?? null,
     toughness: null,
     type: normalizeType(raw.classification?.type, raw.classification?.supertype ?? undefined),
+    supertype: normalizeSupertype(raw.classification?.supertype ?? undefined),
     orientation: raw.orientation === "landscape" ? "landscape" : "portrait",
     subtypes: isBanned(raw.id) ? [BAN_TAG, ...(raw.tags ?? [])] : (raw.tags ?? []),
     domains: normalizeDomains(raw.classification?.domain),

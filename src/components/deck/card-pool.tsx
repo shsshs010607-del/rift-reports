@@ -217,7 +217,7 @@ export function CardPool({
         )}
       </div>
 
-      {/* 결과 — 넣을 수 있는 카드 + 이미 최대인 카드(반투명, 클릭 시 한 장 감소) */}
+      {/* 결과 — 모든 카드가 동일한 -/+ 조작 (레전드·리더 챔피언은 1장 제한). */}
       <ul className="grid max-h-[62vh] grid-cols-2 gap-2 overflow-y-auto pr-1 sm:grid-cols-3">
         {cards
           .filter((card) => {
@@ -228,7 +228,7 @@ export function CardPool({
             if (tab === "champion") return matchesLegendChampion(rd, card);
             if (tab === "rune") return matchesIdentity(rd, card); // 색 맞는 룬 (가득 차도 표시)
             if (planAdd(deck, rd, card).kind !== "blocked") return true;
-            // 못 넣는 카드라도 이미 덱에 있으면(=최대 도달) 남겨서 빼기 클릭을 받는다
+            // 못 넣는 카드라도 이미 덱에 있으면(=최대 도달) 남겨서 -버튼을 받는다
             return (qtyById.get(card.id) ?? 0) > 0;
           })
           .map((card) => {
@@ -236,46 +236,34 @@ export function CardPool({
             const owned = collection[card.id] ?? 0;
             const plan = planAdd(deck, rd, card);
             const blocked = plan.kind === "blocked";
-            const maxed = blocked && inDeck > 0; // 덱에 있는데 더는 못 넣음 → 클릭하면 −1
-            const hardBlocked = blocked && !maxed; // 색·챔피언 불일치 등 → 비활성
+            // 레전드·챔피언 슬롯은 1장뿐 — 이미 선택돼 있으면 +는 막는다(자기 자신 중복 방지).
+            const isSlot = plan.kind === "legend" || plan.kind === "champion";
+            const plusDisabled = blocked || (isSlot && inDeck > 0);
+            const plusTitle = blocked
+              ? plan.reason
+              : plan.kind === "legend"
+                ? "레전드로 선택"
+                : plan.kind === "champion"
+                  ? "리더 챔피언으로 선택"
+                  : "한 장 추가";
             return (
               <li key={card.id}>
-                <button
-                  type="button"
-                  onClick={() => (maxed ? onRemove(card) : blocked ? undefined : onPick(card))}
-                  disabled={hardBlocked}
-                  title={
-                    maxed
-                      ? `${plan.reason} · 클릭하면 한 장 뺍니다`
-                      : blocked
-                        ? plan.reason
-                        : "덱에 추가"
-                  }
+                <div
                   className={cn(
-                    "group relative block w-full overflow-hidden rounded-xl border border-line bg-subcanvas text-left transition",
-                    hardBlocked && "cursor-not-allowed opacity-45",
-                    maxed && "opacity-55 hover:border-error/60 hover:opacity-90",
-                    !blocked && "hover:border-primary/50",
+                    "relative overflow-hidden rounded-xl border border-line bg-subcanvas transition",
+                    blocked && inDeck === 0 && "opacity-45",
+                    inDeck > 0 && "border-primary/50",
                   )}
                 >
                   <div className="relative">
-                    <LocalizedCard
-                      card={card}
-                      sizes="150px"
-                      className="!rounded-none"
-                    />
+                    <LocalizedCard card={card} sizes="150px" className="!rounded-none" />
                     {typeof card.cost === "number" && (
                       <span className="absolute left-1 top-1 grid h-5 w-5 place-items-center rounded-full bg-black/70 text-label-sm font-bold text-white">
                         {card.cost}
                       </span>
                     )}
                     {inDeck > 0 && (
-                      <span
-                        className={cn(
-                          "absolute right-1 top-1 rounded-full px-1.5 text-label-sm font-bold text-white",
-                          maxed ? "bg-error" : "bg-primary",
-                        )}
-                      >
+                      <span className="absolute right-1 top-1 rounded-full bg-primary px-1.5 text-label-sm font-bold text-white">
                         ×{inDeck}
                       </span>
                     )}
@@ -284,25 +272,32 @@ export function CardPool({
                         보유 {owned}
                       </span>
                     )}
-                    {maxed ? (
-                      <span className="absolute inset-x-0 bottom-0 flex items-center justify-center gap-1 bg-error/90 py-1 text-label-sm font-bold text-white opacity-0 transition group-hover:opacity-100">
-                        <Minus className="h-3 w-3" />한 장 빼기
-                      </span>
-                    ) : !blocked ? (
-                      <span className="absolute inset-x-0 bottom-0 flex items-center justify-center gap-1 bg-primary/90 py-1 text-label-sm font-bold text-white opacity-0 transition group-hover:opacity-100">
-                        <Plus className="h-3 w-3" />
-                        {plan.kind === "legend"
-                          ? "레전드"
-                          : plan.kind === "champion"
-                            ? "리더 챔피언"
-                            : "추가"}
-                      </span>
-                    ) : null}
                   </div>
-                  <p className="truncate px-1.5 py-1 text-label-sm text-ink">
-                    {card.name}
-                  </p>
-                </button>
+                  <p className="truncate px-1.5 pt-1 text-label-sm text-ink">{card.name}</p>
+                  <div className="mt-1 flex items-center border-t border-line">
+                    <button
+                      type="button"
+                      onClick={() => onRemove(card)}
+                      disabled={inDeck === 0}
+                      title="한 장 빼기"
+                      className="flex flex-1 items-center justify-center py-1.5 text-ink-soft transition hover:bg-error/10 hover:text-error disabled:cursor-not-allowed disabled:opacity-30"
+                    >
+                      <Minus className="h-3.5 w-3.5" />
+                    </button>
+                    <span className="w-7 shrink-0 text-center text-label-md font-bold text-ink">
+                      {inDeck}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => onPick(card)}
+                      disabled={plusDisabled}
+                      title={plusTitle}
+                      className="flex flex-1 items-center justify-center py-1.5 text-primary-strong transition hover:bg-primary/10 disabled:cursor-not-allowed disabled:text-ink-soft disabled:opacity-30"
+                    >
+                      <Plus className="h-3.5 w-3.5" />
+                    </button>
+                  </div>
+                </div>
               </li>
             );
           })}

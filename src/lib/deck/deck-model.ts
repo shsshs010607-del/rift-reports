@@ -120,6 +120,20 @@ export function matchesLegendChampion(rd: ResolvedDeck, card: Card): boolean {
   return championName(card.localization.en.name) === championName(rd.legend.localization.en.name);
 }
 
+/** 시그니처 카드는 레전드와 같은 챔피언 태그를 가져야 한다. 시그니처가 아니면 항상 통과. */
+export function matchesSignatureLegend(rd: ResolvedDeck, card: Card): boolean {
+  if (card.supertype !== "signature") return true;
+  if (!rd.legend) return true; // 레전드 미정이면 제한 없음
+  return card.subtypes.some((t) => rd.legend!.subtypes.includes(t));
+}
+
+/** 메인덱의 시그니처 카드 총 장수(이름 무관 합산) — 최대 {@link DECK_RULES.maxCopies}장. */
+export function signatureCount(rd: ResolvedDeck): number {
+  return rd.sections.main
+    .filter((e) => e.card.supertype === "signature")
+    .reduce((s, e) => s + e.qty, 0);
+}
+
 // ── 검증 ───────────────────────────────────────────────────────
 
 export interface DeckIssue {
@@ -162,6 +176,26 @@ export function validateDeck(rd: ResolvedDeck): DeckIssue[] {
       });
   }
 
+  // 시그니처 — 이름 무관 총 3장, 레전드와 챔피언 태그가 달라도 금지.
+  const sigTotal = signatureCount(rd);
+  if (sigTotal > DECK_RULES.maxCopies)
+    issues.push({
+      level: "error",
+      message: `시그니처 카드는 이름과 무관하게 총 ${DECK_RULES.maxCopies}장까지 (현재 ${sigTotal}장).`,
+    });
+  for (const e of rd.sections.main)
+    if (!matchesSignatureLegend(rd, e.card))
+      issues.push({
+        level: "error",
+        message: `"${e.card.name}" 은(는) 레전드(${rd.legend?.name ?? "미정"})의 챔피언 태그와 다른 시그니처입니다.`,
+      });
+
+  // 토큰 — 카드 효과로만 생기는 카드라 덱 구성에 넣을 수 없다.
+  for (const zone of ["battlefield", "rune", "main"] as const)
+    for (const e of rd.sections[zone])
+      if (e.card.supertype === "token")
+        issues.push({ level: "error", message: `"${e.card.name}" 은(는) 토큰 카드라 덱에 넣을 수 없습니다.` });
+
   if (rd.legend || rd.champion) {
     const all: Card[] = [
       ...(rd.champion ? [rd.champion] : []),
@@ -199,7 +233,12 @@ export type AddAction =
 export function planAdd(deck: Deck, rd: ResolvedDeck, card: Card): AddAction {
   if (card.type === "legend") return { kind: "legend", id: card.id };
 
+  if (card.supertype === "token") return { kind: "blocked", reason: "토큰 카드는 덱에 넣을 수 없습니다" };
+
   if (!matchesIdentity(rd, card)) return { kind: "blocked", reason: "덱 색과 다릅니다" };
+
+  if (!matchesSignatureLegend(rd, card))
+    return { kind: "blocked", reason: "레전드의 챔피언 태그와 다른 시그니처입니다" };
 
   if (card.type === "champion") {
     // 레전드와 같은 이름의 챔피언 + 지정 슬롯이 비었으면 슬롯으로.
@@ -208,6 +247,10 @@ export function planAdd(deck: Deck, rd: ResolvedDeck, card: Card): AddAction {
   }
 
   const zone = entryZoneOf(card.type);
+  // 시그니처는 이름 무관 총 3장(다른 시그니처 이름과 합산).
+  if (card.supertype === "signature" && signatureCount(rd) >= DECK_RULES.maxCopies)
+    return { kind: "blocked", reason: `시그니처는 이름과 무관하게 총 ${DECK_RULES.maxCopies}장까지` };
+
   // 이름당 최대 3장 (룬 제외). "이름" = 전체 이름(부제 포함) → 부제가 다르면 다른 카드.
   // 리더 챔피언 슬롯의 카드도 같은 이름이면 1장으로 카운트한다.
   const sameNameInZone = rd.sections[zone]

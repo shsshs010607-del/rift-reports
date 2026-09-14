@@ -32,6 +32,14 @@ export type CardRarity = (typeof CARD_RARITIES)[number]["slug"] | (string & {});
 export type Locale = "ko" | "en";
 
 /**
+ * 상위 분류(Riftcodex `classification.supertype`).
+ * - "champion": 챔피언 유닛(레전드와 이름이 같은 챔피언 태그).
+ * - "signature": 레전드와 같은 챔피언 태그를 가져야 덱에 넣을 수 있는 카드(이름 무관 총 3장).
+ * - "token": 카드 효과로만 생성되는 토큰 — 덱 구성에 넣을 수 없다.
+ */
+export type CardSupertype = "champion" | "signature" | "token" | null;
+
+/**
  * 카드 데이터 출처 식별자.
  * `NEXT_PUBLIC_DATA_SOURCE` 환경변수 값과 1:1 로 매핑된다.
  */
@@ -107,6 +115,8 @@ export interface Card {
   toughness: number | null;
 
   type: CardType;
+  /** 상위 분류. 대부분 null(Basic). */
+  supertype: CardSupertype;
   /** 카드 방향. 전장은 landscape, 그 외 portrait. */
   orientation: "portrait" | "landscape";
   /** 세부 태그(지역, 종족, 키워드 등). */
