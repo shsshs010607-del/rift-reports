@@ -87,6 +87,21 @@
   .open-btn:active{transform:translateY(0);}
   .open-btn:disabled{opacity:.4;cursor:default;transform:none;box-shadow:none;}
 
+  .open-row{display:flex;gap:12px;flex-wrap:wrap;justify-content:center;margin-bottom:14px;}
+  .open-row .open-btn{margin-bottom:0;}
+  .openall-btn{
+    font-family:var(--font-mono);font-weight:700;font-size:14px;letter-spacing:.03em;color:var(--gold);
+    background:transparent;border:1px solid var(--gold-dim);padding:15px 26px;border-radius:999px;
+    cursor:pointer;transition:background .15s ease, transform .18s ease;
+  }
+  .openall-btn:hover{background:rgba(232,184,75,.12);transform:translateY(-1px);}
+
+  .pack-progress{
+    font-family:var(--font-mono);font-size:12px;color:var(--text-faint);text-align:center;margin-bottom:14px;
+  }
+  .pack-progress b{color:var(--gold);}
+  .next-pack-row{display:flex;justify-content:center;margin-top:22px;margin-bottom:6px;}
+
   .stage{width:100%;position:relative;min-height:60px;}
   .empty-hint{text-align:center;color:var(--text-faint);font-size:13px;padding:40px 0;}
 
@@ -189,7 +204,7 @@
   }
   .bulk-img img{width:100%;display:block;}
 
-  .again-row{margin-top:32px;}
+  .again-row{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin-bottom:28px;}
   .again-btn{
     font-family:var(--font-mono);font-weight:600;font-size:13px;letter-spacing:.05em;color:var(--text);
     background:var(--surface-2);border:1px solid var(--line-soft);padding:11px 26px;border-radius:999px;
@@ -249,14 +264,18 @@
     </div>
   </div>
 
-  <button class="open-btn" id="openBtn" disabled>카드 불러오는 중…</button>
-
-  <div class="stage" id="stage">
-    <div class="empty-hint">위에서 종류를 고르고 버튼을 눌러 까보세요.</div>
+  <div class="open-row" id="openRow">
+    <button class="open-btn" id="openBtn" disabled>카드 불러오는 중…</button>
+    <button class="openall-btn" id="openAllBtn" style="display:none;">전체 까기</button>
   </div>
 
   <div class="again-row" id="againRow" style="display:none;">
+    <button class="again-btn viewall-btn" id="viewAllBtn" style="display:none;">모아보기</button>
     <button class="again-btn" id="againBtn">다시 까기</button>
+  </div>
+
+  <div class="stage" id="stage">
+    <div class="empty-hint">위에서 종류를 고르고 버튼을 눌러 까보세요.</div>
   </div>
 
   <a href="/" class="made-in">Made in <b>RIBA.GG</b></a>
@@ -314,14 +333,19 @@
   var PACK_PRICE_KRW = { '5': 2000, '14': 5200 };
 
   var stage = document.getElementById('stage');
+  var openRow = document.getElementById('openRow');
   var openBtn = document.getElementById('openBtn');
+  var openAllBtn = document.getElementById('openAllBtn');
   var productOpts = document.getElementById('productOpts');
   var tierOpts = document.getElementById('tierOpts');
   var againRow = document.getElementById('againRow');
   var againBtn = document.getElementById('againBtn');
+  var viewAllBtn = document.getElementById('viewAllBtn');
 
   var POOLS = null;
   var state = { product: '14', tier: 'pack' };
+  /** 박스/카톤을 "한 팩씩 까기"로 진행 중일 때만 값이 있음 — { packs, index, purchase, total } */
+  var session = null;
 
   function setActive(container, attr, value){
     Array.prototype.forEach.call(container.querySelectorAll('.opt-btn'), function(btn){
@@ -336,12 +360,14 @@
     if(!btn) return;
     state.product = btn.dataset.product;
     setActive(productOpts, 'product', state.product);
+    resetStage();
   });
   tierOpts.addEventListener('click', function(e){
     var btn = e.target.closest('.opt-btn');
     if(!btn) return;
     state.tier = btn.dataset.tier;
     setActive(tierOpts, 'tier', state.tier);
+    resetStage();
   });
 
   function formatWon(n){
@@ -398,8 +424,7 @@
     });
     var priceAsOf = document.getElementById('priceAsOf');
     if(priceAsOf && payload.updatedAt) priceAsOf.textContent = payload.updatedAt;
-    openBtn.disabled = false;
-    openBtn.textContent = '까기';
+    updateOpenButtons();
   }).catch(function(){
     openBtn.textContent = '카드 데이터를 불러오지 못했습니다';
   });
@@ -468,55 +493,119 @@
     };
   }
 
+  /** 뒤집을 수 있는 카드 한 장. 뒤집히면 onFlip(price) 호출. */
+  function buildFlipCard(card, onFlip){
+    var el = document.createElement('div');
+    el.className = 'fcard';
+    el.innerHTML =
+      '<div class="fcard-inner">' +
+        '<div class="fface fface-back">' +
+          '<svg viewBox="0 0 100 100"><path d="M50 10 C 65 20, 80 30, 78 50 C 76 68, 62 80, 50 90 C 38 80, 24 68, 22 50 C 20 30, 35 20, 50 10 Z" fill="none" stroke="#e8b84b" stroke-width="4"/><circle cx="50" cy="50" r="8" fill="#e8b84b"/></svg>' +
+        '</div>' +
+        '<div class="fface fface-front"></div>' +
+      '</div>';
+    el.addEventListener('click', function(){
+      if(el.classList.contains('flipped')) return;
+      el.classList.add('flipped');
+      var front = el.querySelector('.fface-front');
+      var v = cardVisual(card);
+      front.style.setProperty('--r-color', v.color);
+      front.style.setProperty('--r-glow', v.glow);
+      if(card.hanbok) front.classList.add('hanbok');
+      var img = document.createElement('img');
+      img.src = card.img;
+      img.alt = card.name;
+      front.appendChild(img);
+      var price = cardPrice(card);
+      if(price != null){
+        var badge = document.createElement('div');
+        badge.className = 'fprice';
+        badge.textContent = formatWon(price);
+        front.appendChild(badge);
+      }
+      onFlip(price);
+    });
+    return el;
+  }
+
+  /** 결과 통계 바(구매가/획득 시세/손익)를 값이 바뀔 때마다 갱신 + 살짝 튀는 애니메이션. */
+  function bumpStats(totalAmt, plAmt, plWrap, total, purchase){
+    totalAmt.textContent = formatWon(total);
+    totalAmt.classList.remove('bump'); void totalAmt.offsetWidth; totalAmt.classList.add('bump');
+    var pl = total - purchase;
+    plAmt.textContent = formatWonSigned(pl);
+    plAmt.classList.remove('bump'); void plAmt.offsetWidth; plAmt.classList.add('bump');
+    plWrap.classList.toggle('profit', pl > 0);
+    plWrap.classList.toggle('loss', pl < 0);
+  }
+
   function renderPack(cards, purchase){
-    var html = resultStatsHtml(purchase, 0) + '<div class="packrow" id="packRow"></div>';
-    stage.innerHTML = html;
+    stage.innerHTML = resultStatsHtml(purchase, 0) + '<div class="packrow" id="packRow"></div>';
     var row = document.getElementById('packRow');
     var totalAmt = document.getElementById('rsTotal');
     var plAmt = document.getElementById('rsPl');
     var plWrap = document.getElementById('rsPlWrap');
     var total = 0;
-    cards.forEach(function(card, idx){
-      var el = document.createElement('div');
-      el.className = 'fcard';
-      el.innerHTML =
-        '<div class="fcard-inner">' +
-          '<div class="fface fface-back">' +
-            '<svg viewBox="0 0 100 100"><path d="M50 10 C 65 20, 80 30, 78 50 C 76 68, 62 80, 50 90 C 38 80, 24 68, 22 50 C 20 30, 35 20, 50 10 Z" fill="none" stroke="#e8b84b" stroke-width="4"/><circle cx="50" cy="50" r="8" fill="#e8b84b"/></svg>' +
-          '</div>' +
-          '<div class="fface fface-front"></div>' +
-        '</div>';
-      el.addEventListener('click', function(){
-        if(el.classList.contains('flipped')) return;
-        el.classList.add('flipped');
-        var front = el.querySelector('.fface-front');
-        var v = cardVisual(card);
-        front.style.setProperty('--r-color', v.color);
-        front.style.setProperty('--r-glow', v.glow);
-        if(card.hanbok) front.classList.add('hanbok');
-        var img = document.createElement('img');
-        img.src = card.img;
-        img.alt = card.name;
-        front.appendChild(img);
-        var price = cardPrice(card);
-        if(price != null){
-          var badge = document.createElement('div');
-          badge.className = 'fprice';
-          badge.textContent = formatWon(price);
-          front.appendChild(badge);
-          total += price;
-          totalAmt.textContent = formatWon(total);
-          totalAmt.classList.remove('bump'); void totalAmt.offsetWidth; totalAmt.classList.add('bump');
-          var pl = total - purchase;
-          plAmt.textContent = formatWonSigned(pl);
-          plAmt.classList.remove('bump'); void plAmt.offsetWidth; plAmt.classList.add('bump');
-          plWrap.classList.toggle('profit', pl > 0);
-          plWrap.classList.toggle('loss', pl < 0);
-        }
-      });
-      row.appendChild(el);
+    cards.forEach(function(card){
+      row.appendChild(buildFlipCard(card, function(price){
+        if(price == null) return;
+        total += price;
+        bumpStats(totalAmt, plAmt, plWrap, total, purchase);
+      }));
     });
-    againRow.style.display = 'block';
+  }
+
+  /** 박스/카톤을 "한 팩씩 까기"로 볼 때, 현재 세션의 팩 하나를 보여준다. */
+  function renderSessionPack(){
+    var pack = session.packs[session.index];
+    stage.innerHTML =
+      resultStatsHtml(session.purchase, session.total) +
+      '<div class="pack-progress">팩 <b>' + (session.index + 1) + '</b> / ' + session.packs.length + '</div>' +
+      '<div class="packrow" id="packRow"></div>' +
+      '<div class="next-pack-row" id="nextPackRow"></div>';
+    var row = document.getElementById('packRow');
+    var totalAmt = document.getElementById('rsTotal');
+    var plAmt = document.getElementById('rsPl');
+    var plWrap = document.getElementById('rsPlWrap');
+    var nextPackRow = document.getElementById('nextPackRow');
+    var flipped = 0;
+    var isLast = session.index + 1 >= session.packs.length;
+
+    pack.forEach(function(card){
+      row.appendChild(buildFlipCard(card, function(price){
+        flipped++;
+        if(price != null){
+          session.total += price;
+          bumpStats(totalAmt, plAmt, plWrap, session.total, session.purchase);
+        }
+        if(flipped === pack.length){
+          nextPackRow.innerHTML =
+            '<button class="open-btn" id="nextPackBtn">' +
+            (isLast ? '결과 모아보기' : '다음 팩 열기 (' + (session.index + 2) + '/' + session.packs.length + ')') +
+            '</button>';
+          document.getElementById('nextPackBtn').addEventListener('click', function(){
+            if(isLast){
+              finishToAll();
+            } else {
+              session.index++;
+              renderSessionPack();
+            }
+          });
+        }
+      }));
+    });
+
+    viewAllBtn.style.display = '';
+  }
+
+  /** 세션의 남은 카드까지 전부 모아서 요약(모아보기) 화면으로 전환. */
+  function finishToAll(){
+    if(!session) return;
+    var allCards = [].concat.apply([], session.packs);
+    var purchase = session.purchase;
+    session = null;
+    viewAllBtn.style.display = 'none';
+    renderBulk(allCards, purchase);
   }
 
   function renderBulk(cards, purchase){
@@ -562,37 +651,78 @@
     '</div></div>';
 
     stage.innerHTML = resultStatsHtml(purchase, total) + '<div class="summary">' + summaryHtml + '</div>' + hlHtml + bulkHtml;
-    againRow.style.display = 'block';
+    againRow.style.display = 'flex';
   }
 
-  function doOpen(){
-    if(!POOLS) return;
-    var packs = packsForTier(state.tier);
+  function generateCards(packs){
     var cards = [];
-    for(var i=0;i<packs;i++){
-      cards = cards.concat(openPack(state.product));
-    }
-    var purchase = purchasePrice(state.product, state.tier);
-
-    if(state.tier === 'pack'){
-      renderPack(cards, purchase);
-    } else {
-      renderBulk(cards, purchase);
-    }
-
-    productOpts.querySelectorAll('.opt-btn').forEach(function(b){ b.disabled = true; });
-    tierOpts.querySelectorAll('.opt-btn').forEach(function(b){ b.disabled = true; });
-    openBtn.style.display = 'none';
+    for(var i=0;i<packs;i++) cards = cards.concat(openPack(state.product));
+    return cards;
   }
 
-  openBtn.addEventListener('click', doOpen);
-
-  againBtn.addEventListener('click', function(){
-    stage.innerHTML = '<div class="empty-hint">위에서 종류를 고르고 버튼을 눌러 까보세요.</div>';
-    againRow.style.display = 'none';
+  /** 열기 버튼(들) 표시 상태를 현재 단위(팩/박스/카톤)에 맞춰 갱신. */
+  function updateOpenButtons(){
+    if(!POOLS) return; // 카드 데이터 로딩 중엔 로딩 문구를 건드리지 않음
     openBtn.style.display = '';
-    productOpts.querySelectorAll('.opt-btn').forEach(function(b){ b.disabled = false; });
-    tierOpts.querySelectorAll('.opt-btn').forEach(function(b){ b.disabled = false; });
+    openBtn.disabled = false;
+    if(state.tier === 'pack'){
+      openBtn.textContent = '까기';
+      openAllBtn.style.display = 'none';
+    } else {
+      openBtn.textContent = '한 팩씩 까기';
+      openAllBtn.textContent = '전체 까기';
+      openAllBtn.style.display = '';
+    }
+  }
+
+  function afterOpen(hasSession){
+    openRow.style.display = 'none';
+    againRow.style.display = 'flex';
+    viewAllBtn.style.display = hasSession ? '' : 'none';
+  }
+
+  function doOpenSinglePack(){
+    var purchase = purchasePrice(state.product, state.tier);
+    renderPack(openPack(state.product), purchase);
+    afterOpen(false);
+  }
+
+  function startPackByPack(){
+    var n = packsForTier(state.tier);
+    var packs = [];
+    for(var i=0;i<n;i++) packs.push(openPack(state.product));
+    session = { packs: packs, index: 0, purchase: purchasePrice(state.product, state.tier), total: 0 };
+    renderSessionPack();
+    afterOpen(true);
+  }
+
+  function doOpenAllAtOnce(){
+    var purchase = purchasePrice(state.product, state.tier);
+    renderBulk(generateCards(packsForTier(state.tier)), purchase);
+    afterOpen(false);
+  }
+
+  function resetStage(){
+    session = null;
+    stage.innerHTML = '<div class="empty-hint">위에서 종류를 고르고 버튼을 눌러 까보세요.</div>';
+    openRow.style.display = 'flex';
+    againRow.style.display = 'none';
+    viewAllBtn.style.display = 'none';
+    updateOpenButtons();
+  }
+
+  openBtn.addEventListener('click', function(){
+    if(!POOLS) return;
+    if(state.tier === 'pack') doOpenSinglePack();
+    else startPackByPack();
+  });
+  openAllBtn.addEventListener('click', function(){
+    if(!POOLS) return;
+    doOpenAllAtOnce();
+  });
+  viewAllBtn.addEventListener('click', finishToAll);
+  againBtn.addEventListener('click', function(){
+    resetStage();
     window.scrollTo({ top: 0, behavior: 'smooth' });
   });
 })();
