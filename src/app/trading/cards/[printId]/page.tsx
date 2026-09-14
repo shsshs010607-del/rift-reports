@@ -6,7 +6,7 @@ import { fmtKstRelative } from "@/lib/datetime";
 import { getPrintWithPrice, getPrintVariants, getPrintGroup, isStale } from "@/lib/prices";
 import { getUsdKrw } from "@/lib/fx";
 import { fmtKrw, fmtPct, fmtUsd } from "@/lib/money";
-import { PRINT_LANGUAGES, CARD_CONDITIONS } from "@/lib/constants";
+import { PRINT_LANGUAGES, CARD_CONDITIONS, SITE } from "@/lib/constants";
 import { cn } from "@/lib/utils";
 import { PriceSparkline } from "@/components/trading/price-sparkline";
 import { FxNote } from "@/components/trading/fx-note";
@@ -122,13 +122,15 @@ export default async function PrintPricePage({ params }: { params: { printId: st
             TCGplayer 에서 거래
           </a>
         )}
-        <Link
-          href={`/trading?q=${encodeURIComponent(print.ko_name || print.name)}#listings`}
+        <a
+          href={`https://cafe.naver.com/ArticleSearchList.nhn?search.clubid=${SITE.naverCafeClubId}&search.menuid=${SITE.naverCafeTradeMenuId}&search.searchBy=1&search.query=${encodeURIComponent(print.ko_name || print.name)}`}
+          target="_blank"
+          rel="noopener noreferrer"
           className="btn-ghost"
         >
           <MessagesSquare className="h-4 w-4" />
-          커뮤니티 거래글
-        </Link>
+          네이버 카페에서 거래글 검색
+        </a>
       </div>
 
       {variants.length > 1 && (
