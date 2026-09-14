@@ -33,7 +33,7 @@ const STEPS: Step[] = [
   {
     tab: "main",
     label: "메인덱",
-    done: (c) => c.main >= 39 && c.main <= 59,
+    done: (c) => c.main === 39,
     progress: (c) => `${c.main}/39`,
     hint: "유닛·주문·도구로 메인덱을 39장 채우세요 (같은 카드 최대 3장).",
   },

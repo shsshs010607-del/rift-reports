@@ -316,7 +316,7 @@ export const CARD_SETS = [
  */
 export const DECK_RULES = {
   mainMin: 39,
-  mainMax: 59,
+  mainMax: 39,
   maxCopies: 3,
   runeCount: 12,
   battlefieldCount: 3,

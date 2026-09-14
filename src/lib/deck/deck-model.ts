@@ -133,10 +133,11 @@ export function validateDeck(rd: ResolvedDeck): DeckIssue[] {
 
   if (!rd.legend) issues.push({ level: "warn", message: "레전드를 선택하세요." });
   if (!rd.champion) issues.push({ level: "warn", message: "지정 챔피언을 선택하세요." });
-  if (c.main < DECK_RULES.mainMin)
-    issues.push({ level: "error", message: `메인덱이 ${DECK_RULES.mainMin}장 미만입니다 (현재 ${c.main}장).` });
-  if (c.main > DECK_RULES.mainMax)
-    issues.push({ level: "error", message: `메인덱이 ${DECK_RULES.mainMax}장을 넘습니다 (현재 ${c.main}장).` });
+  if (c.main !== DECK_RULES.mainMin)
+    issues.push({
+      level: c.main === 0 ? "warn" : "error",
+      message: `메인덱은 정확히 ${DECK_RULES.mainMin}장이어야 합니다 (현재 ${c.main}장).`,
+    });
   if (c.rune !== DECK_RULES.runeCount)
     issues.push({
       level: c.rune === 0 ? "warn" : "error",
