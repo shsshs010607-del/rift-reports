@@ -32,20 +32,23 @@ export function CommunityCafeCrossPost({
   body,
   permalink,
   tags,
+  category,
 }: {
   title: string;
   categoryLabel: string;
   body: string;
   permalink: string;
   tags?: string[];
+  category?: string;
 }) {
   const [copied, setCopied] = useState(false);
   const [open, setOpen] = useState(false);
 
   const cafeReady = SITE.naverCafe && SITE.naverCafe !== "#";
-  // "이벤트응모" 태그가 붙은 글은 카페 이벤트 게시판으로, 그 외에는 카페 홈으로.
+  // "이벤트응모" 태그가 붙은 글은 카페 이벤트 게시판으로, 그 외엔 카테고리별 게시판으로.
   const isEventEntry = (tags ?? []).includes("이벤트응모");
-  const targetUrl = isEventEntry ? SITE.naverCafeEvent : SITE.naverCafe;
+  const categoryUrl = category ? SITE.naverCafeBoardByCategory[category] : undefined;
+  const targetUrl = isEventEntry ? SITE.naverCafeEvent : (categoryUrl ?? SITE.naverCafe);
   const boardLabel = isEventEntry ? "이벤트 게시판" : "카페";
 
   const bodyText = useMemo(() => {

@@ -139,6 +139,7 @@ export default async function PostDetailPage({ params }: { params: { id: string 
               body={post.body}
               permalink={`${SITE.url}/community/post/${post.id}`}
               tags={post.tags}
+              category={post.category}
             />
           </div>
         )
