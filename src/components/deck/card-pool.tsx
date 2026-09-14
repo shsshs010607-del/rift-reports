@@ -280,9 +280,9 @@ export function CardPool({
                       onClick={() => onRemove(card)}
                       disabled={inDeck === 0}
                       title="한 장 빼기"
-                      className="flex flex-1 items-center justify-center py-1.5 text-ink-soft transition hover:bg-error/10 hover:text-error disabled:cursor-not-allowed disabled:opacity-30"
+                      className="flex flex-1 items-center justify-center py-2.5 text-ink-soft transition hover:bg-error/10 hover:text-error disabled:cursor-not-allowed disabled:opacity-30"
                     >
-                      <Minus className="h-3.5 w-3.5" />
+                      <Minus className="h-4 w-4" />
                     </button>
                     <span className="w-7 shrink-0 text-center text-label-md font-bold text-ink">
                       {inDeck}
@@ -292,9 +292,9 @@ export function CardPool({
                       onClick={() => onPick(card)}
                       disabled={plusDisabled}
                       title={plusTitle}
-                      className="flex flex-1 items-center justify-center py-1.5 text-primary-strong transition hover:bg-primary/10 disabled:cursor-not-allowed disabled:text-ink-soft disabled:opacity-30"
+                      className="flex flex-1 items-center justify-center py-2.5 text-primary-strong transition hover:bg-primary/10 disabled:cursor-not-allowed disabled:text-ink-soft disabled:opacity-30"
                     >
-                      <Plus className="h-3.5 w-3.5" />
+                      <Plus className="h-4 w-4" />
                     </button>
                   </div>
                 </div>

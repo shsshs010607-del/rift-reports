@@ -300,27 +300,27 @@ function EntryRow({
         <button
           type="button"
           onClick={() => onChange(card.id, -1)}
-          className="grid h-6 w-6 place-items-center rounded-md text-ink-soft hover:bg-card hover:text-ink"
+          className="grid h-8 w-8 place-items-center rounded-md text-ink-soft hover:bg-card hover:text-ink"
           aria-label="1장 빼기"
         >
-          <Minus className="h-3.5 w-3.5" />
+          <Minus className="h-4 w-4" />
         </button>
         <span className="w-5 text-center text-label-md font-bold text-ink">{qty}</span>
         <button
           type="button"
           onClick={() => onChange(card.id, 1)}
-          className="grid h-6 w-6 place-items-center rounded-md text-ink-soft hover:bg-card hover:text-ink"
+          className="grid h-8 w-8 place-items-center rounded-md text-ink-soft hover:bg-card hover:text-ink"
           aria-label="1장 더"
         >
-          <Plus className="h-3.5 w-3.5" />
+          <Plus className="h-4 w-4" />
         </button>
         <button
           type="button"
           onClick={() => onChange(card.id, -qty)}
-          className="grid h-6 w-6 place-items-center rounded-md text-ink-soft opacity-0 transition hover:text-error group-hover:opacity-100"
+          className="grid h-8 w-8 place-items-center rounded-md text-ink-soft/50 transition hover:text-error sm:opacity-0 sm:group-hover:opacity-100"
           aria-label="전부 빼기"
         >
-          <X className="h-3.5 w-3.5" />
+          <X className="h-4 w-4" />
         </button>
       </div>
     </li>
