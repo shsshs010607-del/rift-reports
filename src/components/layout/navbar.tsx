@@ -19,6 +19,7 @@ export function Navbar() {
   const [open, setOpen] = useState(false);
   const [q, setQ] = useState("");
   const [user, setUser] = useState<User | null>(null);
+  const [expanded, setExpanded] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     if (!hasSupabaseEnv) return;
@@ -177,49 +178,78 @@ export function Navbar() {
             >
               <Home className="h-[18px] w-[18px]" />홈
             </Link>
-            {[...NAV_PRIMARY, ...NAV_SECONDARY].map((item) => (
-              <div key={item.href}>
-                <Link
-                  href={item.href}
-                  onClick={() => setOpen(false)}
-                  className={cn(
-                    "block rounded-xl px-space-sm py-space-sm text-title-md transition-colors",
-                    isActive(item.href)
-                      ? "bg-surface-container-high font-bold text-primary"
-                      : "text-on-surface-variant hover:bg-surface-container hover:text-on-surface",
-                  )}
-                  {...("external" in item && item.external
-                    ? { target: "_blank", rel: "noopener noreferrer" }
-                    : {})}
-                >
-                  {item.label}
-                </Link>
-                {"children" in item &&
-                  item.children?.map((s) => {
-                    const { url, external, disabled } = subHref(s.href);
-                    if (disabled)
-                      return (
-                        <span
-                          key={s.href}
-                          className="block px-space-sm py-2 pl-8 text-body-md text-on-surface-variant/60"
-                        >
-                          {s.label} · 준비 중
-                        </span>
-                      );
-                    return (
-                      <Link
-                        key={s.href}
-                        href={url}
-                        {...(external ? { target: "_blank", rel: "noopener noreferrer" } : {})}
-                        onClick={() => setOpen(false)}
-                        className="block px-space-sm py-2 pl-8 text-body-md text-on-surface-variant hover:text-on-surface"
+            {[...NAV_PRIMARY, ...NAV_SECONDARY].map((item) => {
+              const hasChildren = "children" in item && !!item.children?.length;
+              const isExpanded = expanded.has(item.href);
+              return (
+                <div key={item.href}>
+                  <div
+                    className={cn(
+                      "flex items-center rounded-xl transition-colors",
+                      isActive(item.href)
+                        ? "bg-surface-container-high font-bold text-primary"
+                        : "text-on-surface-variant hover:bg-surface-container hover:text-on-surface",
+                    )}
+                  >
+                    <Link
+                      href={item.href}
+                      onClick={() => setOpen(false)}
+                      className="block flex-1 px-space-sm py-space-sm text-title-md"
+                      {...("external" in item && item.external
+                        ? { target: "_blank", rel: "noopener noreferrer" }
+                        : {})}
+                    >
+                      {item.label}
+                    </Link>
+                    {hasChildren && (
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setExpanded((prev) => {
+                            const next = new Set(prev);
+                            if (next.has(item.href)) next.delete(item.href);
+                            else next.add(item.href);
+                            return next;
+                          })
+                        }
+                        aria-label={`${item.label} 하위 메뉴`}
+                        aria-expanded={isExpanded}
+                        className="grid h-10 w-10 shrink-0 place-items-center"
                       >
-                        {s.label}
-                      </Link>
-                    );
-                  })}
-              </div>
-            ))}
+                        <ChevronDown className={cn("h-4 w-4 transition", isExpanded && "rotate-180")} />
+                      </button>
+                    )}
+                  </div>
+                  {hasChildren && isExpanded && (
+                    <div className="pb-1">
+                      {item.children?.map((s) => {
+                        const { url, external, disabled } = subHref(s.href);
+                        if (disabled)
+                          return (
+                            <span
+                              key={s.href}
+                              className="block px-space-sm py-2 pl-8 text-body-md text-on-surface-variant/60"
+                            >
+                              {s.label} · 준비 중
+                            </span>
+                          );
+                        return (
+                          <Link
+                            key={s.href}
+                            href={url}
+                            {...(external ? { target: "_blank", rel: "noopener noreferrer" } : {})}
+                            onClick={() => setOpen(false)}
+                            className="block px-space-sm py-2 pl-8 text-body-md text-on-surface-variant hover:text-on-surface"
+                          >
+                            {s.label}
+                          </Link>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
             <Link
               href={user ? "/me" : "/login"}
               onClick={() => setOpen(false)}
