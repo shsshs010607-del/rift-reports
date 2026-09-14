@@ -34,7 +34,7 @@ const ROLE_BADGE: Record<string, { label: string; cls: string }> = {
 
 export default async function MePage() {
   if (!hasSupabaseEnv) redirect("/login");
-  const supabase = createClient();
+  const supabase = await createClient();
   const { data } = await supabase.auth.getUser();
   if (!data.user) redirect("/login?next=/me");
   const user = data.user;

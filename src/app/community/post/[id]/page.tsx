@@ -19,11 +19,12 @@ import { CommunityCafeCrossPost } from "@/components/community/community-cafe-cr
 // 감싸고 있어서 force-dynamic 없이는 빌드 시 정적 생성 시도가 타임아웃난다 — 지우지 말 것.
 export const dynamic = "force-dynamic";
 
-export default async function PostDetailPage({ params }: { params: { id: string } }) {
+export default async function PostDetailPage(props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
   const [post, comments] = await Promise.all([getPost(params.id), getComments(params.id)]);
   if (!post) notFound();
 
-  const supabase = createClient();
+  const supabase = await createClient();
   const { data: userRes } = await supabase.auth.getUser();
   const user = userRes.user ?? null;
 

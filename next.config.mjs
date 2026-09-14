@@ -2,15 +2,13 @@
 const nextConfig = {
   reactStrictMode: true,
   // data/*.json (카드 스냅샷·한글 번역)을 서버리스 번들에 포함
-  experimental: {
-    outputFileTracingIncludes: {
-      "/cards": ["./data/cards.json", "./data/cards-ko.json"],
-      "/api/cards": ["./data/cards.json", "./data/cards-ko.json"],
-      "/deck-simulator": ["./data/cards.json", "./data/cards-ko.json"],
-      "/rules": ["./data/cards.json", "./data/cards-ko.json"],
-      "/trading": ["./data/cards-ko.json"],
-      "/trading/cards/[printId]": ["./data/cards-ko.json"],
-    },
+  outputFileTracingIncludes: {
+    "/cards": ["./data/cards.json", "./data/cards-ko.json"],
+    "/api/cards": ["./data/cards.json", "./data/cards-ko.json"],
+    "/deck-simulator": ["./data/cards.json", "./data/cards-ko.json"],
+    "/rules": ["./data/cards.json", "./data/cards-ko.json"],
+    "/trading": ["./data/cards-ko.json"],
+    "/trading/cards/[printId]": ["./data/cards-ko.json"],
   },
   images: {
     remotePatterns: [

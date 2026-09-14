@@ -15,7 +15,7 @@ export default async function NotificationsPage() {
 
   let seenAt: string | null = null;
   if (hasSupabaseEnv && feed.signedIn) {
-    const supabase = createClient();
+    const supabase = await createClient();
     const {
       data: { user },
     } = await supabase.auth.getUser();

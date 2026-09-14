@@ -17,7 +17,7 @@ export async function setNickname(_prev: NickState, formData: FormData): Promise
     return { error: "2~20자, 한글·영문·숫자·_- 만 사용할 수 있어요." };
   }
 
-  const supabase = createClient();
+  const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();

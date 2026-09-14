@@ -27,7 +27,7 @@ export function deckSetsFromCode(code: string | null | undefined): string[] {
 export async function getMetaDecks(): Promise<MetaDeckView[]> {
   if (!hasSupabaseEnv) return [];
   try {
-    const supabase = createClient();
+    const supabase = await createClient();
     const { data, error } = await supabase
       .from("meta_decks")
       .select("*")

@@ -22,7 +22,7 @@ export const dynamic = "force-dynamic";
 async function viewerIsStaff(): Promise<boolean> {
   if (!hasSupabaseEnv) return false;
   try {
-    const supabase = createClient();
+    const supabase = await createClient();
     const {
       data: { user },
     } = await supabase.auth.getUser();
@@ -51,11 +51,12 @@ async function legendImagesByRef(): Promise<Record<string, string>> {
   }
 }
 
-export default async function DecksPage({
-  searchParams,
-}: {
-  searchParams: { legend?: string };
-}) {
+export default async function DecksPage(
+  props: {
+    searchParams: Promise<{ legend?: string }>;
+  }
+) {
+  const searchParams = await props.searchParams;
   const [decks, images, isStaff] = await Promise.all([
     getMetaDecks(),
     legendImagesByRef(),

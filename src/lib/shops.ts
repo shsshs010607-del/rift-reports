@@ -6,7 +6,7 @@ import type { Shop } from "@/lib/types/database";
 export async function getShops(): Promise<Shop[]> {
   if (!hasSupabaseEnv) return [];
   try {
-    const supabase = createClient();
+    const supabase = await createClient();
     const { data, error } = await supabase
       .from("shops")
       .select("*")

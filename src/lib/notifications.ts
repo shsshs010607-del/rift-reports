@@ -18,7 +18,7 @@ const EMPTY: NotificationFeed = { items: [], unread: 0, signedIn: false };
 export async function getNotificationFeed(limit = 30): Promise<NotificationFeed> {
   if (!hasSupabaseEnv) return EMPTY;
   try {
-    const supabase = createClient();
+    const supabase = await createClient();
     const {
       data: { user },
     } = await supabase.auth.getUser();

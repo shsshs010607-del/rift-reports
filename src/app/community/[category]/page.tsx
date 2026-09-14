@@ -20,18 +20,20 @@ export function generateStaticParams() {
   return COMMUNITY_CATEGORIES.map((c) => ({ category: c.slug }));
 }
 
-export function generateMetadata({ params }: { params: { category: string } }): Metadata {
+export async function generateMetadata(props: { params: Promise<{ category: string }> }): Promise<Metadata> {
+  const params = await props.params;
   const c = COMMUNITY_CATEGORIES.find((x) => x.slug === params.category);
   return { title: c ? `커뮤니티 · ${c.label}` : "커뮤니티" };
 }
 
-export default async function BoardPage({
-  params,
-  searchParams,
-}: {
-  params: { category: string };
-  searchParams: { tab?: string; q?: string; tag?: string; page?: string };
-}) {
+export default async function BoardPage(
+  props: {
+    params: Promise<{ category: string }>;
+    searchParams: Promise<{ tab?: string; q?: string; tag?: string; page?: string }>;
+  }
+) {
+  const searchParams = await props.searchParams;
+  const params = await props.params;
   const category = COMMUNITY_CATEGORIES.find((c) => c.slug === params.category);
   if (!category) notFound();
   const slug = category.slug as CommunityCategory;

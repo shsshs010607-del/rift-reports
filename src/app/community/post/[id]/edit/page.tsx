@@ -12,10 +12,11 @@ import { PostForm } from "@/components/community/post-form";
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = { title: "글 수정" };
 
-export default async function EditPostPage({ params }: { params: { id: string } }) {
+export default async function EditPostPage(props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
   if (!hasSupabaseEnv) redirect(`/login?next=/community/post/${params.id}/edit`);
 
-  const supabase = createClient();
+  const supabase = await createClient();
   const { data: userRes } = await supabase.auth.getUser();
   const user = userRes.user ?? null;
   if (!user) redirect(`/login?next=/community/post/${params.id}/edit`);

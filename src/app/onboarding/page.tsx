@@ -8,14 +8,15 @@ export const metadata: Metadata = { title: "닉네임 설정" };
 
 const safeNext = (raw: string) => (raw.startsWith("/") && !raw.startsWith("//") ? raw : "/");
 
-export default async function OnboardingPage({
-  searchParams,
-}: {
-  searchParams: { next?: string };
-}) {
+export default async function OnboardingPage(
+  props: {
+    searchParams: Promise<{ next?: string }>;
+  }
+) {
+  const searchParams = await props.searchParams;
   if (!hasSupabaseEnv) redirect("/login");
 
-  const supabase = createClient();
+  const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();

@@ -20,7 +20,7 @@ async function safe<T>(fn: () => Promise<T>, fallback: T): Promise<T> {
 
 export function getLatestReports(limit = 4) {
   return safe<Report[]>(async () => {
-    const supabase = createClient();
+    const supabase = await createClient();
     const { data, error } = await supabase
       .from("reports")
       .select("*")
@@ -38,7 +38,7 @@ export type ReportWithAuthor = Report & {
 
 export function getReports() {
   return safe<ReportWithAuthor[]>(async () => {
-    const supabase = createClient();
+    const supabase = await createClient();
     const { data, error } = await supabase
       .from("reports")
       .select("*, author:profiles!reports_author_id_fkey(username, avatar_url)")
@@ -51,7 +51,7 @@ export function getReports() {
 
 export function getReport(slug: string) {
   return safe<ReportWithAuthor | null>(async () => {
-    const supabase = createClient();
+    const supabase = await createClient();
     const { data, error } = await supabase
       .from("reports")
       .select("*, author:profiles!reports_author_id_fkey(username, avatar_url)")
@@ -65,7 +65,7 @@ export function getReport(slug: string) {
 
 export function getTournaments() {
   return safe<Tournament[]>(async () => {
-    const supabase = createClient();
+    const supabase = await createClient();
     const { data, error } = await supabase
       .from("tournaments")
       .select("*")
@@ -77,7 +77,7 @@ export function getTournaments() {
 
 export function getTournament(slug: string) {
   return safe<Tournament | null>(async () => {
-    const supabase = createClient();
+    const supabase = await createClient();
     const { data, error } = await supabase
       .from("tournaments")
       .select("*")
@@ -92,7 +92,7 @@ export type DeckWithChampions = Deck & { champions: Pick<Card, "id" | "name" | "
 
 export function getTierSummary() {
   return safe<DeckWithChampions[]>(async () => {
-    const supabase = createClient();
+    const supabase = await createClient();
     const { data: decks, error } = await supabase
       .from("decks")
       .select("*")
@@ -119,7 +119,7 @@ export function getTierSummary() {
 
 export function getUpcomingTournaments(limit = 3) {
   return safe<Tournament[]>(async () => {
-    const supabase = createClient();
+    const supabase = await createClient();
     const { data, error } = await supabase
       .from("tournaments")
       .select("*")

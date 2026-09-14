@@ -9,7 +9,7 @@ import { KR_SIDO } from "@/lib/constants";
 export type ShopState = { error?: string; ok?: string };
 
 async function requireStaff() {
-  const supabase = createClient();
+  const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();

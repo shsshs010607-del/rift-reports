@@ -11,7 +11,7 @@ export async function updateProfile(
   _prev: ProfileState,
   formData: FormData,
 ): Promise<ProfileState> {
-  const supabase = createClient();
+  const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
@@ -55,7 +55,7 @@ export async function updateProfile(
 
 /** 아바타 URL 저장 (null = 제거). 업로드 자체는 클라이언트가 Storage 로. */
 export async function setAvatar(url: string | null): Promise<ProfileState> {
-  const supabase = createClient();
+  const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();

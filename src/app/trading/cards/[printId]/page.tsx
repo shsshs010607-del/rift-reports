@@ -17,7 +17,8 @@ const langLabel = (s: string) => PRINT_LANGUAGES.find((l) => l.slug === s)?.labe
 const condLabel = (s: string) => CARD_CONDITIONS.find((c) => c.slug === s)?.label ?? s;
 const pct = fmtPct;
 
-export default async function PrintPricePage({ params }: { params: { printId: string } }) {
+export default async function PrintPricePage(props: { params: Promise<{ printId: string }> }) {
+  const params = await props.params;
   const res = await getPrintWithPrice(params.printId);
   if (!res) notFound();
   const { print, price } = res;

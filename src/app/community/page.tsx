@@ -17,11 +17,12 @@ import { POSTS_PER_PAGE } from "@/lib/constants";
 export const metadata: Metadata = { title: "커뮤니티" };
 export const revalidate = 30;
 
-export default async function CommunityHubPage({
-  searchParams,
-}: {
-  searchParams: { tab?: string; q?: string; tag?: string; page?: string };
-}) {
+export default async function CommunityHubPage(
+  props: {
+    searchParams: Promise<{ tab?: string; q?: string; tag?: string; page?: string }>;
+  }
+) {
+  const searchParams = await props.searchParams;
   const page = Number(searchParams.page) || 1;
   const q = searchParams.q?.trim() || undefined;
   const tag = searchParams.tag?.trim() || undefined;

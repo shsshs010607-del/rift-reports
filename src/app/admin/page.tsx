@@ -17,7 +17,7 @@ export const metadata: Metadata = { title: "운영" };
 
 export default async function AdminPage() {
   if (!hasSupabaseEnv) redirect("/login?next=/admin");
-  const supabase = createClient();
+  const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();

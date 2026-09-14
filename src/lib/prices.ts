@@ -37,7 +37,7 @@ async function safe<T>(fn: () => Promise<T>, fallback: T): Promise<T> {
 
 function moverQuery(dir: "asc" | "desc", limit: number) {
   return safe<PriceRow[]>(async () => {
-    const supabase = createClient();
+    const supabase = await createClient();
     const { data, error } = await supabase
       .from("price_snapshots")
       .select("*, print:card_prints(*)")
@@ -77,7 +77,7 @@ export const getTopLosers = (limit = 5) => moverQuery("asc", limit);
  */
 export function getPriceBoard(limit = 600) {
   return safe<PriceRow[]>(async () => {
-    const supabase = createClient();
+    const supabase = await createClient();
     const { data, error } = await supabase
       .from("price_snapshots")
       .select("*, print:card_prints(*)")
@@ -102,7 +102,7 @@ export function getPriceBoard(limit = 600) {
  */
 export function getPriceIndex() {
   return safe<Map<string, { usd: number; printId: string }>>(async () => {
-    const supabase = createClient();
+    const supabase = await createClient();
     const { data, error } = await supabase
       .from("price_snapshots")
       .select("market_price, print:card_prints(id, set_code, number)")
@@ -132,7 +132,7 @@ export function getPriceIndex() {
 /** 프린트 + 현재 대표 시세 */
 export function getPrintWithPrice(printId: string) {
   return safe<{ print: PrintWithKo; price: PriceSnapshot | null } | null>(async () => {
-    const supabase = createClient();
+    const supabase = await createClient();
     const { data: print, error } = await supabase
       .from("card_prints")
       .select("*")
@@ -156,7 +156,7 @@ export function getPrintWithPrice(printId: string) {
 /** 프린트의 모든 현재 변형 시세 (condition·printing 별) */
 export function getPrintVariants(printId: string) {
   return safe<PriceSnapshot[]>(async () => {
-    const supabase = createClient();
+    const supabase = await createClient();
     const { data, error } = await supabase
       .from("price_snapshots")
       .select("*")
@@ -171,7 +171,7 @@ export function getPrintVariants(printId: string) {
 /** 같은 카드의 다른 언어·일러스트·레어도 프린트 + 각 대표가 */
 export function getPrintGroup(groupId: string) {
   return safe<{ print: PrintWithKo; price: PriceSnapshot | null }[]>(async () => {
-    const supabase = createClient();
+    const supabase = await createClient();
     const { data: prints, error } = await supabase
       .from("card_prints")
       .select("*")

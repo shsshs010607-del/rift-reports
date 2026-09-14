@@ -9,14 +9,15 @@ import { COMMUNITY_CATEGORIES } from "@/lib/constants";
 
 export const metadata: Metadata = { title: "글쓰기" };
 
-export default async function NewPostPage({
-  searchParams,
-}: {
-  searchParams: { category?: string; tag?: string };
-}) {
+export default async function NewPostPage(
+  props: {
+    searchParams: Promise<{ category?: string; tag?: string }>;
+  }
+) {
+  const searchParams = await props.searchParams;
   if (!hasSupabaseEnv) redirect("/login?next=/community/new");
 
-  const supabase = createClient();
+  const supabase = await createClient();
   const { data } = await supabase.auth.getUser();
   if (!data.user) redirect("/login?next=/community/new");
 

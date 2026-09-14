@@ -43,13 +43,13 @@ function normalizeDeckCode(raw: FormDataEntryValue | null): string | null {
 export type ActionState = { error?: string; fieldErrors?: Record<string, string> };
 
 async function requireUser() {
-  const supabase = createClient();
+  const supabase = await createClient();
   const { data } = await supabase.auth.getUser();
   if (!data.user) redirect("/login");
   return { supabase, userId: data.user.id };
 }
 
-async function isStaff(supabase: ReturnType<typeof createClient>, userId: string) {
+async function isStaff(supabase: Awaited<ReturnType<typeof createClient>>, userId: string) {
   const { data } = await supabase.from("profiles").select("role").eq("id", userId).maybeSingle();
   return data?.role === "editor" || data?.role === "admin";
 }
@@ -167,7 +167,7 @@ const commentSchema = z.object({
 
 /** 글쓴이(및 답글이면 원댓글 작성자)에게 개인 알림 발송 — 본인 글/댓글엔 안 보냄. 실패해도 댓글 등록엔 영향 없음. */
 async function notifyComment(
-  supabase: ReturnType<typeof createClient>,
+  supabase: Awaited<ReturnType<typeof createClient>>,
   opts: { postId: string; parentId: string | null; commenterId: string; body: string },
 ) {
   const recipients = new Map<string, string>(); // userId -> 알림 제목
@@ -298,6 +298,6 @@ export async function toggleLike(postId: string): Promise<{ liked: boolean; erro
 
 /** 조회수 증가 (원자적). 비로그인도 가능. */
 export async function incrementView(postId: string, table: "posts" | "reports" = "posts") {
-  const supabase = createClient();
+  const supabase = await createClient();
   await supabase.rpc("increment_view_count", { table_name: table, row_id: postId });
 }

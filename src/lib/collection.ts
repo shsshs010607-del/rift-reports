@@ -11,7 +11,7 @@ export type CollectionItem = { card_id: string; quantity: number };
 export async function getMyCollection(): Promise<CollectionItem[]> {
   if (!hasSupabaseEnv) return [];
   try {
-    const supabase = createClient();
+    const supabase = await createClient();
     const { data: userRes } = await supabase.auth.getUser();
     if (!userRes.user) return [];
     const { data, error } = await supabase

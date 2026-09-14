@@ -61,7 +61,8 @@ function buildQuery(sp: RawSearchParams): CardSearchQuery {
 
 const PER_PAGE = 36;
 
-export default function CardsPage({ searchParams }: { searchParams: RawSearchParams }) {
+export default async function CardsPage(props: { searchParams: Promise<RawSearchParams> }) {
+  const searchParams = await props.searchParams;
   const query = buildQuery(searchParams);
   const q = query.q ?? "";
   const termHits = q ? findGlossaryMatches(q).slice(0, 4) : [];

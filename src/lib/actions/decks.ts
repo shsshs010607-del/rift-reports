@@ -10,7 +10,7 @@ export type SaveDeckState = { error?: string; ok?: boolean; saved?: SavedDeck };
 const MAX_DECKS = 30;
 
 async function requireUser() {
-  const supabase = createClient();
+  const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
@@ -68,7 +68,7 @@ export async function deleteSavedDeck(id: string): Promise<void> {
 }
 
 export async function listMyDecks(): Promise<SavedDeck[]> {
-  const supabase = createClient();
+  const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();

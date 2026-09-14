@@ -293,7 +293,7 @@ function NavPill({
   external?: boolean;
 }) {
   const [open, setOpen] = useState(false);
-  const closeTimer = useRef<ReturnType<typeof setTimeout>>();
+  const closeTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   const openNow = () => {
     clearTimeout(closeTimer.current);
     setOpen(true);

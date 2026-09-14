@@ -23,11 +23,12 @@ export const metadata: Metadata = { title: "덱 시뮬레이터" };
  * 덱 시뮬레이터 = 덱 빌더 + 오프닝 핸드 4장 드로우/멀리건.
  * 덱 공유: ?d=<짧은 코드> (신규) 또는 ?deck=<base64> (구버전). 카드 소스는 어댑터.
  */
-export default async function DeckSimulatorPage({
-  searchParams,
-}: {
-  searchParams: { deck?: string; d?: string };
-}) {
+export default async function DeckSimulatorPage(
+  props: {
+    searchParams: Promise<{ deck?: string; d?: string }>;
+  }
+) {
+  const searchParams = await props.searchParams;
   let deck: Deck = EMPTY_DECK;
   let resolvedCards: Card[] = [];
   let loadError = false;

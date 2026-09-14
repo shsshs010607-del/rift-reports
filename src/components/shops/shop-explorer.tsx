@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import Link from "next/link";
 import {
   Search,
   ShieldCheck,
@@ -327,13 +328,13 @@ function SubmitCallout() {
             운영진이 확인 후 등록합니다. 정보 정정도 환영해요.
           </p>
         </div>
-        <a
+        <Link
           href="/community/recruit"
           className="inline-flex shrink-0 items-center justify-center gap-1.5 rounded-full bg-primary px-4 py-2 text-label-md font-bold text-white transition hover:brightness-105"
         >
           매장 제보하기
           <ArrowRight className="h-4 w-4" />
-        </a>
+        </Link>
       </div>
       <p className="border-t border-primary/15 bg-primary/[0.03] px-4 py-2 text-body-sm text-ink-soft">
         ※ 매장 정보는 커뮤니티 제보 기반이라 실제와 다를 수 있습니다. 정정 제보를 받고 있어요.
@@ -350,9 +351,9 @@ function EmptyState() {
       <p className="mt-1 max-w-sm text-body-sm text-ink-soft">
         운영진이 매장을 등록하면 여기 지역별로 표시됩니다. 매장 제보를 받고 있어요.
       </p>
-      <a href="/community/recruit" className="btn-ghost mt-4 !py-2 !text-label-md">
+      <Link href="/community/recruit" className="btn-ghost mt-4 !py-2 !text-label-md">
         매장 제보하기
-      </a>
+      </Link>
     </div>
   );
 }

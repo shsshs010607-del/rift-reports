@@ -34,7 +34,7 @@ export function getPosts(opts: {
 
   return safe<{ posts: PostListItem[]; total: number; page: number }>(
     async () => {
-      const supabase = createClient();
+      const supabase = await createClient();
       let filter = supabase
         .from("posts")
         .select("*, author:profiles!posts_author_id_fkey(username, avatar_url)", { count: "exact" });
@@ -74,7 +74,7 @@ export function getPopularPosts(opts: { category?: CommunityCategory; page?: num
 
   return safe<{ posts: PostListItem[]; total: number; page: number }>(
     async () => {
-      const supabase = createClient();
+      const supabase = await createClient();
       let filter = supabase
         .from("posts")
         .select("*, author:profiles!posts_author_id_fkey(username, avatar_url)", { count: "exact" })
@@ -101,7 +101,7 @@ export function getPopularPosts(opts: { category?: CommunityCategory; page?: num
 export function getTrendingPosts(limit = 6) {
   const since = new Date(Date.now() - 14 * 86400_000).toISOString();
   return safe<PostListItem[]>(async () => {
-    const supabase = createClient();
+    const supabase = await createClient();
     const { data, error } = await supabase
       .from("posts")
       .select("*, author:profiles!posts_author_id_fkey(username, avatar_url)")
@@ -124,7 +124,7 @@ export function getTrendingPosts(limit = 6) {
 
 export function getPost(id: string) {
   return safe<PostListItem | null>(async () => {
-    const supabase = createClient();
+    const supabase = await createClient();
     const { data, error } = await supabase
       .from("posts")
       .select("*, author:profiles!posts_author_id_fkey(username, avatar_url)")
@@ -137,7 +137,7 @@ export function getPost(id: string) {
 
 export function getComments(postId: string) {
   return safe<CommentItem[]>(async () => {
-    const supabase = createClient();
+    const supabase = await createClient();
     const { data, error } = await supabase
       .from("comments")
       .select("*, author:profiles!comments_author_id_fkey(username, avatar_url)")
@@ -151,7 +151,7 @@ export function getComments(postId: string) {
 /** 다른 게시판 최신글 — 카테고리별 최근 글 몇 개씩. */
 export function getRecentByCategory(perCategory = 4) {
   return safe<Record<CommunityCategory, PostListItem[]>>(async () => {
-    const supabase = createClient();
+    const supabase = await createClient();
     // 카테고리별로 나눠 조회 (row_number 윈도우 대신 단순 반복 — 카테고리 5개뿐)
     const cats: CommunityCategory[] = ["riftbound", "report", "deck-guide", "tournament", "recruit"];
     const entries = await Promise.all(
@@ -173,7 +173,7 @@ export function getRecentByCategory(perCategory = 4) {
 export function getLikedPostIds(postIds: string[]) {
   return safe<Set<string>>(async () => {
     if (postIds.length === 0) return new Set();
-    const supabase = createClient();
+    const supabase = await createClient();
     const { data: userRes } = await supabase.auth.getUser();
     if (!userRes.user) return new Set();
     const { data } = await supabase

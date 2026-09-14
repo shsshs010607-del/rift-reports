@@ -4,7 +4,8 @@ import { LoginForm } from "@/components/auth/login-form";
 
 export const metadata: Metadata = { title: "로그인" };
 
-export default function LoginPage({ searchParams }: { searchParams: { next?: string } }) {
+export default async function LoginPage(props: { searchParams: Promise<{ next?: string }> }) {
+  const searchParams = await props.searchParams;
   return (
     <div className="mx-auto max-w-md py-8">
       <h1 className="text-center font-display text-headline-md text-ink">리바지지 로그인</h1>

@@ -11,7 +11,7 @@ import { SITE } from "@/lib/constants";
 export type AdminState = { error?: string; ok?: string };
 
 async function requireStaff() {
-  const supabase = createClient();
+  const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();

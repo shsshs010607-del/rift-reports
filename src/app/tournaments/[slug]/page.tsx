@@ -15,11 +15,12 @@ import { cn } from "@/lib/utils";
 
 export const revalidate = 120;
 
-export async function generateMetadata({
-  params,
-}: {
-  params: { slug: string };
-}): Promise<Metadata> {
+export async function generateMetadata(
+  props: {
+    params: Promise<{ slug: string }>;
+  }
+): Promise<Metadata> {
+  const params = await props.params;
   const t = await getTournament(params.slug);
   return t ? { title: t.name, description: t.description ?? undefined } : { title: "대회" };
 }
@@ -33,7 +34,8 @@ function Row({ icon, children }: { icon: React.ReactNode; children: React.ReactN
   );
 }
 
-export default async function TournamentDetailPage({ params }: { params: { slug: string } }) {
+export default async function TournamentDetailPage(props: { params: Promise<{ slug: string }> }) {
+  const params = await props.params;
   const t = await getTournament(params.slug);
   if (!t) notFound();
 
