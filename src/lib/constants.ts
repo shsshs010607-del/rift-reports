@@ -21,6 +21,8 @@ export const SITE = {
   /** 네이버 카페 카드 판매 게시판 clubid/menuid (검색 링크 조립용) */
   naverCafeClubId: "31788328" as string,
   naverCafeTradeMenuId: "14" as string,
+  /** 네이버 카페 이벤트 게시판 — "이벤트응모" 태그 글은 여기로 안내. */
+  naverCafeEvent: "https://cafe.naver.com/f-e/cafes/31788328/menus/22" as string,
   /** 리프트바운드 공식 채널 (Riot Games) */
   officialYoutube: "https://www.youtube.com/@riftbound" as string,
   officialSite: "https://riftbound.leagueoflegends.com/" as string,

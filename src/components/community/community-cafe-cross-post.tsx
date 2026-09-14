@@ -31,16 +31,22 @@ export function CommunityCafeCrossPost({
   categoryLabel,
   body,
   permalink,
+  tags,
 }: {
   title: string;
   categoryLabel: string;
   body: string;
   permalink: string;
+  tags?: string[];
 }) {
   const [copied, setCopied] = useState(false);
   const [open, setOpen] = useState(false);
 
   const cafeReady = SITE.naverCafe && SITE.naverCafe !== "#";
+  // "이벤트응모" 태그가 붙은 글은 카페 이벤트 게시판으로, 그 외에는 카페 홈으로.
+  const isEventEntry = (tags ?? []).includes("이벤트응모");
+  const targetUrl = isEventEntry ? SITE.naverCafeEvent : SITE.naverCafe;
+  const boardLabel = isEventEntry ? "이벤트 게시판" : "카페";
 
   const bodyText = useMemo(() => {
     const lines = [`[${categoryLabel}] ${title}`, "", cleanForCafe(body)];
@@ -62,7 +68,7 @@ export function CommunityCafeCrossPost({
 
   async function copyAndOpen() {
     await copy();
-    window.open(SITE.naverCafe, "_blank", "noopener,noreferrer");
+    window.open(targetUrl, "_blank", "noopener,noreferrer");
   }
 
   return (
@@ -72,9 +78,11 @@ export function CommunityCafeCrossPost({
           <NaverIcon className="h-4 w-4" />
         </span>
         <div className="min-w-0 flex-1">
-          <p className="text-body-md font-bold text-ink">네이버 카페에도 올리기</p>
+          <p className="text-body-md font-bold text-ink">
+            네이버 {isEventEntry ? "이벤트 게시판에도 올리기" : "카페에도 올리기"}
+          </p>
           <p className="mt-0.5 text-body-sm text-ink-soft">
-            글 내용을 복사하고 카페를 엽니다. 원하는 게시판에서 붙여넣기(Ctrl+V)만 하면 돼요.
+            글 내용을 복사하고 {boardLabel}를 엽니다. 붙여넣기(Ctrl+V)만 하면 돼요.
           </p>
 
           <div className="mt-3 flex flex-wrap gap-2">
@@ -84,7 +92,7 @@ export function CommunityCafeCrossPost({
               className="inline-flex items-center gap-1.5 rounded-full bg-[#03C75A] px-4 py-2 text-label-md font-bold text-white transition hover:brightness-95"
             >
               {copied ? <Check className="h-4 w-4" /> : <NaverIcon className="h-3.5 w-3.5" />}
-              {copied ? "복사됨 · 카페 열림" : "복사하고 카페 열기"}
+              {copied ? `복사됨 · ${boardLabel} 열림` : `복사하고 ${boardLabel} 열기`}
             </button>
             <button
               type="button"
