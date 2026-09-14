@@ -1,3 +1,5 @@
+import Image from "next/image";
+
 import { cn } from "@/lib/utils";
 
 /**
@@ -24,11 +26,13 @@ export function LogoMark({ className }: { className?: string }) {
         className,
       )}
     >
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img
+      <Image
         src={LOGO_SRC}
         alt="리바지지 RIBA.GG"
-        className="pointer-events-none absolute left-1/2 top-1/2 h-[360%] max-w-none -translate-x-1/2 -translate-y-1/2 select-none"
+        width={240}
+        height={148}
+        priority
+        className="pointer-events-none absolute left-1/2 top-1/2 h-[360%] w-auto max-w-none -translate-x-1/2 -translate-y-1/2 select-none"
       />
     </span>
   );
