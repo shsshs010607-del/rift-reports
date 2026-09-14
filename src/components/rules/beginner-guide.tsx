@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Trophy, Package, Lightbulb, ShoppingCart } from "lucide-react";
+import { Trophy, Package, Lightbulb, ShoppingCart, Flame, Droplet, Brain, Dumbbell, Shuffle, Shield } from "lucide-react";
 import {
   GAME_GOAL,
   COMPONENTS,
@@ -26,6 +26,16 @@ const DOMAIN_TRAITS: Record<string, string> = {
   body: "전투·거점. 이동, 점령, 방패. 전장을 몸으로 밀어붙이는 압박.",
   chaos: "변칙·확률. 무작위 효과, 자기 희생, 판을 흔드는 고위험 고수익.",
   order: "규율·군단. 토큰 소환, 광역 버프, 진형. 수로 밀어붙이는 물량.",
+};
+
+/** 도메인 문양 — 공식 룬 아이콘 대신 성향을 나타내는 대체 아이콘. */
+const DOMAIN_ICONS: Record<string, typeof Flame> = {
+  fury: Flame,
+  calm: Droplet,
+  mind: Brain,
+  body: Dumbbell,
+  chaos: Shuffle,
+  order: Shield,
 };
 
 /** 판 위(The Board) 구역 */
@@ -261,15 +271,17 @@ export function BeginnerGuide({ exampleCard = null }: { exampleCard?: Card | nul
 
       <Block id="domains" title="6개 도메인">
         <div className="grid gap-3 sm:grid-cols-2">
-          {CARD_DOMAINS.map((d) => (
+          {CARD_DOMAINS.map((d) => {
+            const DomainIcon = DOMAIN_ICONS[d.slug] ?? Flame;
+            return (
             <div key={d.slug} className="surface flex gap-3 overflow-hidden p-0">
               <span className="w-1.5 shrink-0" style={{ backgroundColor: d.color }} />
               <div className="flex gap-3 py-3.5 pr-4">
                 <span
-                  className="grid h-9 w-9 shrink-0 place-items-center rounded-full text-label-md font-extrabold text-white"
+                  className="grid h-9 w-9 shrink-0 place-items-center rounded-full text-white"
                   style={{ backgroundColor: d.color }}
                 >
-                  {d.short}
+                  <DomainIcon className="h-5 w-5" />
                 </span>
                 <div>
                   <p className="text-title-md text-ink">
@@ -279,7 +291,8 @@ export function BeginnerGuide({ exampleCard = null }: { exampleCard?: Card | nul
                 </div>
               </div>
             </div>
-          ))}
+            );
+          })}
         </div>
       </Block>
 
