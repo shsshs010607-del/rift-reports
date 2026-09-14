@@ -1,18 +1,13 @@
 import Link from "next/link";
-import { Trophy, ArrowLeftRight } from "lucide-react";
+import { Trophy, ArrowLeftRight, ArrowUpRight } from "lucide-react";
 
-import { getUpcomingTournaments, getRecentTrades } from "@/lib/queries";
-import { TRADING_CATEGORIES } from "@/lib/constants";
-import { fmtKstShort, fmtKstRelative } from "@/lib/datetime";
+import { getUpcomingTournaments } from "@/lib/queries";
+import { SITE } from "@/lib/constants";
+import { fmtKstShort } from "@/lib/datetime";
 
-const TCAT = new Map<string, string>(TRADING_CATEGORIES.map((c) => [c.slug, c.label]));
-
-/** 홈 하단 — 대회 · 거래글. */
+/** 홈 하단 — 대회 · 거래글(네이버 카페 바로가기). */
 export async function HomeExtras() {
-  const [tournaments, trades] = await Promise.all([
-    getUpcomingTournaments(4),
-    getRecentTrades(5),
-  ]);
+  const tournaments = await getUpcomingTournaments(4);
 
   return (
     <div className="grid gap-3 sm:grid-cols-2">
@@ -35,30 +30,21 @@ export async function HomeExtras() {
         )}
       </Panel>
 
-      <Panel title="최근 거래글" icon={<ArrowLeftRight className="h-4 w-4" />} href="/trading">
-        {trades.length === 0 ? (
-          <Empty>등록된 거래글이 없습니다.</Empty>
-        ) : (
-          <ul className="flex flex-col gap-1.5">
-            {trades.map((l) => (
-              <li key={l.id}>
-                <Link
-                  href={`/trading/${l.id}`}
-                  className="flex items-center gap-1.5 hover:text-primary-strong"
-                >
-                  <span className="shrink-0 rounded bg-subcanvas px-1 text-[11px] font-bold text-ink-soft">
-                    {TCAT.get(l.category)}
-                  </span>
-                  <span className="min-w-0 flex-1 truncate text-body-sm text-ink">{l.title}</span>
-                  <span className="shrink-0 text-[11px] text-ink-soft">
-                    {fmtKstRelative(l.created_at)}
-                  </span>
-                </Link>
-              </li>
-            ))}
-          </ul>
-        )}
-      </Panel>
+      <div className="note-card p-4">
+        <h3 className="mb-2 flex items-center gap-1.5 text-label-lg font-bold text-ink">
+          <ArrowLeftRight className="h-4 w-4" />
+          거래글
+        </h3>
+        <a
+          href={SITE.naverCafeTrade}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="flex items-center gap-2 rounded-xl border border-[#03C75A]/30 bg-[#03C75A]/10 px-3 py-2.5 text-body-sm font-bold text-ink transition hover:bg-[#03C75A]/15"
+        >
+          네이버 카페에서 카드 거래글 보기
+          <ArrowUpRight className="ml-auto h-4 w-4 shrink-0 text-ink-soft" />
+        </a>
+      </div>
     </div>
   );
 }

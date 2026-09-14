@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
-import { FileText, Store, Layers } from "lucide-react";
+import { FileText, Layers } from "lucide-react";
 
 import { createClient } from "@/lib/supabase/server";
 import { hasSupabaseEnv } from "@/lib/supabase/env";
@@ -13,19 +13,17 @@ import { SignOutButton } from "@/components/auth/sign-out-button";
 import { ProfileEditor } from "@/components/me/profile-editor";
 import { CollectionEditor } from "@/components/me/collection-editor";
 import { PagedRows } from "@/components/me/paged-rows";
-import { getMyPosts, getMyListings } from "@/lib/me";
+import { getMyPosts } from "@/lib/me";
 import { getMyCollection } from "@/lib/collection";
 import { listMyDecks } from "@/lib/actions/decks";
 import { getPriceIndex } from "@/lib/prices";
 import { getUsdKrw } from "@/lib/fx";
-import { COMMUNITY_CATEGORIES, TRADING_CATEGORIES, TRADE_STATUS } from "@/lib/constants";
+import { COMMUNITY_CATEGORIES } from "@/lib/constants";
 
 export const metadata: Metadata = { title: "내 프로필" };
 export const dynamic = "force-dynamic";
 
 const CAT = new Map(COMMUNITY_CATEGORIES.map((c) => [c.slug, c.label]));
-const TCAT = new Map(TRADING_CATEGORIES.map((c) => [c.slug, c.label]));
-const TSTATUS = new Map(TRADE_STATUS.map((s) => [s.slug, s.label]));
 
 const ROLE_BADGE: Record<string, { label: string; cls: string }> = {
   admin: { label: "운영자", cls: "bg-secondary-fixed text-on-secondary-fixed-variant" },
@@ -45,9 +43,8 @@ export default async function MePage() {
     .eq("id", user.id)
     .single();
 
-  const [posts, listings, decks, collection, priceIndex, fx] = await Promise.all([
+  const [posts, decks, collection, priceIndex, fx] = await Promise.all([
     getMyPosts(user.id),
-    getMyListings(user.id),
     listMyDecks(),
     getMyCollection(),
     getPriceIndex(),
@@ -110,9 +107,8 @@ export default async function MePage() {
             </p>
           )}
 
-          <div className="mt-4 grid grid-cols-3 gap-2">
+          <div className="mt-4 grid grid-cols-2 gap-2">
             <Stat label="쓴 글" value={posts.length} />
-            <Stat label="거래글" value={listings.length} />
             <Stat label="저장 덱" value={decks.length} />
           </div>
 
@@ -140,23 +136,6 @@ export default async function MePage() {
           <Row key={p.id} href={`/community/post/${p.id}`} when={p.created_at}>
             <span className="chip shrink-0">{CAT.get(p.category) ?? p.category}</span>
             <span className="min-w-0 flex-1 truncate text-body-md text-ink">{p.title}</span>
-          </Row>
-        ))}
-      </ListSection>
-
-      <ListSection
-        title="내 거래글"
-        icon={<Store className="h-4 w-4" />}
-        count={listings.length}
-        empty="등록한 거래글이 없습니다."
-      >
-        {listings.map((l) => (
-          <Row key={l.id} href={`/trading/${l.id}`}>
-            <span className="chip shrink-0">{TCAT.get(l.category)}</span>
-            <span className="min-w-0 flex-1 truncate text-body-md text-ink">{l.title}</span>
-            <span className="shrink-0 text-label-sm font-bold text-ink-soft">
-              {TSTATUS.get(l.status)}
-            </span>
           </Row>
         ))}
       </ListSection>

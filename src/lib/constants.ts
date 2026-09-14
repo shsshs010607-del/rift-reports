@@ -252,26 +252,6 @@ export const PRINT_LANGUAGES = [
   { slug: "ko", label: "한국어" },
 ] as const;
 
-export const TRADING_CATEGORIES = [
-  { slug: "sell", label: "팝니다" },
-  { slug: "buy", label: "삽니다" },
-  { slug: "trade", label: "교환" },
-] as const;
-
-export const TRADE_CONDITIONS = [
-  { slug: "mint", label: "미개봉/민트" },
-  { slug: "near-mint", label: "니어민트" },
-  { slug: "lightly-played", label: "라이트플레이" },
-  { slug: "played", label: "플레이드" },
-  { slug: "damaged", label: "손상" },
-] as const;
-
-export const TRADE_STATUS = [
-  { slug: "open", label: "진행 중" },
-  { slug: "reserved", label: "예약 중" },
-  { slug: "closed", label: "완료" },
-] as const;
-
 export const TOURNAMENT_STATUS = [
   { slug: "upcoming", label: "진행 예정" },
   { slug: "ongoing", label: "진행 중" },

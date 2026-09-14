@@ -1,7 +1,7 @@
 import "server-only";
 import { createClient } from "@/lib/supabase/server";
 import { hasSupabaseEnv } from "@/lib/supabase/env";
-import type { Report, Deck, TradeListing, Tournament, Card } from "@/lib/types/database";
+import type { Report, Deck, Tournament, Card } from "@/lib/types/database";
 
 /**
  * 홈 대시보드용 읽기 쿼리 모음.
@@ -114,20 +114,6 @@ export function getTierSummary() {
         .map((id) => cardById.get(id))
         .filter((c): c is Pick<Card, "id" | "name" | "image_url"> => Boolean(c)),
     }));
-  }, []);
-}
-
-export function getRecentTrades(limit = 4) {
-  return safe<TradeListing[]>(async () => {
-    const supabase = createClient();
-    const { data, error } = await supabase
-      .from("trade_listings")
-      .select("*")
-      .eq("status", "open")
-      .order("created_at", { ascending: false })
-      .limit(limit);
-    if (error) throw error;
-    return data ?? [];
   }, []);
 }
 
