@@ -19,8 +19,10 @@ export interface FxRate {
 
 export async function getUsdKrw(): Promise<FxRate> {
   try {
+    // 호출 자체 캐시는 두지 않는다 — 이 함수를 쓰는 페이지의 revalidate(예: /trading = 15분)가
+    // 이미 호출 빈도를 정하므로, 여기서 또 12h 캐시를 겹치면 어느 한쪽이 stale 로 굳어버릴 수 있다.
     const res = await fetch("https://open.er-api.com/v6/latest/USD", {
-      next: { revalidate: 43_200 }, // 12h
+      cache: "no-store",
     });
     if (!res.ok) throw new Error(String(res.status));
     const j = (await res.json()) as {
