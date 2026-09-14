@@ -65,6 +65,16 @@
   .sub{font-size:14px;color:var(--text-dim);text-align:center;margin:0 0 34px;line-height:1.6;max-width:560px;}
   .sub b{color:var(--text);font-weight:700;}
 
+  .rarity-guide{width:100%;max-width:760px;margin-bottom:30px;}
+  .rarity-guide h2{font-family:var(--font-display);font-weight:400;font-size:16px;margin:0 0 3px;text-align:center;color:var(--gold-bright);}
+  .rarity-guide .rg-sub{font-size:11.5px;color:var(--text-faint);text-align:center;margin:0 0 14px;line-height:1.6;}
+  .rg-grid{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;}
+  .rg-card{width:92px;display:flex;flex-direction:column;align-items:center;gap:5px;}
+  .rg-img{width:92px;height:128px;border-radius:8px;overflow:hidden;background:var(--surface);border:1px solid var(--r-color,var(--line));box-shadow:0 0 14px -3px var(--r-glow,transparent);}
+  .rg-img img{width:100%;height:100%;object-fit:cover;display:block;}
+  .rg-label{font-size:11px;font-weight:700;color:var(--rg-color,var(--text));text-align:center;line-height:1.3;}
+  .rg-pct{font-family:var(--font-mono);font-size:10px;color:var(--text-faint);text-align:center;}
+
   .picker{width:100%;max-width:640px;display:flex;flex-direction:column;gap:16px;margin-bottom:26px;}
   .picker-row{display:flex;align-items:center;gap:10px;}
   .picker-label{font-family:var(--font-mono);font-size:11px;letter-spacing:.14em;color:var(--text-faint);text-transform:uppercase;width:64px;flex:none;}
@@ -293,6 +303,12 @@
   <h1 class="title">오리진 <span class="em">언박싱</span> 시뮬레이터</h1>
   <p class="sub">실제 오리진(OGN) 카드 데이터로 팩·박스·카톤을 까봅니다. <b>돈이나 인벤토리는 없고, 그냥 까는 재미</b>만 있습니다.</p>
 
+  <div class="rarity-guide" id="rarityGuide" style="display:none;">
+    <h2>레어도 안내</h2>
+    <p class="rg-sub">등급별 색 테두리 · 실제 카드 예시입니다. %는 팩 1개당 "이 등급 이상"이 나올 확률(추정치)입니다.</p>
+    <div class="rg-grid" id="rgGrid"></div>
+  </div>
+
   <div class="picker">
     <div class="picker-row">
       <div class="picker-label">팩 종류</div>
@@ -369,6 +385,13 @@
     Overnumbered: 'rgba(255,138,61,.55)',
     Signature: 'rgba(224,36,63,.6)'
   };
+  /** 레어도 안내 카드에 표시할 순서 + 부제(등급 자체 확률 or "기본 포함" 안내). rate 는 아래 HIT_*_RATE 정의 후 채운다. */
+  var RARITY_GUIDE_ORDER = ['Common', 'Uncommon', 'Rare', 'Epic', 'AltArt', 'Overnumbered', 'Signature'];
+  var RARITY_GUIDE_NOTE = {
+    Common: '팩마다 기본 포함',
+    Uncommon: '팩마다 기본 포함',
+    Rare: '레어 이상 슬롯 기본값'
+  };
 
   /** 카드 표시용 등급 키 (Showcase 는 하위 유형으로 세분화). */
   function displayRarity(card){
@@ -390,6 +413,14 @@
   var HIT_ALTART_RATE = 1 / 12;
   var HIT_OVERNUMBERED_RATE = 1 / 72;
   var HIT_SIGNATURE_RATE = 1 / 700;
+
+  function fmtPct(rate){
+    return (rate * 100).toLocaleString('ko-KR', { minimumFractionDigits: rate < 0.01 ? 2 : 1, maximumFractionDigits: 2 }) + '%';
+  }
+  RARITY_GUIDE_NOTE.Epic = fmtPct(HIT_EPIC_RATE) + ' 이상';
+  RARITY_GUIDE_NOTE.AltArt = fmtPct(HIT_ALTART_RATE) + ' 이상';
+  RARITY_GUIDE_NOTE.Overnumbered = fmtPct(HIT_OVERNUMBERED_RATE) + ' 이상';
+  RARITY_GUIDE_NOTE.Signature = fmtPct(HIT_SIGNATURE_RATE) + ' 이상';
 
   /**
    * 오리진 부스터팩 1팩당 원화 가격 — 국내 카드샵 예약판매 공지(2026-09-13 마감분) 기준.
@@ -489,6 +520,40 @@
     return 'altart';
   }
 
+  var rarityGuideEl = document.getElementById('rarityGuide');
+  var rgGrid = document.getElementById('rgGrid');
+  /** 레어도별 대표 카드 하나씩 뽑아 색·확률과 함께 보여주는 안내 그리드. */
+  function renderRarityGuide(){
+    if(!rgGrid) return;
+    var poolFor = {
+      Common: POOLS.Common,
+      Uncommon: POOLS.Uncommon,
+      Rare: POOLS.Rare,
+      Epic: POOLS.Epic,
+      AltArt: ALTART_POOL,
+      Overnumbered: OVERNUMBERED_POOL,
+      Signature: SIGNATURE_POOL
+    };
+    var html = RARITY_GUIDE_ORDER.map(function(r){
+      var pool = poolFor[r];
+      if(!pool || !pool.length) return '';
+      var card = pick(pool);
+      var color = RARITY_COLOR[r];
+      var glow = RARITY_GLOW[r];
+      return '' +
+        '<div class="rg-card">' +
+          '<div class="rg-img" style="--r-color:' + color + ';--r-glow:' + glow + '">' +
+            '<img src="' + card.img + '" alt="' + card.name + '" loading="lazy">' +
+          '</div>' +
+          '<div class="rg-label" style="--rg-color:' + color + '">' + RARITY_LABEL[r] + '</div>' +
+          '<div class="rg-pct">' + (RARITY_GUIDE_NOTE[r] || '') + '</div>' +
+        '</div>';
+    }).join('');
+    if(!html) return;
+    rgGrid.innerHTML = html;
+    rarityGuideEl.style.display = '';
+  }
+
   fetch('/origins-cards.json').then(function(r){ return r.json(); }).then(function(payload){
     var cards = payload.cards || payload; // 구버전(순수 배열) 폴백
     POOLS = {};
@@ -507,6 +572,7 @@
     });
     var priceAsOf = document.getElementById('priceAsOf');
     if(priceAsOf && payload.updatedAt) priceAsOf.textContent = payload.updatedAt;
+    renderRarityGuide();
     updateOpenButtons();
   }).catch(function(){
     openBtn.textContent = '카드 데이터를 불러오지 못했습니다';
