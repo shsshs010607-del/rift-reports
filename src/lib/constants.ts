@@ -4,10 +4,10 @@ export const SITE = {
   description:
     "리프트바운드(Riftbound) TCG 정보 허브 — 덱 티어리스트 · 카드 DB · 덱 시뮬레이터 · 시세 · 매장 대회 · 커뮤니티",
   url: process.env.NEXT_PUBLIC_SITE_URL ?? "https://riba.gg",
-  /** 커뮤니티 채널 — 실제 URL 확정 전 "#" (그 사이엔 "준비 중" 표시) */
-  discord: "#" as string,
+  /** 리바지지 공식 디스코드 서버 초대 링크 (영구) */
+  discord: "https://discord.gg/r6tAwdynQK" as string,
   /** 디스코드 신고/제보 게시판 (오역·버그·문의). 개발자 대상 신고는 전부 여기로. */
-  discordReport: "#" as string,
+  discordReport: "https://discord.gg/r6tAwdynQK" as string,
   youtube: "#" as string,
   instagram: "#" as string,
   /** 리바지지 공식 X(트위터). 확정 전 "#". */
