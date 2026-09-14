@@ -218,8 +218,6 @@
     text-align:center;padding:3px 4px;letter-spacing:.02em;
     font-variant-numeric:tabular-nums;
   }
-  .chip b{color:var(--gold);font-weight:700;font-variant-numeric:tabular-nums;}
-
   .highlights{width:100%;margin-bottom:26px;}
   .highlights h2{font-family:var(--font-display);font-weight:400;font-size:17px;margin:0 0 12px;text-align:center;color:var(--gold-bright);}
   .hl-grid{display:flex;flex-wrap:wrap;gap:12px;justify-content:center;}
@@ -242,17 +240,16 @@
   .bulkwrap{width:100%;}
   .bulkwrap h3{font-family:var(--font-mono);font-size:11px;letter-spacing:.12em;color:var(--text-faint);text-transform:uppercase;margin:0 0 10px;text-align:center;}
   .bulk-grid{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;max-height:640px;overflow-y:auto;padding:4px;}
-  .chip{
-    font-family:var(--font-mono);font-size:10px;padding:6px 9px;border-radius:6px;
-    background:var(--surface);border-left:3px solid var(--r-color,var(--line));color:var(--text-dim);
-    opacity:0;animation:chip-in .3s ease forwards;white-space:nowrap;
-  }
-  @keyframes chip-in{0%{opacity:0;}100%{opacity:1;}}
   .bulk-img{
     width:64px;border-radius:6px;overflow:hidden;border:1px solid var(--r-color,var(--line));
     box-shadow:0 0 10px -2px var(--r-glow,transparent);opacity:0;animation:pop-in .35s ease forwards;
   }
   .bulk-img img{width:100%;display:block;}
+  .bulk-img-sm{
+    width:38px;border-radius:5px;overflow:hidden;border:1px solid var(--r-color,var(--line));
+    opacity:0;animation:pop-in .3s ease forwards;
+  }
+  .bulk-img-sm img{width:100%;display:block;}
 
   .again-row{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin-bottom:28px;}
   .again-btn{
@@ -316,7 +313,8 @@
 
   <div class="open-row" id="openRow">
     <button class="open-btn" id="openBtn" disabled>카드 불러오는 중…</button>
-    <button class="openall-btn" id="openAllBtn" style="display:none;">전체 까기</button>
+    <button class="openall-btn" id="openOneNowBtn" style="display:none;">한 팩 바로 까기</button>
+    <button class="openall-btn" id="openAllBtn" style="display:none;">전체 바로 까기</button>
   </div>
 
   <div class="again-row" id="againRow" style="display:none;">
@@ -404,6 +402,7 @@
   var stage = document.getElementById('stage');
   var openRow = document.getElementById('openRow');
   var openBtn = document.getElementById('openBtn');
+  var openOneNowBtn = document.getElementById('openOneNowBtn');
   var openAllBtn = document.getElementById('openAllBtn');
   var productOpts = document.getElementById('productOpts');
   var tierOpts = document.getElementById('tierOpts');
@@ -581,8 +580,11 @@
     };
   }
 
-  /** 뒤집을 수 있는 카드 한 장. 뒤집히면 onFlip(price) 호출. */
-  function buildFlipCard(card, onFlip){
+  /**
+   * 뒤집을 수 있는 카드 한 장. 뒤집히면 onFlip(price) 호출.
+   * instant=true 면 클릭을 기다리지 않고 생성 즉시 뒤집힌 상태로 보여준다("바로 까기"용).
+   */
+  function buildFlipCard(card, onFlip, instant){
     var el = document.createElement('div');
     el.className = 'fcard';
     el.innerHTML =
@@ -592,7 +594,7 @@
         '</div>' +
         '<div class="fface fface-front"></div>' +
       '</div>';
-    el.addEventListener('click', function(){
+    function reveal(){
       if(el.classList.contains('flipped')) return;
       el.classList.add('flipped');
       var front = el.querySelector('.fface-front');
@@ -613,7 +615,13 @@
         front.appendChild(badge);
       }
       onFlip(price);
-    });
+    }
+    if(instant){
+      el.classList.add('locked');
+      reveal();
+    } else {
+      el.addEventListener('click', reveal);
+    }
     return el;
   }
 
@@ -663,9 +671,11 @@
   function renderSessionPack(){
     function build(){
       var pack = session.packs[session.index];
+      var remaining = session.packs.length - session.index - 1;
       stage.innerHTML =
         resultStatsHtml(session.purchase, session.total) +
-        '<div class="pack-progress">팩 <b>' + (session.index + 1) + '</b> / ' + session.packs.length + '</div>' +
+        '<div class="pack-progress">팩 <b>' + (session.index + 1) + '</b> / ' + session.packs.length +
+        ' · 남은 <b>' + remaining + '</b>팩</div>' +
         '<div class="packrow" id="packRow"></div>' +
         '<div class="next-pack-row" id="nextPackRow"></div>';
       var row = document.getElementById('packRow');
@@ -697,7 +707,7 @@
               }
             });
           }
-        }));
+        }, session.instant));
       });
 
       viewAllBtn.style.display = '';
@@ -772,7 +782,7 @@
         if(isHitTier(c)){
           return '<div class="bulk-img" style="--r-color:' + v.color + ';--r-glow:' + v.glow + ';animation-delay:' + delay + 'ms" title="' + c.name + (price != null ? ' · ' + formatWon(price) : '') + '"><img src="' + c.img + '" alt="' + c.name + '" loading="lazy"></div>';
         }
-        return '<span class="chip" style="--r-color:' + v.color + ';animation-delay:' + delay + 'ms">' + c.name + (price != null ? ' <b>' + formatWon(price) + '</b>' : '') + '</span>';
+        return '<div class="bulk-img-sm" style="--r-color:' + v.color + ';animation-delay:' + delay + 'ms" title="' + c.name + (price != null ? ' · ' + formatWon(price) : '') + '"><img src="' + c.img + '" alt="' + c.name + '" loading="lazy"></div>';
       }).join('') +
     '</div></div>';
 
@@ -791,15 +801,17 @@
     if(!POOLS) return; // 카드 데이터 로딩 중엔 로딩 문구를 건드리지 않음
     openBtn.style.display = '';
     openBtn.disabled = false;
+    openAllBtn.textContent = '전체 바로 까기';
+    openAllBtn.style.display = '';
     if(state.tier === 'pack'){
-      // 팩 1개: 한 장씩 뒤집기 / 14장 한번에 모아보기 둘 다 제공.
+      // 팩 1개: 한 장씩 뒤집기 / 14장 한번에 바로 까기 둘 다 제공. "한 팩 바로 까기"는 전체와 동일해 생략.
       openBtn.textContent = '까기';
-      openAllBtn.textContent = '전체 까기';
-      openAllBtn.style.display = '';
+      openOneNowBtn.style.display = 'none';
     } else {
-      // 박스·카톤: 몰아서 한번에 보여주지 않고, 반드시 한 팩씩 순서대로 까도록 유도.
+      // 박스·카톤: 한 팩씩(클릭으로 뒤집기) / 한 팩씩(바로 공개) / 전체 한번에, 셋 다 제공.
       openBtn.textContent = '한 팩씩 까기';
-      openAllBtn.style.display = 'none';
+      openOneNowBtn.textContent = '한 팩 바로 까기';
+      openOneNowBtn.style.display = '';
     }
   }
 
@@ -815,11 +827,11 @@
     afterOpen(false);
   }
 
-  function startPackByPack(){
+  function startPackByPack(instant){
     var n = packsForTier(state.tier);
     var packs = [];
     for(var i=0;i<n;i++) packs.push(openPack(state.product));
-    session = { packs: packs, index: 0, purchase: purchasePrice(state.product, state.tier), total: 0 };
+    session = { packs: packs, index: 0, purchase: purchasePrice(state.product, state.tier), total: 0, instant: !!instant };
     renderSessionPack();
     afterOpen(true);
   }
@@ -842,7 +854,11 @@
   openBtn.addEventListener('click', function(){
     if(!POOLS) return;
     if(state.tier === 'pack') doOpenSinglePack();
-    else startPackByPack();
+    else startPackByPack(false);
+  });
+  openOneNowBtn.addEventListener('click', function(){
+    if(!POOLS) return;
+    startPackByPack(true);
   });
   openAllBtn.addEventListener('click', function(){
     if(!POOLS) return;
