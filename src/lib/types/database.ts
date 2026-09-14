@@ -287,7 +287,9 @@ export interface Database {
           title: string;
           body: string | null;
           href: string | null;
-          kind: "notice" | "update" | "event";
+          kind: "notice" | "update" | "event" | "comment";
+          /** null = 전체 공지, 값 있으면 그 유저에게만 보이는 개인 알림(댓글 알림 등). */
+          user_id: string | null;
           created_by: string | null;
           created_at: string;
         };
@@ -296,7 +298,8 @@ export interface Database {
           title: string;
           body?: string | null;
           href?: string | null;
-          kind?: "notice" | "update" | "event";
+          kind?: "notice" | "update" | "event" | "comment";
+          user_id?: string | null;
           created_by?: string | null;
           created_at?: string;
         };

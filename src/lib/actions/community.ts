@@ -165,6 +165,49 @@ const commentSchema = z.object({
   body: z.string().trim().min(1, "댓글을 입력하세요").max(2000),
 });
 
+/** 글쓴이(및 답글이면 원댓글 작성자)에게 개인 알림 발송 — 본인 글/댓글엔 안 보냄. 실패해도 댓글 등록엔 영향 없음. */
+async function notifyComment(
+  supabase: ReturnType<typeof createClient>,
+  opts: { postId: string; parentId: string | null; commenterId: string; body: string },
+) {
+  const recipients = new Map<string, string>(); // userId -> 알림 제목
+
+  const { data: post } = await supabase
+    .from("posts")
+    .select("author_id")
+    .eq("id", opts.postId)
+    .maybeSingle();
+  if (post && post.author_id !== opts.commenterId) {
+    recipients.set(post.author_id, "내 글에 새 댓글이 달렸습니다");
+  }
+
+  if (opts.parentId) {
+    const { data: parent } = await supabase
+      .from("comments")
+      .select("author_id")
+      .eq("id", opts.parentId)
+      .maybeSingle();
+    if (parent && parent.author_id !== opts.commenterId && !recipients.has(parent.author_id)) {
+      recipients.set(parent.author_id, "내 댓글에 답글이 달렸습니다");
+    }
+  }
+
+  if (recipients.size === 0) return;
+
+  const preview = opts.body.trim().replace(/\s+/g, " ").slice(0, 80);
+  const href = `/community/post/${opts.postId}`;
+  await supabase.from("notifications").insert(
+    [...recipients].map(([userId, title]) => ({
+      title,
+      body: preview,
+      href,
+      kind: "comment" as const,
+      user_id: userId,
+      created_by: opts.commenterId,
+    })),
+  );
+}
+
 export async function createComment(_prev: ActionState, formData: FormData): Promise<ActionState> {
   const { supabase, userId } = await requireUser();
   const parsed = commentSchema.safeParse({
@@ -181,6 +224,13 @@ export async function createComment(_prev: ActionState, formData: FormData): Pro
     author_id: userId,
   });
   if (error) return { error: error.message };
+
+  await notifyComment(supabase, {
+    postId: parsed.data.post_id,
+    parentId: parsed.data.parent_id ?? null,
+    commenterId: userId,
+    body: parsed.data.body,
+  }).catch(() => {});
 
   revalidatePath(`/community/post/${parsed.data.post_id}`);
   return {};

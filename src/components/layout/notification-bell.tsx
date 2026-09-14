@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { Bell, Megaphone, Sparkles, CalendarDays, Check } from "lucide-react";
+import { Bell, Megaphone, Sparkles, CalendarDays, MessageSquare, Check } from "lucide-react";
 import { fmtKstRelative } from "@/lib/datetime";
 import { createClient } from "@/lib/supabase/client";
 import { hasSupabaseEnv } from "@/lib/supabase/env";
@@ -15,6 +15,7 @@ const KIND_ICON = {
   notice: Megaphone,
   update: Sparkles,
   event: CalendarDays,
+  comment: MessageSquare,
 } as const;
 
 export function NotificationBell() {

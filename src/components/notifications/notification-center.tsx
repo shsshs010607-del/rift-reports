@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from "react";
 import Link from "next/link";
-import { Megaphone, Sparkles, CalendarDays, Trash2, Check, BellOff } from "lucide-react";
+import { Megaphone, Sparkles, CalendarDays, MessageSquare, Trash2, Check, BellOff } from "lucide-react";
 import {
   dismissNotification,
   clearAllNotifications,
@@ -16,6 +16,7 @@ const KIND = {
   notice: { icon: Megaphone, label: "공지" },
   update: { icon: Sparkles, label: "업데이트" },
   event: { icon: CalendarDays, label: "이벤트" },
+  comment: { icon: MessageSquare, label: "댓글" },
 } as const;
 
 export function NotificationCenter({

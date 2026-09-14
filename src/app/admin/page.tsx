@@ -34,6 +34,7 @@ export default async function AdminPage() {
     ? await supabase
         .from("notifications")
         .select("id, title, kind, created_at")
+        .is("user_id", null) // 전체공지만 — 댓글 알림 같은 개인 알림은 여기 안 섞음
         .order("created_at", { ascending: false })
         .limit(20)
     : { data: [] };
