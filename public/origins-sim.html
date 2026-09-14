@@ -27,6 +27,8 @@
     --c-rare:#5aa7ff;
     --c-epic:#b073ff;
     --c-showcase:#f2b73a;
+    --c-overnumbered:#ff8a3d;
+    --c-signature:#e0243f;
     --c-hanbok:#ff5f8f;
     --font-display:'Black Han Sans','Noto Sans KR',sans-serif;
     --font-body:'Noto Sans KR',sans-serif;
@@ -329,8 +331,8 @@
   <a href="/" class="made-in">Made in <b>RIBA.GG</b></a>
   <footer class="note">
     실제 카드 데이터(이름·레어도·일러스트)는 오리진(OGN) 세트를 그대로 사용합니다. 팩 봉입 확률은 중국 정식 유통사
-    Shining Soul 공개 팩 구성(7 커먼·3 언커먼·포일 1·룬 1·레어 이상 2)과 해외 개봉 통계(에픽 1/4팩, 이색아트
-    1/12팩, 초편 1/72팩, 시그니처 1/700+팩)를 참고한 추정치이며, 공식 확률표가 아닙니다.<br>
+    Shining Soul 공개 팩 구성(7 커먼·3 언커먼·포일 1·룬 1·레어 이상 2)과 해외 개봉 통계(서사 1/4팩, 대체 일러스트
+    1/12팩, 오버넘버 1/72팩, 시그니처 1/700+팩)를 참고한 추정치이며, 공식 확률표가 아닙니다.<br>
     한국판 오리진 한정 "구미호(한복)" 아리는 기존 오버넘버·시그니처 아리를 대체해 표시됩니다(아트는 추후 교체 예정).<br>
     카드별 시세는 리바지지 실시간 시세(JustTCG · <span id="priceAsOf">-</span> 기준, 원화 환산)를 참고한
     추정가입니다. <b>이 시세는 해외(주로 미국) 거래소 기준</b>이라 국내 실제 되팔 가격과는 차이가 클 수 있고,
@@ -344,21 +346,37 @@
 (function(){
   "use strict";
 
+  // 표시용 등급 — 실데이터 rarity(Common/Uncommon/Rare/Epic/Showcase) 중 Showcase 는
+  // 번호 패턴(showcaseBucket)에 따라 대체 일러스트/오버넘버/시그니처 셋으로 더 나눠 보여준다.
   var RARITY_COLOR = {
     Common: 'var(--c-common)',
     Uncommon: 'var(--c-uncommon)',
     Rare: 'var(--c-rare)',
     Epic: 'var(--c-epic)',
-    Showcase: 'var(--c-showcase)'
+    AltArt: 'var(--c-showcase)',
+    Overnumbered: 'var(--c-overnumbered)',
+    Signature: 'var(--c-signature)'
   };
-  var RARITY_LABEL = { Common:'커먼', Uncommon:'언커먼', Rare:'레어', Epic:'에픽', Showcase:'쇼케이스' };
+  var RARITY_LABEL = {
+    Common:'일반', Uncommon:'특별', Rare:'희귀', Epic:'서사',
+    AltArt:'대체 일러스트', Overnumbered:'오버넘버', Signature:'시그니처'
+  };
   var RARITY_GLOW = {
     Common: 'rgba(138,147,166,.35)',
     Uncommon: 'rgba(79,209,138,.45)',
     Rare: 'rgba(90,167,255,.5)',
     Epic: 'rgba(176,115,255,.5)',
-    Showcase: 'rgba(242,183,58,.55)'
+    AltArt: 'rgba(242,183,58,.55)',
+    Overnumbered: 'rgba(255,138,61,.55)',
+    Signature: 'rgba(224,36,63,.6)'
   };
+
+  /** 카드 표시용 등급 키 (Showcase 는 하위 유형으로 세분화). */
+  function displayRarity(card){
+    if(card.rarity !== 'Showcase') return card.rarity;
+    var b = showcaseBucket(card);
+    return b === 'signature' ? 'Signature' : b === 'overnumbered' ? 'Overnumbered' : 'AltArt';
+  }
   var BOX_PACKS = 24;
   /** 카톤당 박스 수 — 상품별로 다르다 (14장입 카톤 748,800원=박스가×6, 5장입 카톤 576,000원=박스가×12). */
   var CARTON_BOXES = { '5': 12, '14': 6 };
@@ -548,9 +566,10 @@
   }
 
   function cardVisual(card){
+    var r = displayRarity(card);
     return {
-      color: RARITY_COLOR[card.rarity] || 'var(--line)',
-      glow: card.hanbok ? 'rgba(255,95,143,.55)' : (RARITY_GLOW[card.rarity] || 'transparent')
+      color: RARITY_COLOR[r] || 'var(--line)',
+      glow: card.hanbok ? 'rgba(255,95,143,.55)' : (RARITY_GLOW[r] || 'transparent')
     };
   }
 
@@ -691,11 +710,18 @@
     renderBulk(allCards, purchase);
   }
 
+  /** 하이라이트/이미지 표시 대상 등급 — 커먼·언커먼을 제외한 전부. */
+  function isHitTier(card){
+    var r = displayRarity(card);
+    return r !== 'Common' && r !== 'Uncommon';
+  }
+
   function renderBulk(cards, purchase){
     var counts = {};
     var total = 0;
     cards.forEach(function(c){
-      counts[c.rarity] = (counts[c.rarity]||0) + 1;
+      var r = displayRarity(c);
+      counts[r] = (counts[r]||0) + 1;
       var price = cardPrice(c);
       if(price != null) total += price;
     });
@@ -713,7 +739,7 @@
     });
     cards = sorted;
 
-    var highlights = cards.filter(function(c){ return c.rarity === 'Rare' || c.rarity === 'Epic' || c.rarity === 'Showcase'; });
+    var highlights = cards.filter(isHitTier);
 
     var hlHtml = '';
     if(highlights.length){
@@ -735,7 +761,7 @@
         var v = cardVisual(c);
         var delay = Math.min((i % 60) * 12, 700);
         var price = cardPrice(c);
-        if(c.rarity === 'Rare' || c.rarity === 'Epic' || c.rarity === 'Showcase'){
+        if(isHitTier(c)){
           return '<div class="bulk-img" style="--r-color:' + v.color + ';--r-glow:' + v.glow + ';animation-delay:' + delay + 'ms" title="' + c.name + (price != null ? ' · ' + formatWon(price) : '') + '"><img src="' + c.img + '" alt="' + c.name + '" loading="lazy"></div>';
         }
         return '<span class="chip" style="--r-color:' + v.color + ';animation-delay:' + delay + 'ms">' + c.name + (price != null ? ' <b>' + formatWon(price) + '</b>' : '') + '</span>';
