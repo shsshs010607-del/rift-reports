@@ -28,6 +28,12 @@ export const SITE = {
   officialTwitter: "https://x.com/playriftbound" as string,
 } as const;
 
+/** 네이버 카페 OPEN 기념 추첨 이벤트 (2026-09-15 ~ 09-22) — 공지 글 id · 응모 태그. */
+export const CAFE_EVENT = {
+  postId: "c7a23d3b-6ee5-42a2-b868-d78a79efa7f8",
+  tag: "이벤트응모",
+} as const;
+
 /**
  * 홈에 노출할 리프트바운드 공식 새소식 요약 (수동 큐레이션, playriftbound.com 기준).
  * 새 소식은 여기 맨 위에 추가. date 는 "YYYY-MM-DD".

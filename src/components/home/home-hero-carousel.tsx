@@ -4,6 +4,7 @@ import { ArrowRight, Gift, Layers, MessagesSquare, Package, TrendingUp, Wand2 } 
 
 import { CarouselClient } from "@/components/home/carousel-client";
 import { T1EditionBanner } from "@/components/home/t1-edition-banner";
+import { CAFE_EVENT } from "@/lib/constants";
 
 /**
  * 홈 상단 프로모 캐러셀 — 한 번에 1장, 번호 = 배너 순서.
@@ -51,9 +52,6 @@ function SlideShell({
   );
 }
 
-/** 네이버 카페 오픈 기념 추첨 이벤트 공지글 (2026-09-15 ~ 09-22). */
-const CAFE_EVENT_POST_HREF = "/community/post/c7a23d3b-6ee5-42a2-b868-d78a79efa7f8";
-
 function CafeEventSlide() {
   return (
     <SlideShell className="border-[#03C75A]/30 bg-gradient-to-br from-[#03C75A]/[0.09] via-card to-card">
@@ -71,12 +69,18 @@ function CafeEventSlide() {
         </p>
         <div className="mt-3.5 flex flex-wrap gap-2">
           <Link
-            href={CAFE_EVENT_POST_HREF}
+            href={`/community/new?category=riftbound&tag=${encodeURIComponent(CAFE_EVENT.tag)}`}
             className="inline-flex items-center gap-1.5 rounded-full bg-[#03C75A] px-4 py-2 text-label-sm font-bold text-white transition hover:opacity-90"
           >
             <Gift className="h-4 w-4" />
-            이벤트 참여하기
+            가입인증글 바로쓰기
             <ArrowRight className="h-4 w-4" />
+          </Link>
+          <Link
+            href={`/community/post/${CAFE_EVENT.postId}`}
+            className="inline-flex items-center gap-1.5 rounded-full border border-line bg-card px-4 py-2 text-label-sm font-bold text-ink-soft transition hover:border-[#03C75A]/40 hover:text-ink"
+          >
+            자세히 보기
           </Link>
         </div>
       </div>

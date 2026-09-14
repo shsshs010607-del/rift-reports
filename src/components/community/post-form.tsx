@@ -66,10 +66,13 @@ const PLACEHOLDERS: Record<string, string> = {
 
 export function PostForm({
   defaultCategory,
+  defaultTags,
   canWriteNotice,
   edit,
 }: {
   defaultCategory?: string;
+  /** URL(?tag=)로 미리 채울 태그 — 이벤트 응모 글쓰기 바로가기 등에 사용. */
+  defaultTags?: string;
   canWriteNotice: boolean;
   /** 있으면 수정 모드 — 기존 값을 채우고 임시저장을 사용하지 않는다. */
   edit?: { postId: string; title: string; body: string; category: string; tags?: string[] };
@@ -83,7 +86,7 @@ export function PostForm({
   const [title, setTitle] = useState(edit?.title ?? "");
   const [body, setBody] = useState(edit?.body ?? "");
   const [deckCode, setDeckCode] = useState("");
-  const [tags, setTags] = useState(edit?.tags?.join(", ") ?? "");
+  const [tags, setTags] = useState(edit?.tags?.join(", ") ?? defaultTags ?? "");
   const [tab, setTab] = useState<"write" | "preview">("write");
   const [saved, setSaved] = useState<"idle" | "saving" | "saved">("idle");
   const [restored, setRestored] = useState(false);
@@ -107,14 +110,14 @@ export function PostForm({
         setTitle(d.title ?? "");
         setBody(d.body ?? "");
         setDeckCode(d.deckCode ?? "");
-        setTags(d.tags ?? "");
+        setTags(d.tags || defaultTags || "");
         setRestored(true);
       }
     } catch {
       /* noop */
     }
     hydratedRef.current = true;
-  }, [defaultCategory, editing]);
+  }, [defaultCategory, defaultTags, editing]);
 
   // ── 임시 저장 (디바운스) ────────────────────────────────
   useEffect(() => {

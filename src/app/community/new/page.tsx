@@ -9,7 +9,11 @@ import { COMMUNITY_CATEGORIES } from "@/lib/constants";
 
 export const metadata: Metadata = { title: "글쓰기" };
 
-export default async function NewPostPage({ searchParams }: { searchParams: { category?: string } }) {
+export default async function NewPostPage({
+  searchParams,
+}: {
+  searchParams: { category?: string; tag?: string };
+}) {
   if (!hasSupabaseEnv) redirect("/login?next=/community/new");
 
   const supabase = createClient();
@@ -39,7 +43,11 @@ export default async function NewPostPage({ searchParams }: { searchParams: { ca
         작성 중인 글은 이 브라우저에 자동으로 임시 저장됩니다.
       </p>
       <div className="note-card p-5 sm:p-6">
-        <PostForm defaultCategory={defaultCategory} canWriteNotice={canWriteNotice} />
+        <PostForm
+          defaultCategory={defaultCategory}
+          defaultTags={searchParams.tag}
+          canWriteNotice={canWriteNotice}
+        />
       </div>
     </div>
   );
