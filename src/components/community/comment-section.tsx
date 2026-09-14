@@ -16,6 +16,46 @@ import { Avatar } from "./avatar";
 
 const initial: ActionState = {};
 
+const URL_RE = /(https?:\/\/[^\s]+)/g;
+const TRAILING_PUNCT_RE = /[),.!?;:'"\]]+$/;
+
+/** 댓글 본문에서 http(s):// 로 시작하는 링크를 자동으로 하이퍼링크로 바꾼다. */
+function linkify(text: string): React.ReactNode[] {
+  const nodes: React.ReactNode[] = [];
+  let lastIndex = 0;
+  let key = 0;
+  let m: RegExpExecArray | null;
+  while ((m = URL_RE.exec(text))) {
+    if (m.index > lastIndex) nodes.push(text.slice(lastIndex, m.index));
+    let url = m[0];
+    let trailing = "";
+    const tm = url.match(TRAILING_PUNCT_RE);
+    if (tm) {
+      trailing = tm[0];
+      url = url.slice(0, -trailing.length);
+    }
+    if (url) {
+      nodes.push(
+        <a
+          key={key++}
+          href={url}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="break-all text-primary-strong underline"
+        >
+          {url}
+        </a>,
+      );
+      if (trailing) nodes.push(trailing);
+    } else {
+      nodes.push(m[0]);
+    }
+    lastIndex = URL_RE.lastIndex;
+  }
+  if (lastIndex < text.length) nodes.push(text.slice(lastIndex));
+  return nodes;
+}
+
 const INPUT =
   "w-full resize-y rounded-xl border border-line bg-card px-3.5 py-2.5 text-body-md text-ink placeholder:text-ink-soft/70 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/15";
 
@@ -163,7 +203,9 @@ function CommentNode({
           onDone={() => setEditing(false)}
         />
       ) : (
-        <p className="mt-1.5 whitespace-pre-wrap text-body-md leading-relaxed text-ink">{c.body}</p>
+        <p className="mt-1.5 whitespace-pre-wrap text-body-md leading-relaxed text-ink">
+          {linkify(c.body)}
+        </p>
       )}
       <div className="mt-1.5 flex items-center gap-3">
         {!isReply && currentUserId && !editing && (
