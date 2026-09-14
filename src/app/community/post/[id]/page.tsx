@@ -70,6 +70,19 @@ export default async function PostDetailPage({ params }: { params: { id: string 
         >
           {post.title}
         </h1>
+        {post.tags?.length > 0 && (
+          <div className="mt-2 flex flex-wrap gap-1.5">
+            {post.tags.map((t) => (
+              <Link
+                key={t}
+                href={`/community?tag=${encodeURIComponent(t)}`}
+                className="rounded-full bg-subcanvas px-2 py-0.5 text-label-sm font-bold text-ink-soft transition hover:text-primary-strong"
+              >
+                #{t}
+              </Link>
+            ))}
+          </div>
+        )}
         <div className="mt-3.5 flex items-center gap-2.5 text-body-sm text-ink-soft">
           <Avatar name={post.author?.username} src={post.author?.avatar_url} size="md" />
           <div className="leading-tight">

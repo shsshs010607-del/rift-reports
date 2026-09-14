@@ -119,6 +119,18 @@ export function PostList({
                       </span>
                     </>
                   )}
+                  {p.tags?.length > 0 && (
+                    <span className="hidden shrink-0 items-center gap-1 sm:flex">
+                      {p.tags.slice(0, 2).map((t) => (
+                        <span
+                          key={t}
+                          className="rounded bg-subcanvas px-1 py-0.5 text-[11px] font-bold text-ink-soft"
+                        >
+                          #{t}
+                        </span>
+                      ))}
+                    </span>
+                  )}
                   <span className="truncate font-medium text-ink-soft">
                     {p.author?.username ?? "익명"}
                   </span>

@@ -20,17 +20,18 @@ export const revalidate = 30;
 export default async function CommunityHubPage({
   searchParams,
 }: {
-  searchParams: { tab?: string; q?: string; page?: string };
+  searchParams: { tab?: string; q?: string; tag?: string; page?: string };
 }) {
   const page = Number(searchParams.page) || 1;
   const q = searchParams.q?.trim() || undefined;
-  const popular = searchParams.tab === "popular" && !q;
+  const tag = searchParams.tag?.trim() || undefined;
+  const popular = searchParams.tab === "popular" && !q && !tag;
 
   const [list, recent, trending] = await Promise.all([
     popular
       ? getPopularPosts({ page })
       : // 전체 최신글에서 게시판별 고정글(리프트 리포트 등)은 제외 — 각 게시판 탭에서 확인
-        getPosts({ q, page, excludePinned: !q }),
+        getPosts({ q, tag, page, excludePinned: !q && !tag }),
     getRecentByCategory(3),
     getTrendingPosts(6),
   ]);
@@ -39,6 +40,7 @@ export default async function CommunityHubPage({
     const sp = new URLSearchParams();
     if (searchParams.tab) sp.set("tab", searchParams.tab);
     if (q) sp.set("q", q);
+    if (tag) sp.set("tag", tag);
     if (p > 1) sp.set("page", String(p));
     const s = sp.toString();
     return s ? `/community?${s}` : "/community";
@@ -60,7 +62,7 @@ export default async function CommunityHubPage({
         {/* 메인 — 전체 최신글 */}
         <div>
           <h2 className="mb-3 text-title-md font-bold text-ink">
-            {q ? `"${q}" 검색 결과` : popular ? "인기글" : "전체 최신글"}
+            {q ? `"${q}" 검색 결과` : tag ? `#${tag}` : popular ? "인기글" : "전체 최신글"}
           </h2>
           <Suspense fallback={<div className="mb-4 h-24" />}>
             <BoardToolbar writeHref="/community/new" />
@@ -68,7 +70,7 @@ export default async function CommunityHubPage({
           <PostList
             posts={list.posts}
             showCategory
-            emptyText={q ? "검색 결과가 없습니다." : "아직 글이 없습니다."}
+            emptyText={q || tag ? "검색 결과가 없습니다." : "아직 글이 없습니다."}
           />
           <Pagination
             page={list.page}

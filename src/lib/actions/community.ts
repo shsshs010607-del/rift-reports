@@ -14,7 +14,21 @@ const postSchema = z.object({
   title: z.string().trim().min(2, "제목은 2자 이상").max(150, "제목은 150자 이하"),
   body: z.string().trim().min(1, "내용을 입력하세요").max(20000),
   is_notice: z.boolean().optional(),
+  tags: z.array(z.string().trim().min(1).max(20)).max(5).optional(),
 });
+
+/** "이벤트응모, 가입인사" 같은 콤마 구분 입력 → 정리된 태그 배열 (최대 5개, 개당 20자). */
+function parseTags(raw: FormDataEntryValue | null): string[] {
+  if (typeof raw !== "string") return [];
+  const seen = new Set<string>();
+  for (const part of raw.split(/[,\s#]+/)) {
+    const tag = part.trim();
+    if (!tag) continue;
+    seen.add(tag.slice(0, 20));
+    if (seen.size >= 5) break;
+  }
+  return [...seen];
+}
 
 /** 유효해 보이는 덱 코드면 반환, 아니면 null. */
 function normalizeDeckCode(raw: FormDataEntryValue | null): string | null {
@@ -48,6 +62,7 @@ export async function createPost(_prev: ActionState, formData: FormData): Promis
     title: formData.get("title"),
     body: formData.get("body"),
     is_notice: formData.get("is_notice") === "on",
+    tags: parseTags(formData.get("tags")),
   });
   if (!parsed.success) {
     const f: Record<string, string> = {};
@@ -75,6 +90,7 @@ export async function createPost(_prev: ActionState, formData: FormData): Promis
       body,
       author_id: userId,
       is_notice: parsed.data.is_notice ?? false,
+      tags: parsed.data.tags ?? [],
     })
     .select("id, category")
     .single();
@@ -97,6 +113,7 @@ export async function updatePost(
     category: formData.get("category"),
     title: formData.get("title"),
     body: formData.get("body"),
+    tags: parseTags(formData.get("tags")),
   });
   if (!parsed.success) {
     const f: Record<string, string> = {};
@@ -116,6 +133,7 @@ export async function updatePost(
       category: parsed.data.category as CommunityCategory,
       title: parsed.data.title,
       body,
+      tags: parsed.data.tags ?? [],
       updated_at: new Date().toISOString(),
     })
     .eq("id", postId) // RLS: 본인/스태프만

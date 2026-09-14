@@ -26,6 +26,7 @@ export function getPosts(opts: {
   /** 고정글 제외 (전체 피드에서 게시판별 고정글이 상단 도배되는 것 방지). */
   excludePinned?: boolean;
   q?: string;
+  tag?: string;
   page?: number;
 }) {
   const page = Math.max(1, opts.page ?? 1);
@@ -41,6 +42,7 @@ export function getPosts(opts: {
       if (opts.category) filter = filter.eq("category", opts.category);
       if (opts.excludeCategory) filter = filter.neq("category", opts.excludeCategory);
       if (opts.excludePinned) filter = filter.eq("is_pinned", false);
+      if (opts.tag?.trim()) filter = filter.contains("tags", [opts.tag.trim()]);
 
       const searching = Boolean(opts.q && opts.q.trim());
       if (searching) {

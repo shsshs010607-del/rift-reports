@@ -30,7 +30,7 @@ export default async function BoardPage({
   searchParams,
 }: {
   params: { category: string };
-  searchParams: { tab?: string; q?: string; page?: string };
+  searchParams: { tab?: string; q?: string; tag?: string; page?: string };
 }) {
   const category = COMMUNITY_CATEGORIES.find((c) => c.slug === params.category);
   if (!category) notFound();
@@ -38,10 +38,13 @@ export default async function BoardPage({
 
   const page = Number(searchParams.page) || 1;
   const q = searchParams.q?.trim() || undefined;
-  const popular = searchParams.tab === "popular" && !q;
+  const tag = searchParams.tag?.trim() || undefined;
+  const popular = searchParams.tab === "popular" && !q && !tag;
 
   const [list, recent] = await Promise.all([
-    popular ? getPopularPosts({ category: slug, page }) : getPosts({ category: slug, q, page }),
+    popular
+      ? getPopularPosts({ category: slug, page })
+      : getPosts({ category: slug, q, tag, page }),
     getRecentByCategory(4),
   ]);
 
@@ -49,6 +52,7 @@ export default async function BoardPage({
     const sp = new URLSearchParams();
     if (searchParams.tab) sp.set("tab", searchParams.tab);
     if (q) sp.set("q", q);
+    if (tag) sp.set("tag", tag);
     if (p > 1) sp.set("page", String(p));
     const s = sp.toString();
     return s ? `/community/${slug}?${s}` : `/community/${slug}`;
@@ -93,7 +97,7 @@ export default async function BoardPage({
       </Suspense>
       <PostList
         posts={list.posts}
-        emptyText={q ? "검색 결과가 없습니다." : "아직 글이 없습니다. 첫 글을 남겨보세요!"}
+        emptyText={q || tag ? "검색 결과가 없습니다." : "아직 글이 없습니다. 첫 글을 남겨보세요!"}
       />
       <Pagination page={list.page} total={list.total} perPage={POSTS_PER_PAGE} hrefFor={hrefFor} />
       <AdSenseUnit className="mt-8" />

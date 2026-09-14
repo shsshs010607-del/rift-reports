@@ -29,7 +29,16 @@ const DRAFT_KEY = "rr:community:draft:v1";
 const BODY_MIN = 10;
 const BODY_MAX = 20000;
 
-type Draft = { category: string; title: string; body: string; deckCode: string; ts: number };
+type Draft = {
+  category: string;
+  title: string;
+  body: string;
+  deckCode: string;
+  tags: string;
+  ts: number;
+};
+
+const TAG_SUGGESTIONS = ["이벤트응모", "가입인사", "질문", "공략", "후기"];
 
 function SubmitBtn({ disabled, editing }: { disabled?: boolean; editing?: boolean }) {
   const { pending } = useFormStatus();
@@ -63,7 +72,7 @@ export function PostForm({
   defaultCategory?: string;
   canWriteNotice: boolean;
   /** 있으면 수정 모드 — 기존 값을 채우고 임시저장을 사용하지 않는다. */
-  edit?: { postId: string; title: string; body: string; category: string };
+  edit?: { postId: string; title: string; body: string; category: string; tags?: string[] };
 }) {
   const editing = Boolean(edit);
   const boundAction = edit ? updatePost.bind(null, edit.postId) : createPost;
@@ -74,6 +83,7 @@ export function PostForm({
   const [title, setTitle] = useState(edit?.title ?? "");
   const [body, setBody] = useState(edit?.body ?? "");
   const [deckCode, setDeckCode] = useState("");
+  const [tags, setTags] = useState(edit?.tags?.join(", ") ?? "");
   const [tab, setTab] = useState<"write" | "preview">("write");
   const [saved, setSaved] = useState<"idle" | "saving" | "saved">("idle");
   const [restored, setRestored] = useState(false);
@@ -97,6 +107,7 @@ export function PostForm({
         setTitle(d.title ?? "");
         setBody(d.body ?? "");
         setDeckCode(d.deckCode ?? "");
+        setTags(d.tags ?? "");
         setRestored(true);
       }
     } catch {
@@ -112,7 +123,7 @@ export function PostForm({
     setSaved("saving");
     const t = setTimeout(() => {
       try {
-        const d: Draft = { category, title, body, deckCode, ts: Date.now() };
+        const d: Draft = { category, title, body, deckCode, tags, ts: Date.now() };
         localStorage.setItem(DRAFT_KEY, JSON.stringify(d));
         setSaved("saved");
       } catch {
@@ -120,7 +131,7 @@ export function PostForm({
       }
     }, 600);
     return () => clearTimeout(t);
-  }, [category, title, body, deckCode, editing]);
+  }, [category, title, body, deckCode, tags, editing]);
 
   // 서버가 에러를 돌려줬으면(리다이렉트 실패) 다시 저장 재개
   useEffect(() => {
@@ -140,6 +151,7 @@ export function PostForm({
     setTitle("");
     setBody("");
     setDeckCode("");
+    setTags("");
     setRestored(false);
     try {
       localStorage.removeItem(DRAFT_KEY);
@@ -277,6 +289,40 @@ export function PostForm({
         {state.fieldErrors?.title && (
           <p className="mt-1 text-body-sm text-coral">{state.fieldErrors.title}</p>
         )}
+      </div>
+
+      <div>
+        <Label>태그 (선택, 최대 5개)</Label>
+        <input
+          name="tags"
+          value={tags}
+          onChange={(e) => setTags(e.target.value)}
+          placeholder="쉼표로 구분 — 예: 이벤트응모, 가입인사"
+          maxLength={120}
+          className={INPUT}
+          autoComplete="off"
+        />
+        <div className="mt-1.5 flex flex-wrap gap-1.5">
+          {TAG_SUGGESTIONS.map((t) => (
+            <button
+              key={t}
+              type="button"
+              onClick={() =>
+                setTags((v) => {
+                  const cur = v
+                    .split(/[,\s#]+/)
+                    .map((x) => x.trim())
+                    .filter(Boolean);
+                  if (cur.includes(t)) return v;
+                  return [...cur, t].join(", ");
+                })
+              }
+              className="rounded-full border border-line px-2.5 py-1 text-label-sm font-semibold text-ink-soft transition hover:border-primary/40 hover:text-primary-strong"
+            >
+              #{t}
+            </button>
+          ))}
+        </div>
       </div>
 
       <div>

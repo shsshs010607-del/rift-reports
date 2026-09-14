@@ -53,6 +53,7 @@ export default async function EditPostPage({ params }: { params: { id: string } 
             title: post.title,
             body: post.body,
             category: post.category,
+            tags: post.tags,
           }}
         />
       </div>
