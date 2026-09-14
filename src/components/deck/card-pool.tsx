@@ -328,7 +328,7 @@ function PoolChip({
       onClick={onClick}
       title={title}
       className={cn(
-        "inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-label-sm transition",
+        "inline-flex items-center gap-1 rounded-full border px-2.5 py-1.5 text-label-sm transition",
         on
           ? "border-primary bg-primary/10 font-bold text-primary-strong"
           : "border-line text-ink-soft hover:border-primary/40",

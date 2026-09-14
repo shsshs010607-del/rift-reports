@@ -25,7 +25,7 @@ export function ListingOwnerControls({
             disabled={pending || status === s.slug}
             onClick={() => start(() => setListingStatus(id, s.slug))}
             className={cn(
-              "rounded-lg px-2.5 py-1 text-label-sm font-bold transition",
+              "rounded-lg px-2.5 py-1.5 text-label-sm font-bold transition",
               status === s.slug
                 ? "bg-primary text-white"
                 : "text-ink-soft hover:bg-card hover:text-ink",

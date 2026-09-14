@@ -461,7 +461,7 @@ function Pill({
       type="button"
       onClick={onClick}
       className={cn(
-        "rounded-full px-3 py-1 text-label-sm font-bold transition",
+        "rounded-full px-3 py-1.5 text-label-sm font-bold transition",
         on ? "bg-primary text-white" : "bg-subcanvas text-ink-soft hover:text-ink",
       )}
     >
@@ -486,7 +486,7 @@ function Swatch({
       type="button"
       onClick={onClick}
       className={cn(
-        "inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-label-sm font-bold transition",
+        "inline-flex items-center gap-1.5 rounded-full px-2.5 py-1.5 text-label-sm font-bold transition",
         on ? "bg-primary text-white" : "bg-subcanvas text-ink-soft hover:text-ink",
       )}
     >

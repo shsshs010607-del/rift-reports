@@ -122,7 +122,7 @@ export function CardFilterBar({ facets }: { facets?: CardFacets | null }) {
                 key={k}
                 type="button"
                 onClick={() => clearOne(k)}
-                className="inline-flex items-center gap-1 rounded-full bg-primary/12 px-2.5 py-1 text-label-sm font-bold text-primary-strong transition hover:bg-primary/20"
+                className="inline-flex items-center gap-1 rounded-full bg-primary/12 px-2.5 py-1.5 text-label-sm font-bold text-primary-strong transition hover:bg-primary/20"
               >
                 {KEY_LABEL[k] ?? k} · {label}
                 <X className="h-3 w-3" />

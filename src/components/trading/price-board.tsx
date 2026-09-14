@@ -146,7 +146,7 @@ export function PriceBoard({ rows, fx }: { rows: PriceRow[]; fx: FxRate }) {
             type="button"
             onClick={() => setSort(s.key)}
             className={cn(
-              "inline-flex items-center gap-1 rounded-lg px-2 py-1 font-semibold transition",
+              "inline-flex items-center gap-1 rounded-lg px-2.5 py-1.5 font-semibold transition",
               sort === s.key
                 ? "bg-primary text-white"
                 : "text-ink-soft hover:bg-subcanvas hover:text-ink",
@@ -159,7 +159,7 @@ export function PriceBoard({ rows, fx }: { rows: PriceRow[]; fx: FxRate }) {
           type="button"
           onClick={() => setAsc((v) => !v)}
           aria-label={asc ? "오름차순" : "내림차순"}
-          className="inline-flex items-center gap-1 rounded-lg border border-line px-2 py-1 font-semibold text-ink-soft transition hover:bg-subcanvas hover:text-ink"
+          className="inline-flex items-center gap-1 rounded-lg border border-line px-2.5 py-1.5 font-semibold text-ink-soft transition hover:bg-subcanvas hover:text-ink"
         >
           {asc ? <ArrowUp className="h-3.5 w-3.5" /> : <ArrowDown className="h-3.5 w-3.5" />}
           {asc ? "오름차순" : "내림차순"}
@@ -296,7 +296,7 @@ function FilterChip({
       type="button"
       onClick={onClick}
       className={cn(
-        "rounded-full border px-2.5 py-1 text-label-sm transition",
+        "rounded-full border px-2.5 py-1.5 text-label-sm transition",
         on
           ? "border-primary bg-primary/10 font-bold text-primary-strong"
           : "border-line text-ink-soft hover:border-primary/40",
