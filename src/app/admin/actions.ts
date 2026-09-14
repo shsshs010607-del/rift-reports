@@ -5,6 +5,8 @@ import { redirect } from "next/navigation";
 import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { notifyDiscordNews } from "@/lib/discord";
+import { SITE } from "@/lib/constants";
 
 export type AdminState = { error?: string; ok?: string };
 
@@ -58,9 +60,10 @@ export async function createReport(_prev: AdminState, formData: FormData): Promi
   if (!parsed.success) return { error: "입력을 확인하세요 (제목 2자+, 본문 필수, 커버는 URL)" };
   const d = parsed.data;
 
+  const slug = d.slug ? slugify(d.slug) : slugify(d.title);
   const { error } = await supabase.from("reports").insert({
     title: d.title,
-    slug: d.slug ? slugify(d.slug) : slugify(d.title),
+    slug,
     excerpt: d.excerpt ?? null,
     body: d.body,
     tag: d.tag ?? null,
@@ -70,6 +73,10 @@ export async function createReport(_prev: AdminState, formData: FormData): Promi
     published_at: d.status === "published" ? new Date().toISOString() : null,
   });
   if (error) return { error: error.message };
+
+  if (d.status === "published") {
+    await notifyDiscordNews({ title: d.title, excerpt: d.excerpt, url: `${SITE.url}/reports/${slug}` });
+  }
 
   revalidatePath("/reports");
   return { ok: `리포트 "${d.title}" 저장됨` };
