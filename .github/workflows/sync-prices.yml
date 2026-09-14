@@ -11,6 +11,9 @@ on:
     - cron: "0 3 */2 * *"
   workflow_dispatch: {} # 수동 실행 버튼
 
+permissions:
+  contents: write # origins-cards.json 갱신 커밋에 필요
+
 concurrency:
   group: sync-prices
   cancel-in-progress: false
@@ -31,3 +34,20 @@ jobs:
           JUSTTCG_API_KEY: ${{ secrets.JUSTTCG_API_KEY }}
           NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+      # 박스깡 시뮬레이터(origins-sim.html) 카드 시세 스냅샷 — 위 시세 동기화 결과를 반영.
+      # 이 파일은 커밋된 정적 스냅샷이라 여기서 자동으로 갱신하지 않으면 그대로 굳는다.
+      - run: node scripts/build-origins-sim-data.js
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+      - name: origins-cards.json 변경 시 커밋
+        run: |
+          if ! git diff --quiet -- public/origins-cards.json; then
+            git config user.name "github-actions[bot]"
+            git config user.email "github-actions[bot]@users.noreply.github.com"
+            git add public/origins-cards.json
+            git commit -m "chore(origins-sim): auto-refresh card price snapshot"
+            git push
+          else
+            echo "변경 없음 — 커밋 생략"
+          fi
