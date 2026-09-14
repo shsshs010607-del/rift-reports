@@ -85,7 +85,7 @@ async function main() {
     const isHanbok = HANBOK_TARGET.test(c.name);
     const num = String(c.riftbound_id.split("-")[1] || "").toLowerCase();
     const usd = priceByNumber.get(num);
-    const price = typeof usd === "number" ? Math.max(1, Math.round((usd * usdKrw) / 100) * 100) : undefined;
+    const price = typeof usd === "number" ? Math.max(1, Math.round(usd * usdKrw)) : undefined;
     if (price != null) priced++;
     return {
       id: c.riftbound_id,

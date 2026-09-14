@@ -126,6 +126,54 @@
     50%{box-shadow:0 0 0 2px var(--c-hanbok),0 0 32px 2px rgba(255,95,143,.75);}
   }
 
+  /* ---------- 쇼케이스 히트 이펙트 ---------- */
+  .fcard.showcase-hit .fface-front{animation:showcase-burst .9s cubic-bezier(.2,.8,.2,1);}
+  @keyframes showcase-burst{
+    0%{box-shadow:0 0 0 1px var(--r-color,transparent),0 0 0 0 rgba(242,183,58,.9);transform:rotateY(180deg) scale(1);}
+    35%{box-shadow:0 0 0 1px var(--r-color,transparent),0 0 46px 14px rgba(242,183,58,.85);transform:rotateY(180deg) scale(1.1);}
+    100%{box-shadow:0 0 0 1px var(--r-color,transparent),0 0 22px -4px var(--r-glow,transparent);transform:rotateY(180deg) scale(1);}
+  }
+  .fcard.showcase-hit .fface-front::after{
+    content:'';position:absolute;inset:-50%;pointer-events:none;
+    background:radial-gradient(circle,rgba(255,255,255,.95) 0%,rgba(242,183,58,.55) 35%,transparent 68%);
+    opacity:0;animation:showcase-flash .7s ease-out;
+  }
+  @keyframes showcase-flash{0%{opacity:1;transform:scale(.25);}100%{opacity:0;transform:scale(1.7);}}
+  @media (prefers-reduced-motion: reduce){
+    .fcard.showcase-hit .fface-front,
+    .fcard.showcase-hit .fface-front::after{animation:none;}
+  }
+
+  /* ---------- 팩 뜯기 인트로 ---------- */
+  .pack-tear{position:relative;width:130px;height:181px;margin:0 auto 20px;}
+  .pack-half{position:absolute;top:0;width:65px;height:181px;overflow:hidden;}
+  .pack-half.pack-left{left:0;transform-origin:left center;animation:pack-tear-left .65s cubic-bezier(.3,.7,.3,1) forwards;}
+  .pack-half.pack-right{right:0;transform-origin:right center;animation:pack-tear-right .65s cubic-bezier(.3,.7,.3,1) forwards;}
+  .pack-face{
+    width:130px;height:181px;border-radius:10px;display:flex;align-items:center;justify-content:center;
+    background:linear-gradient(155deg,#1c1f2a,#12141b 60%);border:1px solid var(--gold);
+    box-shadow:0 10px 22px -12px rgba(0,0,0,.6);
+  }
+  .pack-face svg{width:44px;height:44px;opacity:.7;flex-shrink:0;}
+  .pack-half.pack-right .pack-face{margin-left:-65px;}
+  @keyframes pack-tear-left{
+    0%,20%{transform:rotate(0) translate(0,0);opacity:1;}
+    100%{transform:rotate(-22deg) translate(-26px,6px);opacity:0;}
+  }
+  @keyframes pack-tear-right{
+    0%,20%{transform:rotate(0) translate(0,0);opacity:1;}
+    100%{transform:rotate(22deg) translate(26px,6px);opacity:0;}
+  }
+  .pack-tear-flash{
+    position:absolute;inset:0;margin:auto;width:50px;height:50px;border-radius:50%;pointer-events:none;
+    background:radial-gradient(circle,rgba(255,255,255,.95) 0%,rgba(242,183,58,.6) 40%,transparent 70%);
+    opacity:0;animation:pack-tear-flash .5s ease-out .12s forwards;
+  }
+  @keyframes pack-tear-flash{0%{opacity:0;transform:scale(.2);}40%{opacity:1;}100%{opacity:0;transform:scale(3.4);}}
+  @media (prefers-reduced-motion: reduce){
+    .pack-half, .pack-tear-flash{animation:none;opacity:0;}
+  }
+
   /* ---------- summary + bulk grid ---------- */
   .summary{
     width:100%;display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-bottom:22px;
@@ -259,7 +307,7 @@
       <div class="picker-opts" id="tierOpts">
         <button class="opt-btn" data-tier="pack">팩 <span class="sc">1개</span></button>
         <button class="opt-btn" data-tier="box">박스 <span class="sc">24팩</span></button>
-        <button class="opt-btn" data-tier="carton">카톤 <span class="sc">6박스 · 144팩</span></button>
+        <button class="opt-btn" data-tier="carton">카톤 <span class="sc" id="cartonSc">6박스 · 144팩</span></button>
       </div>
     </div>
   </div>
@@ -312,7 +360,8 @@
     Showcase: 'rgba(242,183,58,.55)'
   };
   var BOX_PACKS = 24;
-  var CARTON_BOXES = 6;
+  /** 카톤당 박스 수 — 상품별로 다르다 (14장입 카톤 748,800원=박스가×6, 5장입 카톤 576,000원=박스가×12). */
+  var CARTON_BOXES = { '5': 12, '14': 6 };
 
   /**
    * 봉입 확률 — 정부 공시(중국 실물카드 확률표기 의무) 수준의 정확한 %표는 공개돼 있지 않아,
@@ -327,8 +376,9 @@
 
   /**
    * 오리진 부스터팩 1팩당 원화 가격 — 국내 카드샵 예약판매 공지(2026-09-13 마감분) 기준.
-   * 5장입: 1박스(24팩) 48,000원 → 팩당 2,000원. 14장입: 1박스(24팩) 124,800원 → 팩당 5,200원
-   * (1카톤 748,800원 = 박스가 × 6, 완전히 일치). 매장·시점에 따라 달라질 수 있음.
+   * 5장입: 팩 2,000원 · 박스(24팩) 48,000원 · 카톤(12박스·288팩) 576,000원 (박스가 × 12, 완전히 일치).
+   * 14장입: 팩 5,200원 · 박스(24팩) 124,800원 · 카톤(6박스·144팩) 748,800원 (박스가 × 6, 완전히 일치).
+   * 매장·시점에 따라 달라질 수 있음.
    */
   var PACK_PRICE_KRW = { '5': 2000, '14': 5200 };
 
@@ -352,14 +402,21 @@
       btn.classList.toggle('active', btn.dataset[attr] === value);
     });
   }
+  var cartonSc = document.getElementById('cartonSc');
+  function updateCartonLabel(){
+    var boxes = cartonBoxes(state.product);
+    cartonSc.textContent = boxes + '박스 · ' + (boxes * BOX_PACKS) + '팩';
+  }
   setActive(productOpts, 'product', state.product);
   setActive(tierOpts, 'tier', state.tier);
+  updateCartonLabel();
 
   productOpts.addEventListener('click', function(e){
     var btn = e.target.closest('.opt-btn');
     if(!btn) return;
     state.product = btn.dataset.product;
     setActive(productOpts, 'product', state.product);
+    updateCartonLabel();
     resetStage();
   });
   tierOpts.addEventListener('click', function(e){
@@ -417,6 +474,7 @@
       }
     });
     (POOLS.Showcase || []).forEach(function(c){
+      if(c.type === 'Rune') return; // 룬은 별도 룬 슬롯(drawRune)에서만 등장 — 히트 슬롯과 중복 집계 방지
       var b = showcaseBucket(c);
       if(b === 'signature') SIGNATURE_POOL.push(c);
       else if(b === 'overnumbered') OVERNUMBERED_POOL.push(c);
@@ -473,10 +531,13 @@
     return cards;
   }
 
+  function cartonBoxes(product){
+    return CARTON_BOXES[product] || 6;
+  }
   function packsForTier(tier){
     if(tier === 'pack') return 1;
     if(tier === 'box') return BOX_PACKS;
-    return BOX_PACKS * CARTON_BOXES;
+    return BOX_PACKS * cartonBoxes(state.product);
   }
 
   function packPrice(product){
@@ -512,6 +573,7 @@
       front.style.setProperty('--r-color', v.color);
       front.style.setProperty('--r-glow', v.glow);
       if(card.hanbok) front.classList.add('hanbok');
+      if(card.rarity === 'Showcase') el.classList.add('showcase-hit');
       var img = document.createElement('img');
       img.src = card.img;
       img.alt = card.name;
@@ -528,6 +590,19 @@
     return el;
   }
 
+  var PACK_RUNE_SVG = '<svg viewBox="0 0 100 100"><path d="M50 10 C 65 20, 80 30, 78 50 C 76 68, 62 80, 50 90 C 38 80, 24 68, 22 50 C 20 30, 35 20, 50 10 Z" fill="none" stroke="#e8b84b" stroke-width="4"/><circle cx="50" cy="50" r="8" fill="#e8b84b"/></svg>';
+
+  /** 팩을 뜯는 짧은 인트로 애니메이션을 재생한 뒤 onDone 호출. */
+  function playPackTear(onDone){
+    stage.innerHTML =
+      '<div class="pack-tear">' +
+        '<div class="pack-half pack-left"><div class="pack-face">' + PACK_RUNE_SVG + '</div></div>' +
+        '<div class="pack-half pack-right"><div class="pack-face">' + PACK_RUNE_SVG + '</div></div>' +
+        '<div class="pack-tear-flash"></div>' +
+      '</div>';
+    setTimeout(onDone, 650);
+  }
+
   /** 결과 통계 바(구매가/획득 시세/손익)를 값이 바뀔 때마다 갱신 + 살짝 튀는 애니메이션. */
   function bumpStats(totalAmt, plAmt, plWrap, total, purchase){
     totalAmt.textContent = formatWon(total);
@@ -540,62 +615,70 @@
   }
 
   function renderPack(cards, purchase){
-    stage.innerHTML = resultStatsHtml(purchase, 0) + '<div class="packrow" id="packRow"></div>';
-    var row = document.getElementById('packRow');
-    var totalAmt = document.getElementById('rsTotal');
-    var plAmt = document.getElementById('rsPl');
-    var plWrap = document.getElementById('rsPlWrap');
-    var total = 0;
-    cards.forEach(function(card){
-      row.appendChild(buildFlipCard(card, function(price){
-        if(price == null) return;
-        total += price;
-        bumpStats(totalAmt, plAmt, plWrap, total, purchase);
-      }));
+    playPackTear(function(){
+      stage.innerHTML = resultStatsHtml(purchase, 0) + '<div class="packrow" id="packRow"></div>';
+      var row = document.getElementById('packRow');
+      var totalAmt = document.getElementById('rsTotal');
+      var plAmt = document.getElementById('rsPl');
+      var plWrap = document.getElementById('rsPlWrap');
+      var total = 0;
+      cards.forEach(function(card){
+        row.appendChild(buildFlipCard(card, function(price){
+          if(price == null) return;
+          total += price;
+          bumpStats(totalAmt, plAmt, plWrap, total, purchase);
+        }));
+      });
     });
   }
 
   /** 박스/카톤을 "한 팩씩 까기"로 볼 때, 현재 세션의 팩 하나를 보여준다. */
   function renderSessionPack(){
-    var pack = session.packs[session.index];
-    stage.innerHTML =
-      resultStatsHtml(session.purchase, session.total) +
-      '<div class="pack-progress">팩 <b>' + (session.index + 1) + '</b> / ' + session.packs.length + '</div>' +
-      '<div class="packrow" id="packRow"></div>' +
-      '<div class="next-pack-row" id="nextPackRow"></div>';
-    var row = document.getElementById('packRow');
-    var totalAmt = document.getElementById('rsTotal');
-    var plAmt = document.getElementById('rsPl');
-    var plWrap = document.getElementById('rsPlWrap');
-    var nextPackRow = document.getElementById('nextPackRow');
-    var flipped = 0;
-    var isLast = session.index + 1 >= session.packs.length;
+    function build(){
+      var pack = session.packs[session.index];
+      stage.innerHTML =
+        resultStatsHtml(session.purchase, session.total) +
+        '<div class="pack-progress">팩 <b>' + (session.index + 1) + '</b> / ' + session.packs.length + '</div>' +
+        '<div class="packrow" id="packRow"></div>' +
+        '<div class="next-pack-row" id="nextPackRow"></div>';
+      var row = document.getElementById('packRow');
+      var totalAmt = document.getElementById('rsTotal');
+      var plAmt = document.getElementById('rsPl');
+      var plWrap = document.getElementById('rsPlWrap');
+      var nextPackRow = document.getElementById('nextPackRow');
+      var flipped = 0;
+      var isLast = session.index + 1 >= session.packs.length;
 
-    pack.forEach(function(card){
-      row.appendChild(buildFlipCard(card, function(price){
-        flipped++;
-        if(price != null){
-          session.total += price;
-          bumpStats(totalAmt, plAmt, plWrap, session.total, session.purchase);
-        }
-        if(flipped === pack.length){
-          nextPackRow.innerHTML =
-            '<button class="open-btn" id="nextPackBtn">' +
-            (isLast ? '결과 모아보기' : '다음 팩 열기 (' + (session.index + 2) + '/' + session.packs.length + ')') +
-            '</button>';
-          document.getElementById('nextPackBtn').addEventListener('click', function(){
-            if(isLast){
-              finishToAll();
-            } else {
-              session.index++;
-              renderSessionPack();
-            }
-          });
-        }
-      }));
-    });
+      pack.forEach(function(card){
+        row.appendChild(buildFlipCard(card, function(price){
+          flipped++;
+          if(price != null){
+            session.total += price;
+            bumpStats(totalAmt, plAmt, plWrap, session.total, session.purchase);
+          }
+          if(flipped === pack.length){
+            nextPackRow.innerHTML =
+              '<button class="open-btn" id="nextPackBtn">' +
+              (isLast ? '결과 모아보기' : '다음 팩 열기 (' + (session.index + 2) + '/' + session.packs.length + ')') +
+              '</button>';
+            document.getElementById('nextPackBtn').addEventListener('click', function(){
+              if(isLast){
+                finishToAll();
+              } else {
+                session.index++;
+                renderSessionPack();
+              }
+            });
+          }
+        }));
+      });
 
-    viewAllBtn.style.display = '';
+      viewAllBtn.style.display = '';
+    }
+
+    // 팩 뜯기 인트로는 박스/카톤 세션의 첫 팩에서만 — 매 팩마다 반복하면 늘어짐.
+    if(session.index === 0) playPackTear(build);
+    else build();
   }
 
   /** 세션의 남은 카드까지 전부 모아서 요약(모아보기) 화면으로 전환. */
@@ -620,6 +703,15 @@
     var summaryHtml = Object.keys(RARITY_LABEL).map(function(r){
       return '<span class="sum-chip" style="--chip-color:' + (RARITY_COLOR[r]) + '">' + RARITY_LABEL[r] + ' <b>' + (counts[r]||0) + '</b></span>';
     }).join('');
+
+    // 한번에 모아볼 땐 비싼 카드부터 — 없는 가격은 맨 뒤로.
+    var sorted = cards.slice().sort(function(a, b){
+      var pa = cardPrice(a), pb = cardPrice(b);
+      if(pa == null) pa = -1;
+      if(pb == null) pb = -1;
+      return pb - pa;
+    });
+    cards = sorted;
 
     var highlights = cards.filter(function(c){ return c.rarity === 'Rare' || c.rarity === 'Epic' || c.rarity === 'Showcase'; });
 
@@ -666,12 +758,14 @@
     openBtn.style.display = '';
     openBtn.disabled = false;
     if(state.tier === 'pack'){
+      // 팩 1개: 한 장씩 뒤집기 / 14장 한번에 모아보기 둘 다 제공.
       openBtn.textContent = '까기';
-      openAllBtn.style.display = 'none';
-    } else {
-      openBtn.textContent = '한 팩씩 까기';
       openAllBtn.textContent = '전체 까기';
       openAllBtn.style.display = '';
+    } else {
+      // 박스·카톤: 몰아서 한번에 보여주지 않고, 반드시 한 팩씩 순서대로 까도록 유도.
+      openBtn.textContent = '한 팩씩 까기';
+      openAllBtn.style.display = 'none';
     }
   }
 
