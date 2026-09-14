@@ -153,7 +153,6 @@ export const NAV_PRIMARY: readonly {
 export const NAV_SECONDARY = [
   { href: "/reports", label: "소식" },
   { href: "/rules", label: "초보자 가이드" },
-  { href: "/rules/reference", label: "상세 룰" },
   { href: "/glossary", label: "용어" },
   { href: "/shops", label: "주변 매장" },
   { href: "/tournaments", label: "다가오는 대회" },

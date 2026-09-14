@@ -7,7 +7,6 @@ const STATIC_PATHS = [
   "/cards",
   "/deck-simulator",
   "/rules",
-  "/rules/reference",
   "/glossary",
   "/community",
   "/trading",

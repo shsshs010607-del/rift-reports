@@ -11,9 +11,12 @@ import {
   type GuideSection,
 } from "@/content/beginner-guide";
 import { CARD_DOMAINS } from "@/lib/constants";
+import { GLOSSARY } from "@/content/glossary";
 import type { Card } from "@/lib/types/card";
 import { LocalizedCard } from "@/components/cards/localized-card";
 import { TurnPhases } from "./turn-phases";
+
+const KEYWORDS = GLOSSARY.filter((t) => t.category === "키워드");
 
 /** 6개 도메인의 플레이 성향 (색 파이 기준 요약) */
 const DOMAIN_TRAITS: Record<string, string> = {
@@ -322,6 +325,26 @@ export function BeginnerGuide({ exampleCard = null }: { exampleCard?: Card | nul
         <StepList section={SCORING_SECTION} />
       </Block>
 
+      <Block id="keywords" title="자주 보는 키워드">
+        <ul className="grid gap-2 sm:grid-cols-2">
+          {KEYWORDS.map((k) => (
+            <li key={k.en} className="surface p-3.5">
+              <p className="font-bold text-ink">
+                {k.term}
+                <span className="ml-1.5 text-body-sm font-normal text-ink-soft">{k.en}</span>
+              </p>
+              <p className="mt-0.5 text-body-sm text-ink-soft">{k.definition}</p>
+            </li>
+          ))}
+        </ul>
+        <Link
+          href="/glossary"
+          className="mt-3 inline-flex items-center gap-1.5 text-label-md font-bold text-primary-strong hover:underline"
+        >
+          전체 용어 사전 보기 →
+        </Link>
+      </Block>
+
       <Block id="tips" title="첫 게임 팁">
         <ul className="surface flex flex-col gap-2 p-5">
           {FIRST_GAME_TIPS.map((t) => (
@@ -346,5 +369,6 @@ export const GUIDE_TOC = [
   { id: "resources", label: "자원" },
   { id: "combat", label: "이동·전투" },
   { id: "scoring", label: "점수" },
+  { id: "keywords", label: "자주 보는 키워드" },
   { id: "tips", label: "첫 게임 팁" },
 ];
