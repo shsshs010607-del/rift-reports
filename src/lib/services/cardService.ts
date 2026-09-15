@@ -604,10 +604,14 @@ export class OpenSourceCardService implements ICardService {
   private async fetchPage(url: URL): Promise<RiftcodexPage> {
     let res: Response;
     try {
+      // Riftcodex 가 가끔 몇 분씩 응답을 안 주는 경우가 있어(관측됨: 100초+),
+      // 타임아웃 없이 기다리면 `next build` 정적 생성이 60초 제한에 걸려 페이지
+      // 전체가 실패한다. 빨리 포기하고 load() 의 로컬 스냅샷 폴백으로 넘긴다.
       res = await fetch(url, {
         headers: this.config.apiKey ? { Authorization: `Bearer ${this.config.apiKey}` } : {},
         // ISR: 요청마다 때리지 않고 하루 단위 재검증. `cards` 태그로 on-demand 무효화 가능.
         next: { revalidate: this.config.revalidateSeconds, tags: ["cards"] },
+        signal: AbortSignal.timeout(15_000),
       });
     } catch (err) {
       throw new CardServiceError(`카드 API 네트워크 오류: ${url.href}`, err);

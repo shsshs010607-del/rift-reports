@@ -8,6 +8,7 @@ import { getMetaDecks } from "@/lib/meta-decks";
 import { getCardService } from "@/lib/services/cardService";
 import { createClient } from "@/lib/supabase/server";
 import { hasSupabaseEnv } from "@/lib/supabase/env";
+import { rethrowIfNextControlFlow } from "@/lib/next-dynamic-error";
 
 export const metadata: Metadata = {
   title: "메타 덱",
@@ -29,7 +30,8 @@ async function viewerIsStaff(): Promise<boolean> {
     if (!user) return false;
     const { data } = await supabase.from("profiles").select("role").eq("id", user.id).maybeSingle();
     return data?.role === "editor" || data?.role === "admin";
-  } catch {
+  } catch (e) {
+    rethrowIfNextControlFlow(e);
     return false;
   }
 }

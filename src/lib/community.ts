@@ -2,6 +2,7 @@ import "server-only";
 import { createClient } from "@/lib/supabase/server";
 import { hasSupabaseEnv } from "@/lib/supabase/env";
 import { POSTS_PER_PAGE, POPULAR_POST } from "@/lib/constants";
+import { rethrowIfNextControlFlow } from "@/lib/next-dynamic-error";
 import type { Post, Comment, CommunityCategory } from "@/lib/types/database";
 
 export type Author = { username: string; avatar_url: string | null };
@@ -13,6 +14,7 @@ async function safe<T>(fn: () => Promise<T>, fallback: T): Promise<T> {
   try {
     return await fn();
   } catch (e) {
+    rethrowIfNextControlFlow(e);
     console.error("[community]", e);
     return fallback;
   }

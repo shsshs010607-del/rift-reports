@@ -2,6 +2,7 @@ import "server-only";
 import { createClient } from "@/lib/supabase/server";
 import { hasSupabaseEnv } from "@/lib/supabase/env";
 import { normLegend } from "@/lib/legend-name";
+import { rethrowIfNextControlFlow } from "@/lib/next-dynamic-error";
 import { CARD_SET_CODES } from "@/lib/types/card";
 import type { Database } from "@/lib/types/database";
 
@@ -38,6 +39,7 @@ export async function getMetaDecks(): Promise<MetaDeckView[]> {
     if (error) throw error;
     return (data ?? []).map((d) => ({ ...d, sets: deckSetsFromCode(d.deck_code) }));
   } catch (e) {
+    rethrowIfNextControlFlow(e);
     console.error("[meta-decks]", e);
     return [];
   }

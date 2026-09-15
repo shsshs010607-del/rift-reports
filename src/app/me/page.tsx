@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
-import { FileText, Layers } from "lucide-react";
+import { FileText, Layers, ChevronRight } from "lucide-react";
 
 import { createClient } from "@/lib/supabase/server";
 import { hasSupabaseEnv } from "@/lib/supabase/env";
@@ -11,13 +11,10 @@ import { Children } from "react";
 
 import { SignOutButton } from "@/components/auth/sign-out-button";
 import { ProfileEditor } from "@/components/me/profile-editor";
-import { CollectionEditor } from "@/components/me/collection-editor";
 import { PagedRows } from "@/components/me/paged-rows";
 import { getMyPosts } from "@/lib/me";
 import { getMyCollection } from "@/lib/collection";
 import { listMyDecks } from "@/lib/actions/decks";
-import { getPriceIndex } from "@/lib/prices";
-import { getUsdKrw } from "@/lib/fx";
 import { COMMUNITY_CATEGORIES } from "@/lib/constants";
 
 export const metadata: Metadata = { title: "내 프로필" };
@@ -45,15 +42,11 @@ export default async function MePage() {
     .eq("id", user.id)
     .single();
 
-  const [posts, decks, collection, priceIndex, fx] = await Promise.all([
+  const [posts, decks, collection] = await Promise.all([
     getMyPosts(user.id),
     listMyDecks(),
     getMyCollection(),
-    getPriceIndex(),
-    getUsdKrw(),
   ]);
-  const priceByNumber: Record<string, number> = {};
-  for (const [num, p] of priceIndex) priceByNumber[num] = Math.round(p.usd * fx.usdKrw);
 
   const username = profile?.username ?? "내 프로필";
   const role = profile?.role ?? "user";
@@ -109,9 +102,10 @@ export default async function MePage() {
             </p>
           )}
 
-          <div className="mt-4 grid grid-cols-2 gap-2">
+          <div className="mt-4 grid grid-cols-3 gap-2">
             <Stat label="쓴 글" value={posts.length} />
             <Stat label="저장 덱" value={decks.length} />
+            <Stat label="컬렉션" value={collection.length} />
           </div>
 
           {profile && (
@@ -126,7 +120,21 @@ export default async function MePage() {
         </div>
       </div>
 
-      <CollectionEditor initial={collection} priceByNumber={priceByNumber} />
+      <Link
+        href="/collection"
+        className="mt-8 flex items-center gap-3 rounded-2xl border border-line/70 bg-card p-4 transition hover:border-primary/40"
+      >
+        <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-primary/10 text-primary-strong">
+          <Layers className="h-5 w-5" />
+        </span>
+        <span className="min-w-0 flex-1">
+          <span className="block text-body-md font-bold text-ink">내 컬렉션</span>
+          <span className="block text-body-sm text-ink-soft">
+            보유 카드 {collection.length}종 관리하고 추정 시세 보기
+          </span>
+        </span>
+        <ChevronRight className="h-5 w-5 shrink-0 text-ink-soft" />
+      </Link>
 
       <ListSection
         title="내가 쓴 글"

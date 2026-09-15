@@ -1,6 +1,7 @@
 import "server-only";
 import { createClient } from "@/lib/supabase/server";
 import { hasSupabaseEnv } from "@/lib/supabase/env";
+import { rethrowIfNextControlFlow } from "@/lib/next-dynamic-error";
 import type { Notification } from "@/lib/types/database";
 
 export type NotificationFeed = {
@@ -45,7 +46,8 @@ export async function getNotificationFeed(limit = 30): Promise<NotificationFeed>
       : 0;
     const unread = list.filter((n) => new Date(n.created_at).getTime() > seen).length;
     return { items: list, unread, signedIn: true };
-  } catch {
+  } catch (e) {
+    rethrowIfNextControlFlow(e);
     return EMPTY;
   }
 }

@@ -1,6 +1,7 @@
 import "server-only";
 import { createClient } from "@/lib/supabase/server";
 import { hasSupabaseEnv } from "@/lib/supabase/env";
+import { rethrowIfNextControlFlow } from "@/lib/next-dynamic-error";
 import type { Report, Deck, Tournament, Card } from "@/lib/types/database";
 
 /**
@@ -13,6 +14,7 @@ async function safe<T>(fn: () => Promise<T>, fallback: T): Promise<T> {
   try {
     return await fn();
   } catch (e) {
+    rethrowIfNextControlFlow(e);
     console.error("[queries]", e);
     return fallback;
   }

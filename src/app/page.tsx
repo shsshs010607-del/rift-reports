@@ -22,12 +22,15 @@ import { HomeReports } from "@/components/home/home-reports";
 import { HomePriceMini } from "@/components/home/home-price-mini";
 import { HomeExtras } from "@/components/home/home-extras";
 
-export const revalidate = 60;
+// HomeCommunity/HomeReports/HomePriceMini/HomeExtras 가 쓰는 community.ts/prices.ts/
+// queries.ts 의 safe() 래퍼가 cookies() 의 Next 내부 신호까지 try/catch 로 삼켜버려서,
+// force-dynamic 없이는 빌드가 "/" 정적 생성을 시도하다 타임아웃/실패한다 — 지우지 말 것.
+export const dynamic = "force-dynamic";
 
 const SECTIONS = [
   { href: "/community", label: "커뮤니티", icon: MessagesSquare },
   { href: "/cards", label: "카드 정보", icon: LayoutGrid },
-  { href: "/me#collection", label: "내 컬렉션", icon: Library },
+  { href: "/collection", label: "내 컬렉션", icon: Library },
   { href: "/deck-simulator", label: "덱 시뮬레이터", icon: Layers },
   { href: "/trading", label: "트레이딩", icon: ArrowUpDown },
   { href: "/tiers", label: "덱 티어리스트", icon: Layers },

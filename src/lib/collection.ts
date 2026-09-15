@@ -1,6 +1,7 @@
 import "server-only";
 import { createClient } from "@/lib/supabase/server";
 import { hasSupabaseEnv } from "@/lib/supabase/env";
+import { rethrowIfNextControlFlow } from "@/lib/next-dynamic-error";
 
 export type CollectionItem = { card_id: string; quantity: number };
 
@@ -22,6 +23,7 @@ export async function getMyCollection(): Promise<CollectionItem[]> {
     if (error) throw error;
     return (data as CollectionItem[]) ?? [];
   } catch (e) {
+    rethrowIfNextControlFlow(e);
     console.warn("[collection] 조회 실패(테이블 미생성?):", e);
     return [];
   }
