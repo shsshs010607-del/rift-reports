@@ -169,7 +169,7 @@ export const NAV_PRIMARY: readonly {
   {
     // MBTI 퀴즈·언박싱 시뮬레이터처럼 가볍게 즐기는 부가 콘텐츠 모음.
     href: "/tiers?quiz=1",
-    label: "즐길거리",
+    label: "놀이터",
     children: [
       { href: "/tiers?quiz=1", label: "내 MBTI 덱 찾기" },
       { href: "/origins-sim.html", label: "언박싱 시뮬레이터" },
@@ -216,7 +216,7 @@ export const TIER_STYLES: Record<
 };
 
 export const COMMUNITY_CATEGORIES = [
-  { slug: "report", label: "메타 리포트", desc: "메타 분석 · 뉴스 · 번역" },
+  { slug: "report", label: "리프트 리포트", desc: "메타 분석 · 뉴스 · 번역" },
   { slug: "riftbound", label: "리프트바운드 게시판", desc: "자유 주제 · 잡담 · 질문" },
   { slug: "deck-guide", label: "덱 공략 게시판", desc: "덱 리스트 · 운영법 · 매치업" },
   { slug: "tournament", label: "매장 정보", desc: "매장 위치 · 매장 대회 · 이벤트 · 후기" },
