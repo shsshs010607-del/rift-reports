@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState, useTransition } from "react";
+import { useEffect, useMemo, useRef, useState, useTransition } from "react";
 import { Search, Plus, Minus, X, Layers } from "lucide-react";
 
 import type { Card } from "@/lib/types/card";
@@ -66,6 +66,17 @@ export function CollectionEditor({
         .sort((a, b) => (a.card?.name ?? a.id).localeCompare(b.card?.name ?? b.id, "ko")),
     [qty, byId],
   );
+  // 세트별로 묶어서 — 컬렉션이 커질수록 "이 세트에서 뭐 있더라" 찾기가 훨씬 편해진다.
+  const ownedBySet = useMemo(() => {
+    const groups = new Map<string, typeof owned>();
+    for (const o of owned) {
+      const key = o.card?.setCode ?? "기타";
+      const arr = groups.get(key);
+      if (arr) arr.push(o);
+      else groups.set(key, [o]);
+    }
+    return [...groups.entries()].sort(([a], [b]) => a.localeCompare(b, "ko"));
+  }, [owned]);
   const totalCards = owned.reduce((s, o) => s + o.n, 0);
   const distinct = owned.length;
   const pricedCount = owned.filter((o) => priceFor(o.card) != null).length;
@@ -73,6 +84,17 @@ export function CollectionEditor({
     const p = priceFor(o.card);
     return p != null ? s + p * o.n : s;
   }, 0);
+
+  const searchRef = useRef<HTMLInputElement>(null);
+
+  /** 검색창에서 엔터 — 첫 검색 결과를 +1 하고 바로 다음 카드를 검색할 수 있게 입력창을 비운다. */
+  function addTopResult() {
+    if (results.length === 0) return;
+    const top = results[0];
+    save(top.id, (qty[top.id] ?? 0) + 1);
+    setQ("");
+    requestAnimationFrame(() => searchRef.current?.focus());
+  }
 
   function save(id: string, next: number) {
     const clamped = Math.max(0, Math.min(999, next));
@@ -118,10 +140,17 @@ export function CollectionEditor({
         <div className="relative">
           <Search className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-soft" />
           <input
+            ref={searchRef}
             type="search"
             value={q}
             onChange={(e) => setQ(e.target.value)}
-            placeholder="보유한 카드 검색해서 담기"
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                e.preventDefault();
+                addTopResult();
+              }
+            }}
+            placeholder="카드명·번호 검색 후 엔터로 바로 담기"
             className="w-full rounded-xl border border-line bg-card py-2.5 pl-10 pr-10 text-body-md text-ink placeholder:text-ink-soft/70 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/15"
           />
           {q && (
@@ -172,36 +201,45 @@ export function CollectionEditor({
               아직 담은 카드가 없습니다. 위에서 검색해 수량을 넣어보세요.
             </p>
           ) : (
-            <ul className="flex max-h-[52vh] flex-col divide-y divide-line/40 overflow-y-auto">
-              {owned.map((o) => {
-                const price = o.card ? priceFor(o.card) : null;
-                return (
-                  <li key={o.id} className="flex items-center gap-2.5 py-2">
-                    {o.card ? (
-                      <LocalizedCard card={o.card} className="w-10 shrink-0" sizes="40px" />
-                    ) : (
-                      <span className="aspect-[744/1039] w-10 shrink-0 rounded-[4.5%] bg-subcanvas" />
-                    )}
-                    <span className="min-w-0 flex-1">
-                      <span className="block truncate text-body-md text-ink">
-                        {o.card ? resolveCardText(o.card, "ko").name : o.id}
-                      </span>
-                      {price != null && (
-                        <span className="block text-label-sm font-bold text-primary-strong">
-                          {fmtWon(price)}
-                          {o.n > 1 && (
-                            <span className="ml-1 font-normal text-ink-soft">
-                              · {o.n}장 = {fmtWon(price * o.n)}
-                            </span>
+            <div className="max-h-[52vh] overflow-y-auto">
+              {ownedBySet.map(([setCode, cards]) => (
+                <div key={setCode}>
+                  <p className="sticky top-0 z-10 bg-card py-1 text-label-sm font-bold text-ink-soft/80">
+                    {setCode} · {cards.length}종 · {cards.reduce((s, c) => s + c.n, 0)}장
+                  </p>
+                  <ul className="flex flex-col divide-y divide-line/40">
+                    {cards.map((o) => {
+                      const price = o.card ? priceFor(o.card) : null;
+                      return (
+                        <li key={o.id} className="flex items-center gap-2.5 py-2">
+                          {o.card ? (
+                            <LocalizedCard card={o.card} className="w-10 shrink-0" sizes="40px" />
+                          ) : (
+                            <span className="aspect-[744/1039] w-10 shrink-0 rounded-[4.5%] bg-subcanvas" />
                           )}
-                        </span>
-                      )}
-                    </span>
-                    <Stepper n={o.n} onChange={(v) => save(o.id, v)} />
-                  </li>
-                );
-              })}
-            </ul>
+                          <span className="min-w-0 flex-1">
+                            <span className="block truncate text-body-md text-ink">
+                              {o.card ? resolveCardText(o.card, "ko").name : o.id}
+                            </span>
+                            {price != null && (
+                              <span className="block text-label-sm font-bold text-primary-strong">
+                                {fmtWon(price)}
+                                {o.n > 1 && (
+                                  <span className="ml-1 font-normal text-ink-soft">
+                                    · {o.n}장 = {fmtWon(price * o.n)}
+                                  </span>
+                                )}
+                              </span>
+                            )}
+                          </span>
+                          <Stepper n={o.n} onChange={(v) => save(o.id, v)} />
+                        </li>
+                      );
+                    })}
+                  </ul>
+                </div>
+              ))}
+            </div>
           )}
         </div>
 
