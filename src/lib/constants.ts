@@ -163,20 +163,17 @@ export const NAV_PRIMARY: readonly {
       { href: "/decks", label: "메타 덱" },
     ],
   },
-  {
-    href: "/tiers",
-    label: "덱 티어리스트",
-    children: [
-      { href: "/tiers", label: "티어리스트" },
-      { href: "/tiers?quiz=1", label: "내 MBTI 덱 찾기" },
-    ],
-  },
+  { href: "/tiers", label: "덱 티어리스트" },
   { href: "/trading", label: "트레이딩" },
   { href: "/community", label: "커뮤니티" },
   {
-    href: "/origins-sim.html",
-    label: "언박싱 시뮬레이터",
-    external: true,
+    // MBTI 퀴즈·언박싱 시뮬레이터처럼 가볍게 즐기는 부가 콘텐츠 모음.
+    href: "/tiers?quiz=1",
+    label: "즐길거리",
+    children: [
+      { href: "/tiers?quiz=1", label: "내 MBTI 덱 찾기" },
+      { href: "/origins-sim.html", label: "언박싱 시뮬레이터" },
+    ],
   },
 ];
 
