@@ -10,12 +10,16 @@ import {
   STATUS_LABEL,
   CATEGORY_LABEL,
   categoryOf,
+  EVENT_TYPES,
+  eventTypeOf,
+  type EventType,
 } from "@/components/tournaments/tournament-card";
 import { TournamentCalendar } from "@/components/tournaments/tournament-calendar";
 
 const STATUS_ORDER: Tournament["status"][] = ["ongoing", "upcoming", "finished"];
 const CATEGORIES = ["all", "official", "shop", "community"] as const;
 type Cat = (typeof CATEGORIES)[number];
+type EvType = "all" | EventType;
 
 function regionOf(t: Tournament): string {
   if (t.is_online) return "온라인";
@@ -26,6 +30,12 @@ function regionOf(t: Tournament): string {
 export function TournamentsView({ tournaments }: { tournaments: Tournament[] }) {
   const [cat, setCat] = useState<Cat>("all");
   const [region, setRegion] = useState<string>("all");
+  const [evType, setEvType] = useState<EvType>("all");
+
+  const eventTypes = useMemo(
+    () => EVENT_TYPES.filter((et) => tournaments.some((t) => eventTypeOf(t) === et)),
+    [tournaments],
+  );
 
   const regions = useMemo(() => {
     const set = new Set(tournaments.map(regionOf));
@@ -42,9 +52,10 @@ export function TournamentsView({ tournaments }: { tournaments: Tournament[] }) 
       tournaments.filter(
         (t) =>
           (cat === "all" || categoryOf(t) === cat) &&
-          (region === "all" || regionOf(t) === region),
+          (region === "all" || regionOf(t) === region) &&
+          (evType === "all" || eventTypeOf(t) === evType),
       ),
-    [tournaments, cat, region],
+    [tournaments, cat, region, evType],
   );
 
   const groups = STATUS_ORDER.map((status) => ({
@@ -64,6 +75,19 @@ export function TournamentsView({ tournaments }: { tournaments: Tournament[] }) 
             </Chip>
           ))}
         </div>
+        {eventTypes.length > 0 && (
+          <div className="flex flex-wrap items-center gap-1.5">
+            <span className="mr-1 text-label-sm font-bold text-ink-soft">대회 종류</span>
+            <Chip on={evType === "all"} onClick={() => setEvType("all")}>
+              전체
+            </Chip>
+            {eventTypes.map((et) => (
+              <Chip key={et} on={evType === et} onClick={() => setEvType(et)}>
+                {et}
+              </Chip>
+            ))}
+          </div>
+        )}
         <div className="flex flex-wrap items-center gap-1.5">
           <span className="mr-1 text-label-sm font-bold text-ink-soft">지역</span>
           <Chip on={region === "all"} onClick={() => setRegion("all")}>

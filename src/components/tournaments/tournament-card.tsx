@@ -30,6 +30,19 @@ export function categoryOf(t: Pick<Tournament, "category" | "organizer">): "offi
   return "community";
 }
 
+/** playriftbound.com 등록 대회의 세부 종류(넥서스 나이트 / 오리진 스토어 예선). 해당 없으면 null. */
+export const EVENT_TYPES = ["넥서스 나이트", "오리진 스토어 예선"] as const;
+export type EventType = (typeof EVENT_TYPES)[number];
+
+export function eventTypeOf(t: Pick<Tournament, "format">): EventType | null {
+  return EVENT_TYPES.find((label) => t.format?.startsWith(label)) ?? null;
+}
+
+const EVENT_TYPE_STYLE: Record<EventType, string> = {
+  "넥서스 나이트": "bg-tertiary-fixed text-on-tertiary-fixed",
+  "오리진 스토어 예선": "bg-primary-fixed text-on-primary-fixed-variant",
+};
+
 const STATUS_STYLE: Record<Tournament["status"], string> = {
   upcoming: "bg-primary/10 text-primary-strong",
   ongoing: "bg-emerald/15 text-emerald",
@@ -37,6 +50,7 @@ const STATUS_STYLE: Record<Tournament["status"], string> = {
 };
 
 export function TournamentCard({ t }: { t: Tournament }) {
+  const eventType = eventTypeOf(t);
   return (
     <Link
       href={`/tournaments/${t.slug}`}
@@ -72,6 +86,16 @@ export function TournamentCard({ t }: { t: Tournament }) {
         </div>
       </div>
       <div className="flex flex-1 flex-col gap-2 p-4">
+        {eventType && (
+          <span
+            className={cn(
+              "inline-flex w-fit items-center rounded-full px-2 py-0.5 text-label-sm font-bold",
+              EVENT_TYPE_STYLE[eventType],
+            )}
+          >
+            {eventType}
+          </span>
+        )}
         <h2 className="font-display text-title-lg font-bold text-ink">{t.name}</h2>
         <div className="mt-auto flex flex-col gap-1 pt-1 text-body-sm text-ink-soft">
           <span className="inline-flex items-center gap-1.5">

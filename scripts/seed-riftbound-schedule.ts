@@ -54,7 +54,7 @@ const FORMAT_LABEL: Record<RbEvent["tournament"]["config"]["format"], string> = 
 };
 const TYPE_LABEL: Record<RbEvent["tournament"]["config"]["tournamentType"], string> = {
   NEXUS_NIGHT: "넥서스 나이트",
-  SUMMONER_SKIRMISH: "스토어 예선",
+  SUMMONER_SKIRMISH: "오리진 스토어 예선",
 };
 
 /** adminArea1(시·도 전체 표기) → shops.sido 축약형. */
@@ -110,6 +110,11 @@ const SHOP_MATCH: Record<string, string> = {
   "01a084cd-563b-7336-8674-bc6737771f00": "만수 ILT듀얼존",
   "01a062fc-aa9d-7f9f-bf21-d0fa275d2f7c": "천안 카드빌리지",
   "01a04877-5ce3-755d-803d-af048b4d6df7": "평택 카드빌리지",
+  "01a06535-e370-741e-b74f-730ff21bad35": "수원 카드플래닛",
+  "01a05145-aa2d-7055-8811-3a59746b154b": "이천 정무샵",
+  "01a05265-e131-727a-8275-10535951880f": "송파 카드스타",
+  "01a064a0-76f9-76be-9c0d-6d19866afeef": "신당 카드스퀘어",
+  "01a065a5-1999-75f1-8259-7231cebe0cb0": "역곡 스카이스크레이퍼",
 };
 
 async function main() {
@@ -231,7 +236,21 @@ async function main() {
     }
   }
 
-  console.log(`완료 — 매장 ${organizers.size}곳, 대회 ${EVENTS.length}건`);
+  // ── 3. 스냅샷에서 빠진 대회 정리 (취소·삭제된 대회가 예정 목록에 남지 않도록) ──
+  const currentSlugs = new Set(EVENTS.map((e) => `rb-${e.tournament.id}`));
+  const { data: existingRb, error: listErr } = await db
+    .from("tournaments")
+    .select("id, slug, name")
+    .like("slug", "rb-%");
+  if (listErr) throw listErr;
+  const orphans = (existingRb ?? []).filter((t) => !currentSlugs.has(t.slug));
+  for (const o of orphans) {
+    const { error } = await db.from("tournaments").delete().eq("id", o.id);
+    if (error) throw error;
+    console.log("대회 정리(스냅샷에 없음):", o.name);
+  }
+
+  console.log(`완료 — 매장 ${organizers.size}곳, 대회 ${EVENTS.length}건, 정리 ${orphans.length}건`);
 }
 
 main().catch((e) => {
