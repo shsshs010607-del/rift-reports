@@ -4,11 +4,12 @@ import { useMemo, useState, useTransition } from "react";
 import Link from "next/link";
 import {
   ArrowRight,
+  Bookmark,
   Check,
   Copy,
-  ExternalLink,
   Heart,
   Layers,
+  Loader2,
   Trash2,
   Trophy,
 } from "lucide-react";
@@ -17,6 +18,7 @@ import { CARD_DOMAINS, CARD_SETS } from "@/lib/constants";
 import { normLegend } from "@/lib/legend-name";
 import type { MetaDeckView } from "@/lib/meta-decks";
 import { deleteMetaDeck } from "@/app/admin/actions";
+import { saveDeck } from "@/lib/actions/decks";
 import { cn } from "@/lib/utils";
 
 const SET_LABEL = Object.fromEntries(CARD_SETS.map((s) => [s.code, s.label]));
@@ -222,6 +224,19 @@ function DeckCard({
     }
   };
 
+  const [saving, startSave] = useTransition();
+  const [saved, setSaved] = useState(false);
+  const save = () => {
+    startSave(async () => {
+      // 비로그인 상태면 saveDeck 내부 requireUser() 가 /login 으로 리다이렉트한다.
+      const res = await saveDeck({ name: deck.name, code: deck.deck_code, legendName: deck.legend_name });
+      if (!res.error) {
+        setSaved(true);
+        setTimeout(() => setSaved(false), 1400);
+      }
+    });
+  };
+
   return (
     <div className="flex overflow-hidden rounded-2xl border border-line/70 bg-card">
       {/* 레전드 아트 */}
@@ -301,17 +316,21 @@ function DeckCard({
           >
             {copied ? <Check className="h-4 w-4 text-emerald" /> : <Copy className="h-4 w-4" />}
           </button>
-          {deck.source_url && (
-            <Link
-              href={deck.source_url}
-              target="_blank"
-              rel="noopener noreferrer"
-              title="원본 (Piltover Archive)"
-              className="grid h-9 w-9 shrink-0 place-items-center rounded-lg border border-line text-ink-soft transition hover:border-primary/40 hover:text-ink"
-            >
-              <ExternalLink className="h-4 w-4" />
-            </Link>
-          )}
+          <button
+            type="button"
+            onClick={save}
+            disabled={saving}
+            title="내 덱에 저장"
+            className="grid h-9 w-9 shrink-0 place-items-center rounded-lg border border-line text-ink-soft transition hover:border-primary/40 hover:text-ink disabled:opacity-50"
+          >
+            {saving ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : saved ? (
+              <Check className="h-4 w-4 text-emerald" />
+            ) : (
+              <Bookmark className="h-4 w-4" />
+            )}
+          </button>
           {onDelete && (
             <button
               type="button"
