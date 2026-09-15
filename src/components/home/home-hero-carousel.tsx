@@ -70,7 +70,7 @@ function CafeEventSlide() {
         <div className="mt-3.5 flex flex-wrap gap-2">
           <Link
             href={`/community/new?category=riftbound&tag=${encodeURIComponent(CAFE_EVENT.tag)}`}
-            className="inline-flex items-center gap-1.5 rounded-full bg-[#03C75A] px-4 py-2 text-label-sm font-bold text-white transition hover:opacity-90"
+            className="inline-flex items-center gap-1.5 rounded-lg bg-[#03C75A] px-4 py-2 text-label-sm font-bold text-white transition hover:opacity-90"
           >
             <Gift className="h-4 w-4" />
             가입인증글 바로쓰기
@@ -78,7 +78,7 @@ function CafeEventSlide() {
           </Link>
           <Link
             href={`/community/post/${CAFE_EVENT.postId}`}
-            className="inline-flex items-center gap-1.5 rounded-full border border-line bg-card px-4 py-2 text-label-sm font-bold text-ink-soft transition hover:border-[#03C75A]/40 hover:text-ink"
+            className="inline-flex items-center gap-1.5 rounded-lg border border-line bg-card px-4 py-2 text-label-sm font-bold text-ink-soft transition hover:border-[#03C75A]/40 hover:text-ink"
           >
             자세히 보기
           </Link>
@@ -116,14 +116,14 @@ function IntroSlide() {
         <div className="mt-3.5 flex flex-wrap gap-2">
           <Link
             href="/community"
-            className="inline-flex items-center gap-1.5 rounded-full bg-primary px-4 py-2 text-label-sm font-bold text-white transition hover:bg-primary-container"
+            className="inline-flex items-center gap-1.5 rounded-lg bg-primary px-4 py-2 text-label-sm font-bold text-white transition hover:bg-primary-container"
           >
             <MessagesSquare className="h-4 w-4" />
             커뮤니티
           </Link>
           <Link
             href="/tiers"
-            className="inline-flex items-center gap-1.5 rounded-full border border-line bg-card px-4 py-2 text-label-sm font-bold text-ink-soft transition hover:border-primary/40 hover:text-ink"
+            className="inline-flex items-center gap-1.5 rounded-lg border border-line bg-card px-4 py-2 text-label-sm font-bold text-ink-soft transition hover:border-primary/40 hover:text-ink"
           >
             덱 티어리스트
           </Link>
@@ -170,7 +170,7 @@ function MbtiSlide() {
       <div className="mt-3.5 flex flex-wrap gap-2">
         <Link
           href="/tiers?quiz=1"
-          className="inline-flex items-center gap-1.5 rounded-full bg-primary px-4 py-2 text-label-sm font-bold text-white transition hover:bg-primary-container"
+          className="inline-flex items-center gap-1.5 rounded-lg bg-primary px-4 py-2 text-label-sm font-bold text-white transition hover:bg-primary-container"
         >
           <Wand2 className="h-4 w-4" />
           MBTI 덱 찾기
@@ -178,7 +178,7 @@ function MbtiSlide() {
         </Link>
         <Link
           href="/tiers"
-          className="inline-flex items-center gap-1.5 rounded-full border border-line bg-card px-4 py-2 text-label-sm font-bold text-ink-soft transition hover:border-primary/40 hover:text-ink"
+          className="inline-flex items-center gap-1.5 rounded-lg border border-line bg-card px-4 py-2 text-label-sm font-bold text-ink-soft transition hover:border-primary/40 hover:text-ink"
         >
           덱 티어표
         </Link>
@@ -202,14 +202,14 @@ function ToolsSlide() {
         <div className="mt-3.5 flex flex-wrap gap-2">
           <Link
             href="/deck-simulator"
-            className="inline-flex items-center gap-1.5 rounded-full bg-primary px-4 py-2 text-label-sm font-bold text-white transition hover:bg-primary-container"
+            className="inline-flex items-center gap-1.5 rounded-lg bg-primary px-4 py-2 text-label-sm font-bold text-white transition hover:bg-primary-container"
           >
             <Layers className="h-4 w-4" />
             덱 시뮬레이터
           </Link>
           <Link
             href="/trading"
-            className="inline-flex items-center gap-1.5 rounded-full border border-line bg-card px-4 py-2 text-label-sm font-bold text-ink-soft transition hover:border-primary/40 hover:text-ink"
+            className="inline-flex items-center gap-1.5 rounded-lg border border-line bg-card px-4 py-2 text-label-sm font-bold text-ink-soft transition hover:border-primary/40 hover:text-ink"
           >
             <TrendingUp className="h-4 w-4" />
             카드 시세
@@ -218,7 +218,7 @@ function ToolsSlide() {
             href="/origins-sim.html"
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-1.5 rounded-full border border-line bg-card px-4 py-2 text-label-sm font-bold text-ink-soft transition hover:border-primary/40 hover:text-ink"
+            className="inline-flex items-center gap-1.5 rounded-lg border border-line bg-card px-4 py-2 text-label-sm font-bold text-ink-soft transition hover:border-primary/40 hover:text-ink"
           >
             <Package className="h-4 w-4" />
             언박싱 시뮬레이터

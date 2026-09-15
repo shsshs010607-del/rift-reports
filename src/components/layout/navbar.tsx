@@ -67,7 +67,7 @@ export function Navbar() {
 
           <Link
             href="/community/new"
-            className="hidden items-center gap-2 rounded-full bg-primary px-4 py-2.5 text-body-md font-bold text-white shadow-[0_4px_14px_rgba(70,72,212,0.3)] transition hover:bg-primary-container sm:inline-flex"
+            className="hidden items-center gap-2 rounded-lg bg-primary px-4 py-2.5 text-body-md font-bold text-white shadow-[0_4px_14px_rgba(70,72,212,0.3)] transition hover:bg-primary-container sm:inline-flex"
           >
             <PenSquare className="h-[18px] w-[18px]" />
             <span className="hidden lg:inline">새 글 쓰기</span>
@@ -88,7 +88,7 @@ export function Navbar() {
           ) : (
             <Link
               href="/login"
-              className="hidden rounded-full bg-surface-container-high px-4 py-2.5 text-body-md font-bold text-primary transition hover:bg-surface-container-highest sm:inline-flex"
+              className="hidden rounded-lg bg-surface-container-high px-4 py-2.5 text-body-md font-bold text-primary transition hover:bg-surface-container-highest sm:inline-flex"
             >
               로그인
             </Link>

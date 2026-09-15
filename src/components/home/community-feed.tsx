@@ -46,7 +46,7 @@ export function CommunityFeed({
           </div>
           <Link
             href="/community/new"
-            className="inline-flex items-center gap-1 rounded-full bg-primary px-3 py-1.5 text-label-sm font-bold text-white transition hover:bg-primary-container"
+            className="inline-flex items-center gap-1 rounded-lg bg-primary px-3 py-1.5 text-label-sm font-bold text-white transition hover:bg-primary-container"
           >
             <PenSquare className="h-3.5 w-3.5" />
             글쓰기

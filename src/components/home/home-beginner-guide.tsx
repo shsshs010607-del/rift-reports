@@ -18,7 +18,7 @@ export function HomeBeginnerGuide() {
       </div>
       <Link
         href="/rules"
-        className="inline-flex shrink-0 items-center gap-1.5 rounded-full bg-primary px-4 py-2 text-label-md font-bold text-white transition hover:bg-primary-container"
+        className="inline-flex shrink-0 items-center gap-1.5 rounded-lg bg-primary px-4 py-2 text-label-md font-bold text-white transition hover:bg-primary-container"
       >
         전체 가이드 보기
         <ArrowRight className="h-4 w-4" />

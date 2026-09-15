@@ -73,7 +73,7 @@ export function ChannelBanner({ className }: { className?: string }) {
           href={SITE.naverCafe}
           target="_blank"
           rel="noopener noreferrer"
-          className="group inline-flex items-center gap-2 rounded-full bg-[#03C75A] px-4 py-2 text-label-md font-bold text-white transition hover:brightness-105"
+          className="group inline-flex items-center gap-2 rounded-lg bg-[#03C75A] px-4 py-2 text-label-md font-bold text-white transition hover:brightness-105"
         >
           <NaverIcon className="h-3.5 w-3.5" />
           네이버 카페 카드거래
@@ -86,14 +86,14 @@ export function ChannelBanner({ className }: { className?: string }) {
           href={SITE.discord}
           target="_blank"
           rel="noopener noreferrer"
-          className="group inline-flex items-center gap-2 rounded-full bg-[#5865F2] px-4 py-2 text-label-md font-bold text-white transition hover:brightness-105"
+          className="group inline-flex items-center gap-2 rounded-lg bg-[#5865F2] px-4 py-2 text-label-md font-bold text-white transition hover:brightness-105"
         >
           <DiscordIcon className="h-3.5 w-3.5" />
           디스코드
           <ArrowUpRight className="h-3.5 w-3.5 opacity-80 transition group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
         </a>
       ) : (
-        <span className="inline-flex items-center gap-2 rounded-full border border-line bg-card px-4 py-2 text-label-md font-bold text-ink-soft">
+        <span className="inline-flex items-center gap-2 rounded-lg border border-line bg-card px-4 py-2 text-label-md font-bold text-ink-soft">
           <DiscordIcon className="h-3.5 w-3.5" />
           디스코드
           <span className="rounded-full bg-subcanvas px-1.5 py-0.5 text-[10px]">준비 중</span>
@@ -115,7 +115,7 @@ export function ChannelBanner({ className }: { className?: string }) {
 
       <Link
         href="/community/recruit"
-        className="inline-flex items-center gap-2 rounded-full border border-line bg-card px-4 py-2 text-label-md font-bold text-ink-soft transition hover:border-primary/40 hover:text-ink"
+        className="inline-flex items-center gap-2 rounded-lg border border-line bg-card px-4 py-2 text-label-md font-bold text-ink-soft transition hover:border-primary/40 hover:text-ink"
       >
         <Mail className="h-3.5 w-3.5" />
         문의하기

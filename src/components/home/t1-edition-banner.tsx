@@ -79,7 +79,7 @@ export function T1EditionBanner() {
             href={KREAM_URL}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex w-fit items-center gap-1 rounded-full bg-white px-3 py-1.5 text-label-sm font-bold text-[#1b0509] transition hover:bg-white/90"
+            className="inline-flex w-fit items-center gap-1 rounded-lg bg-white px-3 py-1.5 text-label-sm font-bold text-[#1b0509] transition hover:bg-white/90"
           >
             크림에서 보기 <ArrowUpRight className="h-3.5 w-3.5" />
           </a>

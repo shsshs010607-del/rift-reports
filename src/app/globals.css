@@ -199,9 +199,14 @@ h1, h2, h3, h4 {
   .tier-badge-b { @apply bg-tertiary-fixed text-on-tertiary-fixed; }
   .tier-badge-c { @apply bg-surface-container text-on-surface-variant; }
 
+  /*
+   * 모양 체계 — 전부 알약(pill)으로 통일하면 "AI가 만든 UI" 느낌이 난다.
+   * 버튼은 각진 사각형(rounded-lg)으로 무게감을 주고, 알약 모양은 칩·배지·
+   * 아바타·아이콘 원형 버튼처럼 "원래 원이어야 하는" 요소에만 남겨둔다.
+   */
   /* 버튼 — 물리적 푸시 (하단 베벨) */
   .btn {
-    @apply inline-flex select-none items-center justify-center gap-2 whitespace-nowrap rounded-full px-5 py-2.5 text-label-lg font-bold transition active:translate-y-0.5 disabled:opacity-50;
+    @apply inline-flex select-none items-center justify-center gap-2 whitespace-nowrap rounded-lg px-5 py-2.5 text-label-lg font-bold transition active:translate-y-0.5 disabled:opacity-50;
   }
   .btn-primary {
     @apply btn bg-primary text-on-primary shadow-[0_4px_14px_rgba(70,72,212,0.3)] hover:bg-primary-container;
