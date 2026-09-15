@@ -154,6 +154,7 @@ export const NAV_PRIMARY: readonly {
       { href: "report:", label: "오역 신고" },
     ],
   },
+  { href: "/me#collection", label: "내 컬렉션" },
   {
     href: "/deck-simulator",
     label: "덱 시뮬레이터",
