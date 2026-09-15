@@ -80,8 +80,15 @@ export function PostForm({
   const editing = Boolean(edit);
   const boundAction = edit ? updatePost.bind(null, edit.postId) : createPost;
   const [state, formAction] = useFormState(boundAction, initial);
+  // 메타 리포트는 관리자/에디터만 작성 가능 — 목록에서도 숨긴다.
+  const selectableCategories = canWriteNotice
+    ? COMMUNITY_CATEGORIES
+    : COMMUNITY_CATEGORIES.filter((c) => c.slug !== "report");
+  const fallbackCategory = selectableCategories[0].slug;
+  const clampCategory = (c: string) =>
+    !canWriteNotice && c === "report" ? fallbackCategory : c;
   const [category, setCategory] = useState(
-    edit?.category ?? defaultCategory ?? COMMUNITY_CATEGORIES[0].slug,
+    clampCategory(edit?.category ?? defaultCategory ?? COMMUNITY_CATEGORIES[0].slug),
   );
   const [title, setTitle] = useState(edit?.title ?? "");
   const [body, setBody] = useState(edit?.body ?? "");
@@ -106,7 +113,7 @@ export function PostForm({
       if (!raw) return;
       const d = JSON.parse(raw) as Draft;
       if ((d.title?.trim() || d.body?.trim()) && Date.now() - d.ts < 1000 * 60 * 60 * 24 * 14) {
-        setCategory(defaultCategory ?? d.category ?? COMMUNITY_CATEGORIES[0].slug);
+        setCategory(clampCategory(defaultCategory ?? d.category ?? COMMUNITY_CATEGORIES[0].slug));
         setTitle(d.title ?? "");
         setBody(d.body ?? "");
         setDeckCode(d.deckCode ?? "");
@@ -252,7 +259,7 @@ export function PostForm({
           onChange={(e) => setCategory(e.target.value)}
           className={INPUT}
         >
-          {COMMUNITY_CATEGORIES.map((c) => (
+          {selectableCategories.map((c) => (
             <option key={c.slug} value={c.slug}>
               {c.label}
             </option>

@@ -70,9 +70,12 @@ export async function createPost(_prev: ActionState, formData: FormData): Promis
     return { error: "입력을 확인하세요", fieldErrors: f };
   }
 
-  // 공지는 스태프만
+  // 공지 / 메타 리포트는 스태프만
   if (parsed.data.is_notice && !(await isStaff(supabase, userId))) {
     return { error: "공지는 관리자만 작성할 수 있습니다" };
+  }
+  if (parsed.data.category === "report" && !(await isStaff(supabase, userId))) {
+    return { error: "메타 리포트는 관리자만 작성할 수 있습니다" };
   }
 
   // 덱공략 + 덱 코드 → 본문 상단에 ```deck 블록 삽입 (이미 있으면 생략)
@@ -107,7 +110,7 @@ export async function updatePost(
   _prev: ActionState,
   formData: FormData,
 ): Promise<ActionState> {
-  const { supabase } = await requireUser();
+  const { supabase, userId } = await requireUser();
 
   const parsed = postSchema.omit({ is_notice: true }).safeParse({
     category: formData.get("category"),
@@ -119,6 +122,10 @@ export async function updatePost(
     const f: Record<string, string> = {};
     for (const issue of parsed.error.issues) f[String(issue.path[0])] = issue.message;
     return { error: "입력을 확인하세요", fieldErrors: f };
+  }
+
+  if (parsed.data.category === "report" && !(await isStaff(supabase, userId))) {
+    return { error: "메타 리포트는 관리자만 작성할 수 있습니다" };
   }
 
   let body = parsed.data.body;
