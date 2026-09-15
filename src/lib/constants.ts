@@ -21,8 +21,8 @@ export const SITE = {
   /** 네이버 카페 카드 판매 게시판 clubid/menuid (검색 링크 조립용) */
   naverCafeClubId: "31788328" as string,
   naverCafeTradeMenuId: "14" as string,
-  /** 네이버 카페 이벤트 게시판 — "이벤트응모" 태그 글은 여기로 안내. */
-  naverCafeEvent: "https://cafe.naver.com/f-e/cafes/31788328/menus/22" as string,
+  /** 네이버 카페 부스터 박스 추첨 이벤트 글 — "이벤트응모" 태그 글은 여기로 안내. */
+  naverCafeEvent: "https://cafe.naver.com/f-e/cafes/31788328/articles/9" as string,
   /**
    * 커뮤니티 카테고리 → 카페 게시판 매핑(교차 게시 버튼용).
    * 전용 게시판이 아직 없는 카테고리는 리프트바운드 게시판(menus/7)으로 통일.
