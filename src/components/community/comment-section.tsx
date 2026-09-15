@@ -65,7 +65,7 @@ function SubmitBtn({ label }: { label: string }) {
     <button
       type="submit"
       disabled={pending}
-      className="shrink-0 self-end rounded-full bg-primary px-4 py-2 text-label-md font-bold text-white transition hover:bg-primary-container disabled:opacity-50"
+      className="shrink-0 self-end rounded-lg bg-primary px-4 py-2 text-label-md font-bold text-white transition hover:bg-primary-container disabled:opacity-50"
     >
       {pending ? "등록 중…" : label}
     </button>
@@ -158,7 +158,7 @@ function CommentEditForm({
         <button
           type="button"
           onClick={onDone}
-          className="rounded-full px-3 py-2 text-label-md font-bold text-ink-soft hover:text-ink"
+          className="rounded-lg px-3 py-2 text-label-md font-bold text-ink-soft hover:text-ink"
         >
           취소
         </button>

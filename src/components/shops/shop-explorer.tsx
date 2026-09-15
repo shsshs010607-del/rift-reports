@@ -290,7 +290,7 @@ function ShopItem({ s }: { s: Shop }) {
           href={kakaoMapUrl(s)}
           target="_blank"
           rel="noopener noreferrer"
-          className="inline-flex items-center gap-1.5 rounded-full bg-[#FEE500] px-3 py-1.5 text-label-sm font-bold text-[#191600] transition hover:bg-[#f5dd00]"
+          className="inline-flex items-center gap-1.5 rounded-lg bg-[#FEE500] px-3 py-1.5 text-label-sm font-bold text-[#191600] transition hover:bg-[#f5dd00]"
         >
           <MapIcon className="h-3.5 w-3.5" />
           카카오맵에서 보기
@@ -300,7 +300,7 @@ function ShopItem({ s }: { s: Shop }) {
             href={s.url}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-1.5 rounded-full border border-line px-3 py-1.5 text-label-sm font-bold text-ink-soft transition hover:text-ink"
+            className="inline-flex items-center gap-1.5 rounded-lg border border-line px-3 py-1.5 text-label-sm font-bold text-ink-soft transition hover:text-ink"
           >
             <ExternalLink className="h-3.5 w-3.5" />
             홈페이지
@@ -330,7 +330,7 @@ function SubmitCallout() {
         </div>
         <Link
           href="/community/recruit"
-          className="inline-flex shrink-0 items-center justify-center gap-1.5 rounded-full bg-primary px-4 py-2 text-label-md font-bold text-white transition hover:brightness-105"
+          className="inline-flex shrink-0 items-center justify-center gap-1.5 rounded-lg bg-primary px-4 py-2 text-label-md font-bold text-white transition hover:brightness-105"
         >
           매장 제보하기
           <ArrowRight className="h-4 w-4" />

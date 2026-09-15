@@ -260,7 +260,7 @@ export function BeginnerGuide({ exampleCard = null }: { exampleCard?: Card | nul
             </div>
             <Link
               href="/shops"
-              className="shrink-0 rounded-full bg-primary px-4 py-2 text-label-md font-bold text-white transition hover:bg-primary-container"
+              className="shrink-0 rounded-lg bg-primary px-4 py-2 text-label-md font-bold text-white transition hover:bg-primary-container"
             >
               <ShoppingCart className="mr-1 inline h-4 w-4" />
               매장

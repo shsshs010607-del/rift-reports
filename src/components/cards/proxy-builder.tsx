@@ -286,7 +286,7 @@ export function ProxyBuilder() {
                 type="button"
                 onClick={importDeck}
                 disabled={!deckInput.trim()}
-                className="rounded-full bg-primary px-4 py-2 text-label-sm font-bold text-white transition hover:bg-primary-container disabled:opacity-50"
+                className="rounded-lg bg-primary px-4 py-2 text-label-sm font-bold text-white transition hover:bg-primary-container disabled:opacity-50"
               >
                 덱 카드 담기
               </button>
@@ -370,7 +370,7 @@ export function ProxyBuilder() {
               <button
                 type="button"
                 onClick={() => setLimit((n) => n + SHOW_STEP)}
-                className="mt-4 w-full rounded-full border border-line py-2.5 text-label-md font-bold text-ink-soft transition hover:border-primary/40 hover:text-ink"
+                className="mt-4 w-full rounded-lg border border-line py-2.5 text-label-md font-bold text-ink-soft transition hover:border-primary/40 hover:text-ink"
               >
                 더 보기 ({filtered.length - limit}장 남음)
               </button>
@@ -432,7 +432,7 @@ export function ProxyBuilder() {
           type="button"
           onClick={download}
           disabled={busy || entries.length === 0}
-          className="mt-3 inline-flex w-full items-center justify-center gap-1.5 rounded-full bg-primary px-4 py-2.5 text-label-md font-bold text-white transition hover:bg-primary-container disabled:opacity-50"
+          className="mt-3 inline-flex w-full items-center justify-center gap-1.5 rounded-lg bg-primary px-4 py-2.5 text-label-md font-bold text-white transition hover:bg-primary-container disabled:opacity-50"
         >
           <Printer className="h-4 w-4" />
           {busy ? "만드는 중…" : "인쇄 시트 저장 (PNG)"}

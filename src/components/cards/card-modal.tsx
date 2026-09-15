@@ -290,7 +290,7 @@ export function CardModal({
               type="button"
               onClick={downloadProxy}
               disabled={proxyBusy}
-              className="inline-flex items-center gap-1.5 rounded-full border border-line bg-card px-3.5 py-2 text-label-md font-bold text-ink-soft transition hover:border-primary/40 hover:text-ink disabled:opacity-50"
+              className="inline-flex items-center gap-1.5 rounded-lg border border-line bg-card px-3.5 py-2 text-label-md font-bold text-ink-soft transition hover:border-primary/40 hover:text-ink disabled:opacity-50"
             >
               <Printer className="h-4 w-4" />
               {proxyBusy ? "만드는 중…" : "프록시 다운로드"}

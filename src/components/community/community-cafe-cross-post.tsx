@@ -92,7 +92,7 @@ export function CommunityCafeCrossPost({
             <button
               type="button"
               onClick={copyAndOpen}
-              className="inline-flex items-center gap-1.5 rounded-full bg-[#03C75A] px-4 py-2 text-label-md font-bold text-white transition hover:brightness-95"
+              className="inline-flex items-center gap-1.5 rounded-lg bg-[#03C75A] px-4 py-2 text-label-md font-bold text-white transition hover:brightness-95"
             >
               {copied ? <Check className="h-4 w-4" /> : <NaverIcon className="h-3.5 w-3.5" />}
               {copied ? `복사됨 · ${boardLabel} 열림` : `복사하고 ${boardLabel} 열기`}
@@ -100,7 +100,7 @@ export function CommunityCafeCrossPost({
             <button
               type="button"
               onClick={copy}
-              className="inline-flex items-center gap-1.5 rounded-full border border-line bg-card px-3.5 py-2 text-label-md font-bold text-ink-soft transition hover:text-ink"
+              className="inline-flex items-center gap-1.5 rounded-lg border border-line bg-card px-3.5 py-2 text-label-md font-bold text-ink-soft transition hover:text-ink"
             >
               <Copy className="h-3.5 w-3.5" />
               내용만 복사

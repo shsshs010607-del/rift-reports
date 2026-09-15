@@ -72,7 +72,7 @@ export function BoardToolbar({ writeHref }: { writeHref: string }) {
           </button>
           <Link
             href={writeHref}
-            className="inline-flex items-center gap-1.5 rounded-full bg-primary px-4 py-2 text-label-md font-bold text-white transition hover:bg-primary-container"
+            className="inline-flex items-center gap-1.5 rounded-lg bg-primary px-4 py-2 text-label-md font-bold text-white transition hover:bg-primary-container"
           >
             <PenLine className="h-4 w-4" />
             글쓰기

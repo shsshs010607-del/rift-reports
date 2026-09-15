@@ -172,7 +172,7 @@ export function DeckQuiz({ images = {} }: { images?: Record<string, string> }) {
           reset();
           setOpen(true);
         }}
-        className="inline-flex items-center gap-1.5 rounded-full bg-primary px-4 py-2 text-label-md font-bold text-white shadow-[0_4px_14px_rgba(70,72,212,0.3)] transition hover:bg-primary-container"
+        className="inline-flex items-center gap-1.5 rounded-lg bg-primary px-4 py-2 text-label-md font-bold text-white shadow-[0_4px_14px_rgba(70,72,212,0.3)] transition hover:bg-primary-container"
       >
         <Wand2 className="h-4 w-4" />
         내 MBTI 덱 찾기
@@ -301,7 +301,7 @@ export function DeckQuiz({ images = {} }: { images?: Record<string, string> }) {
                     <Link
                       href={`/community/new?category=riftbound&tag=${encodeURIComponent(CAFE_EVENT.tag)}`}
                       onClick={() => setOpen(false)}
-                      className="mt-2.5 inline-flex items-center gap-1.5 rounded-full bg-[#e8b84b] px-4 py-2 text-label-sm font-bold text-[#241a00] transition hover:brightness-105"
+                      className="mt-2.5 inline-flex items-center gap-1.5 rounded-lg bg-[#e8b84b] px-4 py-2 text-label-sm font-bold text-[#241a00] transition hover:brightness-105"
                     >
                       <Gift className="h-3.5 w-3.5" />
                       가입인증글 바로쓰기
@@ -315,7 +315,7 @@ export function DeckQuiz({ images = {} }: { images?: Record<string, string> }) {
                       type="button"
                       onClick={shareImage}
                       disabled={!imgBlob}
-                      className="inline-flex items-center gap-1.5 rounded-full bg-[#e8b84b] px-4 py-2.5 text-label-md font-bold text-[#241a00] transition hover:brightness-105 disabled:opacity-50"
+                      className="inline-flex items-center gap-1.5 rounded-lg bg-[#e8b84b] px-4 py-2.5 text-label-md font-bold text-[#241a00] transition hover:brightness-105 disabled:opacity-50"
                     >
                       {shared ? <Check className="h-4 w-4" /> : <Share2 className="h-4 w-4" />}
                       {shared ? "공유됨" : "인스타그램에 공유"}
@@ -324,7 +324,7 @@ export function DeckQuiz({ images = {} }: { images?: Record<string, string> }) {
                       type="button"
                       onClick={downloadImage}
                       disabled={!imgUrl}
-                      className="inline-flex items-center gap-1.5 rounded-full border border-white/20 px-4 py-2.5 text-label-md font-bold text-white/80 transition hover:border-white/40 hover:text-white disabled:opacity-50"
+                      className="inline-flex items-center gap-1.5 rounded-lg border border-white/20 px-4 py-2.5 text-label-md font-bold text-white/80 transition hover:border-white/40 hover:text-white disabled:opacity-50"
                     >
                       <Download className="h-3.5 w-3.5" />
                       이미지 저장

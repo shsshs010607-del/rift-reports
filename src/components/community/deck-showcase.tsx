@@ -181,7 +181,7 @@ export function DeckShowcase({ code }: { code: string }) {
       <div className="flex flex-wrap gap-2 border-t border-line/60 p-3">
         <Link
           href={openHref}
-          className="inline-flex items-center gap-1.5 rounded-full bg-primary px-3.5 py-2 text-label-sm font-bold text-white"
+          className="inline-flex items-center gap-1.5 rounded-lg bg-primary px-3.5 py-2 text-label-sm font-bold text-white"
         >
           덱 시뮬레이터에서 열기
           <ArrowUpRight className="h-3.5 w-3.5" />
@@ -189,7 +189,7 @@ export function DeckShowcase({ code }: { code: string }) {
         <button
           type="button"
           onClick={copy}
-          className="inline-flex items-center gap-1.5 rounded-full border border-line px-3.5 py-2 text-label-sm font-bold text-ink-soft hover:text-ink"
+          className="inline-flex items-center gap-1.5 rounded-lg border border-line px-3.5 py-2 text-label-sm font-bold text-ink-soft hover:text-ink"
         >
           {copied ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
           {copied ? "복사됨" : "덱 코드 복사"}

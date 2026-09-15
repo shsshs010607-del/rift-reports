@@ -70,7 +70,7 @@ export default async function RulesPage() {
             href={RIFT_ATLAS_URL}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex w-fit items-center gap-1.5 rounded-full bg-primary px-4 py-2 text-label-md font-bold text-white transition hover:bg-primary-container"
+            className="inline-flex w-fit items-center gap-1.5 rounded-lg bg-primary px-4 py-2 text-label-md font-bold text-white transition hover:bg-primary-container"
           >
             Rift Atlas 시뮬레이터에서 연습하기
             <ArrowUpRight className="h-4 w-4" />

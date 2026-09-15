@@ -12,7 +12,7 @@ export function PostActions({ postId, canEdit = true }: { postId: string; canEdi
       {canEdit && (
         <Link
           href={`/community/post/${postId}/edit`}
-          className="inline-flex items-center gap-1 rounded-full border border-line px-2.5 py-1 text-body-sm text-ink-soft hover:border-primary hover:text-primary-strong"
+          className="inline-flex items-center gap-1 rounded-lg border border-line px-2.5 py-1 text-body-sm text-ink-soft hover:border-primary hover:text-primary-strong"
         >
           <Pencil className="h-3.5 w-3.5" />
           수정
@@ -26,7 +26,7 @@ export function PostActions({ postId, canEdit = true }: { postId: string; canEdi
           setBusy(true);
           await deletePost(postId);
         }}
-        className="inline-flex items-center gap-1 rounded-full border border-line px-2.5 py-1 text-body-sm text-ink-soft hover:border-coral hover:text-coral"
+        className="inline-flex items-center gap-1 rounded-lg border border-line px-2.5 py-1 text-body-sm text-ink-soft hover:border-coral hover:text-coral"
       >
         <Trash2 className="h-3.5 w-3.5" />
         삭제

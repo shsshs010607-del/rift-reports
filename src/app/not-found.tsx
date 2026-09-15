@@ -21,7 +21,7 @@ export default function NotFound() {
           <Link
             key={l.href}
             href={l.href}
-            className="inline-flex items-center gap-1 rounded-full border border-line px-3 py-1.5 text-label-sm font-bold text-ink-soft transition hover:border-primary/40 hover:text-ink"
+            className="inline-flex items-center gap-1 rounded-lg border border-line px-3 py-1.5 text-label-sm font-bold text-ink-soft transition hover:border-primary/40 hover:text-ink"
           >
             {l.label}
             <ArrowRight className="h-3.5 w-3.5" />

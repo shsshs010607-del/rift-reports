@@ -49,7 +49,7 @@ export function LikeButton({
       disabled={pending}
       aria-pressed={liked}
       className={cn(
-        "inline-flex items-center gap-2 rounded-full border px-6 py-2.5 text-label-md font-bold transition",
+        "inline-flex items-center gap-2 rounded-lg border px-6 py-2.5 text-label-md font-bold transition",
         liked
           ? "border-primary bg-primary text-white shadow-[0_4px_14px_rgba(70,72,212,0.25)]"
           : "border-line bg-card text-ink hover:border-primary/50 hover:text-primary-strong",

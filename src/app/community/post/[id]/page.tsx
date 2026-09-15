@@ -123,7 +123,7 @@ export default async function PostDetailPage(props: { params: Promise<{ id: stri
             </p>
             <Link
               href={`/community/new?category=riftbound&tag=${encodeURIComponent(CAFE_EVENT.tag)}`}
-              className="mt-3 inline-flex items-center gap-1.5 rounded-full bg-[#03C75A] px-4 py-2 text-label-md font-bold text-white transition hover:brightness-95"
+              className="mt-3 inline-flex items-center gap-1.5 rounded-lg bg-[#03C75A] px-4 py-2 text-label-md font-bold text-white transition hover:brightness-95"
             >
               <Gift className="h-4 w-4" />
               가입인증글 바로쓰기

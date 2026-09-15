@@ -46,7 +46,7 @@ function SubmitBtn({ disabled, editing }: { disabled?: boolean; editing?: boolea
     <button
       type="submit"
       disabled={pending || disabled}
-      className="rounded-full bg-primary px-7 py-2.5 text-label-md font-bold text-white transition hover:bg-primary-container disabled:opacity-50"
+      className="rounded-lg bg-primary px-7 py-2.5 text-label-md font-bold text-white transition hover:bg-primary-container disabled:opacity-50"
     >
       {pending ? (editing ? "수정 중…" : "등록 중…") : editing ? "수정 완료" : "등록"}
     </button>

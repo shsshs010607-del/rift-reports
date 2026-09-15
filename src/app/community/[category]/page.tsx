@@ -87,7 +87,7 @@ export default async function BoardPage(
         {slug === "tournament" && (
           <Link
             href="/shops"
-            className="shrink-0 rounded-full bg-primary px-3.5 py-2 text-label-sm font-bold text-white transition hover:bg-primary-container"
+            className="shrink-0 rounded-lg bg-primary px-3.5 py-2 text-label-sm font-bold text-white transition hover:bg-primary-container"
           >
             내 주변 매장 보기
           </Link>

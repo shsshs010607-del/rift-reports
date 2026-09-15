@@ -64,7 +64,7 @@ export function NotificationCenter({
             type="button"
             onClick={markSeen}
             disabled={pending}
-            className="inline-flex items-center gap-1 rounded-full border border-line px-3 py-1.5 text-label-sm font-bold text-ink-soft transition hover:text-ink disabled:opacity-50"
+            className="inline-flex items-center gap-1 rounded-lg border border-line px-3 py-1.5 text-label-sm font-bold text-ink-soft transition hover:text-ink disabled:opacity-50"
           >
             <Check className="h-3.5 w-3.5" /> 모두 읽음
           </button>
@@ -72,7 +72,7 @@ export function NotificationCenter({
             type="button"
             onClick={clearAll}
             disabled={pending}
-            className="inline-flex items-center gap-1 rounded-full border border-line px-3 py-1.5 text-label-sm font-bold text-error transition hover:bg-error/10 disabled:opacity-50"
+            className="inline-flex items-center gap-1 rounded-lg border border-line px-3 py-1.5 text-label-sm font-bold text-error transition hover:bg-error/10 disabled:opacity-50"
           >
             <Trash2 className="h-3.5 w-3.5" /> 전체 삭제
           </button>

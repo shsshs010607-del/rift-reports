@@ -104,7 +104,7 @@ export function ProfileEditor({
               type="button"
               onClick={() => fileRef.current?.click()}
               disabled={uploading}
-              className="inline-flex items-center gap-1.5 rounded-full border border-line px-3 py-1.5 text-label-sm font-bold text-ink-soft transition hover:text-ink disabled:opacity-50"
+              className="inline-flex items-center gap-1.5 rounded-lg border border-line px-3 py-1.5 text-label-sm font-bold text-ink-soft transition hover:text-ink disabled:opacity-50"
             >
               <Camera className="h-3.5 w-3.5" /> 사진 변경
             </button>
@@ -113,7 +113,7 @@ export function ProfileEditor({
                 type="button"
                 onClick={removeAvatar}
                 disabled={uploading}
-                className="inline-flex items-center gap-1.5 rounded-full border border-line px-3 py-1.5 text-label-sm font-bold text-error transition hover:bg-error/10 disabled:opacity-50"
+                className="inline-flex items-center gap-1.5 rounded-lg border border-line px-3 py-1.5 text-label-sm font-bold text-error transition hover:bg-error/10 disabled:opacity-50"
               >
                 <Trash2 className="h-3.5 w-3.5" /> 제거
               </button>
