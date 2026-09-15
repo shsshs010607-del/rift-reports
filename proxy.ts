@@ -18,7 +18,10 @@ export async function proxy(request: NextRequest) {
     url.port = "";
     return NextResponse.redirect(url, 308);
   }
-  return updateSession(request);
+  const res = await updateSession(request);
+  // TEMP debug: confirm proxy is executing in prod
+  res.headers.set("x-proxy-debug", `host=${request.nextUrl.hostname}`);
+  return res;
 }
 
 export const config = {
