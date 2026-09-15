@@ -16,7 +16,7 @@ const THEMES: Record<QuizImageTheme, { bg: [string, string]; accent: string; glo
 };
 
 function proxied(src: string, w: number) {
-  return `/_next/image?url=${encodeURIComponent(src)}&w=${w}&q=80`;
+  return `/_next/image?url=${encodeURIComponent(src)}&w=${w}&q=75`;
 }
 
 function loadImg(src: string, w: number): Promise<HTMLImageElement | null> {
