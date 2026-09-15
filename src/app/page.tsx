@@ -47,7 +47,7 @@ export default function HomePage() {
       <HomeBeginnerGuide />
 
       {/* 좌: 추천덱(압축) + 커뮤니티 최신글 / 우: 인기글 + 시세 */}
-      <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_340px] xl:items-start">
+      <div className="grid grid-cols-1 gap-5 xl:grid-cols-[minmax(0,1fr)_340px] xl:items-start">
         <div className="flex flex-col gap-5">
           <Suspense fallback={<div className="h-28 animate-pulse rounded-2xl bg-subcanvas/50" />}>
             <MetaSnapshot />

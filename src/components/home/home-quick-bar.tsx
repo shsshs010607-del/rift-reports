@@ -5,7 +5,7 @@ import { ChannelBanner } from "@/components/home/channel-banner";
 export function HomeQuickBar() {
   return (
     <section className="rounded-2xl border border-line bg-card p-4 sm:p-5">
-      <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-center">
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-center">
         <HomeCardSearch />
         <ChannelBanner className="lg:justify-end" />
       </div>

@@ -42,7 +42,7 @@ export default async function TradingPage() {
       </header>
 
       {/* 시세: 좌 카드 시세 / 우 급등·급락 */}
-      <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
         <section className="min-w-0">
           <div className="mb-3 flex flex-wrap items-end justify-between gap-x-4 gap-y-1">
             <h2 className="text-title-md font-bold text-ink">카드 시세</h2>

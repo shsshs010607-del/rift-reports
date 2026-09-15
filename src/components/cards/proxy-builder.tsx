@@ -183,7 +183,7 @@ export function ProxyBuilder() {
   }
 
   return (
-    <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_340px] lg:items-start">
+    <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1fr)_340px] lg:items-start">
       {/* 검색 + 필터 + 카드 그리드 */}
       <div>
         <div className="flex gap-2">

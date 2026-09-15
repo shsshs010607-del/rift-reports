@@ -43,7 +43,7 @@ export function Navbar() {
   return (
     <header className="fixed inset-x-0 top-0 z-50 bg-surface/95 shadow-header backdrop-blur-xl">
       {/* ── 1행: 로고 · 주요 메뉴 · 알림/글쓰기/프로필 ── */}
-      <div className="mx-auto flex h-[68px] max-w-[1280px] items-center gap-4 px-gutter-desktop">
+      <div className="mx-auto flex h-[68px] max-w-[1280px] items-center gap-2 px-4 sm:gap-4 sm:px-gutter-desktop">
         <Link href="/" aria-label="리바지지 홈" className="flex shrink-0 items-center">
           <LogoMark className="shadow-e1" />
         </Link>
@@ -61,7 +61,7 @@ export function Navbar() {
           ))}
         </nav>
 
-        <div className="flex flex-1 items-center justify-end gap-2.5 xl:flex-none">
+        <div className="flex flex-1 items-center justify-end gap-1.5 sm:gap-2.5 xl:flex-none">
           <ThemeToggle />
           <NotificationBell />
 

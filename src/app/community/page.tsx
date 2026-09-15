@@ -59,7 +59,7 @@ export default async function CommunityHubPage(
       <CategoryTabs />
       <DiscordCta className="mb-5" />
 
-      <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_290px] lg:items-start">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1fr)_290px] lg:items-start">
         {/* 메인 — 전체 최신글 */}
         <div>
           <h2 className="mb-3 text-title-md font-bold text-ink">
