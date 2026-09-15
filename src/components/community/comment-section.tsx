@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useFormState, useFormStatus } from "react-dom";
-import { CornerDownRight } from "lucide-react";
+import { CornerDownRight, SendHorizontal } from "lucide-react";
 import { fmtKstRelative } from "@/lib/datetime";
 import {
   createComment,
@@ -72,6 +72,22 @@ function SubmitBtn({ label }: { label: string }) {
   );
 }
 
+/** 채팅형 입력창 안에 딸린 원형 전송 버튼. */
+function SendBtn({ label }: { label: string }) {
+  const { pending } = useFormStatus();
+  return (
+    <button
+      type="submit"
+      disabled={pending}
+      aria-label={label}
+      title={label}
+      className="grid h-9 w-9 shrink-0 place-items-center self-end rounded-full bg-primary text-white transition hover:bg-primary-container disabled:opacity-50"
+    >
+      <SendHorizontal className="h-4 w-4" />
+    </button>
+  );
+}
+
 function CommentForm({
   postId,
   parentId,
@@ -90,18 +106,18 @@ function CommentForm({
   }, initial);
 
   return (
-    <form action={formAction} className={cn("flex flex-col gap-2", compact ? "mt-2" : "mt-4")}>
+    <form action={formAction} className={cn("flex flex-col gap-1.5", compact ? "mt-2" : "mt-4")}>
       <input type="hidden" name="post_id" value={postId} />
       {parentId && <input type="hidden" name="parent_id" value={parentId} />}
-      <div className="flex gap-2">
+      <div className="flex items-end gap-1.5 rounded-2xl border border-line bg-card p-1.5 pl-3.5 transition focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/15">
         <textarea
           name="body"
           required
-          rows={compact ? 2 : 3}
+          rows={compact ? 1 : 2}
           placeholder={parentId ? "답글 입력…" : "댓글을 입력하세요"}
-          className={INPUT}
+          className="w-full resize-y border-0 bg-transparent py-1.5 text-body-md text-ink placeholder:text-ink-soft/70 focus:outline-none"
         />
-        <SubmitBtn label={parentId ? "답글" : "등록"} />
+        <SendBtn label={parentId ? "답글 등록" : "댓글 등록"} />
       </div>
       {state.error && <p className="text-body-sm text-coral">{state.error}</p>}
     </form>
