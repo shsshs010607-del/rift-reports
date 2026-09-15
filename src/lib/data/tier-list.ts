@@ -91,14 +91,6 @@ const RAW_DECKS: Omit<TierDeck, "guidePostId">[] = [
 
   // ── B ──────────────────────────────────────────────
   {
-    id: "yasuo",
-    tier: "B",
-    name: "야스오",
-    subtitle: "기절·반격 콤보",
-    legendEn: "Yasuo - Unforgiven",
-    keyCard: "야스오",
-  },
-  {
     id: "darius",
     tier: "B",
     name: "다리우스",
@@ -114,15 +106,31 @@ const RAW_DECKS: Omit<TierDeck, "guidePostId">[] = [
     legendEn: "Volibear - Relentless Storm",
     keyCard: "볼리베어",
   },
-
-  // ── C ──────────────────────────────────────────────
+  {
+    id: "leona",
+    tier: "B",
+    name: "레오나",
+    subtitle: "질서 방어 컨트롤",
+    legendEn: "Leona - Radiant Dawn",
+    keyCard: "레오나",
+  },
   {
     id: "ahri",
-    tier: "C",
+    tier: "B",
     name: "아리",
     subtitle: "혼돈 주문 연계",
     legendEn: "Ahri - Nine-Tailed Fox",
     keyCard: "아리",
+  },
+
+  // ── C ──────────────────────────────────────────────
+  {
+    id: "yasuo",
+    tier: "C",
+    name: "야스오",
+    subtitle: "기절·반격 콤보",
+    legendEn: "Yasuo - Unforgiven",
+    keyCard: "야스오",
   },
   {
     id: "leesin",
@@ -131,14 +139,6 @@ const RAW_DECKS: Omit<TierDeck, "guidePostId">[] = [
     subtitle: "침착 킥 콤보",
     legendEn: "Lee Sin - Blind Monk",
     keyCard: "리 신",
-  },
-  {
-    id: "leona",
-    tier: "C",
-    name: "레오나",
-    subtitle: "질서 방어 컨트롤",
-    legendEn: "Leona - Radiant Dawn",
-    keyCard: "레오나",
   },
   {
     id: "jinx",
