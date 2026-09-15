@@ -54,7 +54,7 @@ const FORMAT_LABEL: Record<RbEvent["tournament"]["config"]["format"], string> = 
 };
 const TYPE_LABEL: Record<RbEvent["tournament"]["config"]["tournamentType"], string> = {
   NEXUS_NIGHT: "넥서스 나이트",
-  SUMMONER_SKIRMISH: "소환사 스커미시",
+  SUMMONER_SKIRMISH: "스토어 예선",
 };
 
 /** adminArea1(시·도 전체 표기) → shops.sido 축약형. */

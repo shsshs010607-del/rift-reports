@@ -53,6 +53,14 @@ export const CAFE_EVENT = {
  */
 export const RIFTBOUND_NEWS = [
   {
+    tag: "대회",
+    title: "국내 매장 대회 정식 신청 시작",
+    summary:
+      "PlayRiftbound.com에서 스토어 예선·넥서스 나이트 신청이 열렸습니다. 스토어 예선은 코리아 메이저 진출자를 가리는 매장별 예선(상위 2명 진출), 넥서스 나이트는 매주 열리는 캐주얼 매장 대회입니다.",
+    date: "2026-09-15",
+    url: "https://playriftbound.com/ko-KR/events/",
+  },
+  {
     tag: "공지",
     title: "새 단장한 PlayRiftbound.com 공개",
     summary: "대회 찾기·참가 신청을 위한 새 플랫폼이 9월 14일 정식 오픈합니다.",
