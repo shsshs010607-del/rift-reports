@@ -191,16 +191,24 @@ export function Navbar() {
                         : "text-on-surface-variant hover:bg-surface-container hover:text-on-surface",
                     )}
                   >
-                    <Link
-                      href={item.href}
-                      onClick={() => setOpen(false)}
-                      className="block flex-1 px-space-sm py-space-sm text-title-md"
-                      {...("external" in item && item.external
-                        ? { target: "_blank", rel: "noopener noreferrer" }
-                        : {})}
-                    >
-                      {item.label}
-                    </Link>
+                    {"external" in item && item.external ? (
+                      <a
+                        href={item.href}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="block flex-1 px-space-sm py-space-sm text-title-md"
+                      >
+                        {item.label}
+                      </a>
+                    ) : (
+                      <Link
+                        href={item.href}
+                        onClick={() => setOpen(false)}
+                        className="block flex-1 px-space-sm py-space-sm text-title-md"
+                      >
+                        {item.label}
+                      </Link>
+                    )}
                     {hasChildren && (
                       <button
                         type="button"
@@ -233,14 +241,20 @@ export function Navbar() {
                               {s.label} · 준비 중
                             </span>
                           );
-                        return (
-                          <Link
+                        const subCls =
+                          "block px-space-sm py-2 pl-8 text-body-md text-on-surface-variant hover:text-on-surface";
+                        return external ? (
+                          <a
                             key={s.href}
                             href={url}
-                            {...(external ? { target: "_blank", rel: "noopener noreferrer" } : {})}
-                            onClick={() => setOpen(false)}
-                            className="block px-space-sm py-2 pl-8 text-body-md text-on-surface-variant hover:text-on-surface"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className={subCls}
                           >
+                            {s.label}
+                          </a>
+                        ) : (
+                          <Link key={s.href} href={url} onClick={() => setOpen(false)} className={subCls}>
                             {s.label}
                           </Link>
                         );
@@ -311,13 +325,17 @@ function NavPill({
   );
 
   if (!sub?.length) {
+    // 정적 HTML(예: /origins-sim.html) 등 외부 취급 링크는 <Link>가 아니라 <a>로 —
+    // <Link>는 target="_blank"를 줘도 앱 라우터 경로로 오인해 프리페치를 시도한다.
+    if (external) {
+      return (
+        <a href={href} target="_blank" rel="noopener noreferrer" className={pillCls}>
+          {label}
+        </a>
+      );
+    }
     return (
-      <Link
-        href={href}
-        aria-current={active ? "page" : undefined}
-        className={pillCls}
-        {...(external ? { target: "_blank", rel: "noopener noreferrer" } : {})}
-      >
+      <Link href={href} aria-current={active ? "page" : undefined} className={pillCls}>
         {label}
       </Link>
     );
@@ -326,14 +344,15 @@ function NavPill({
   return (
     <div className="relative" onMouseEnter={openNow} onMouseLeave={closeSoon}>
       <div className={cn("flex items-center", pillCls, "gap-0.5 pr-2")}>
-        <Link
-          href={href}
-          aria-current={active ? "page" : undefined}
-          className="hover:underline"
-          {...(external ? { target: "_blank", rel: "noopener noreferrer" } : {})}
-        >
-          {label}
-        </Link>
+        {external ? (
+          <a href={href} target="_blank" rel="noopener noreferrer" className="hover:underline">
+            {label}
+          </a>
+        ) : (
+          <Link href={href} aria-current={active ? "page" : undefined} className="hover:underline">
+            {label}
+          </Link>
+        )}
         <button
           type="button"
           onClick={() => {
@@ -366,13 +385,21 @@ function NavPill({
                 </span>
               );
             }
+            const ddCls =
+              "block px-3.5 py-2 text-body-sm text-on-surface transition-colors hover:bg-surface-container hover:text-primary";
+            if (external) {
+              return (
+                <a key={s.href} href={url} target="_blank" rel="noopener noreferrer" className={ddCls}>
+                  {s.label}
+                </a>
+              );
+            }
             return (
               <Link
                 key={s.href}
                 href={url}
-                {...(external ? { target: "_blank", rel: "noopener noreferrer" } : {})}
                 onClick={() => setOpen(false)}
-                className="block px-3.5 py-2 text-body-sm text-on-surface transition-colors hover:bg-surface-container hover:text-primary"
+                className={ddCls}
               >
                 {s.label}
               </Link>
