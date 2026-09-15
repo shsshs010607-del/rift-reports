@@ -70,12 +70,12 @@ export async function createPost(_prev: ActionState, formData: FormData): Promis
     return { error: "입력을 확인하세요", fieldErrors: f };
   }
 
-  // 공지 / 메타 리포트는 스태프만
+  // 공지 / 리프트 리포트는 스태프만
   if (parsed.data.is_notice && !(await isStaff(supabase, userId))) {
     return { error: "공지는 관리자만 작성할 수 있습니다" };
   }
   if (parsed.data.category === "report" && !(await isStaff(supabase, userId))) {
-    return { error: "메타 리포트는 관리자만 작성할 수 있습니다" };
+    return { error: "리프트 리포트는 관리자만 작성할 수 있습니다" };
   }
 
   // 덱공략 + 덱 코드 → 본문 상단에 ```deck 블록 삽입 (이미 있으면 생략)

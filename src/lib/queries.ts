@@ -52,12 +52,27 @@ export function getReports() {
 export function getReport(slug: string) {
   return safe<ReportWithAuthor | null>(async () => {
     const supabase = await createClient();
-    const { data, error } = await supabase
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    let staff = false;
+    if (user) {
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("role")
+        .eq("id", user.id)
+        .maybeSingle();
+      staff = profile?.role === "editor" || profile?.role === "admin";
+    }
+
+    // 스태프는 비공개(draft) 리포트도 미리보기 할 수 있다 — 그 외엔 공개된 것만.
+    let query = supabase
       .from("reports")
       .select("*, author:profiles!reports_author_id_fkey(username, avatar_url)")
-      .eq("slug", slug)
-      .eq("status", "published")
-      .maybeSingle();
+      .eq("slug", slug);
+    if (!staff) query = query.eq("status", "published");
+
+    const { data, error } = await query.maybeSingle();
     if (error) throw error;
     return (data as unknown as ReportWithAuthor) ?? null;
   }, null);

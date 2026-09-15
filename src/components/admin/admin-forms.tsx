@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useState, useTransition } from "react";
 import { useFormState, useFormStatus } from "react-dom";
 import { Trash2, Pencil, Check, X } from "lucide-react";
@@ -289,6 +290,45 @@ function SubmitBtn({ label }: { label: string }) {
     <button type="submit" disabled={pending} className="btn-primary">
       {pending ? "저장 중…" : label}
     </button>
+  );
+}
+
+/** 작성한 리포트 목록 — draft(비공개)도 여기서 바로 열어볼 수 있다. */
+export function ReportList({
+  items,
+}: {
+  items: { id: string; slug: string; title: string; status: string; created_at: string }[];
+}) {
+  if (items.length === 0) {
+    return <p className="text-body-sm text-ink-soft">작성한 리포트가 없습니다.</p>;
+  }
+
+  return (
+    <ul className="divide-y divide-line/50 overflow-hidden rounded-xl border border-line/70">
+      {items.map((r) => (
+        <li key={r.id}>
+          <Link
+            href={`/reports/${r.slug}`}
+            target="_blank"
+            className="flex items-center gap-3 px-3 py-2.5 transition hover:bg-subcanvas/60"
+          >
+            <span
+              className={`shrink-0 rounded px-1.5 py-0.5 text-[11px] font-bold ${
+                r.status === "published"
+                  ? "bg-emerald/15 text-emerald"
+                  : "bg-subcanvas text-ink-soft"
+              }`}
+            >
+              {r.status === "published" ? "공개" : "비공개"}
+            </span>
+            <span className="min-w-0 flex-1 truncate text-body-md text-ink">{r.title}</span>
+            <span className="shrink-0 text-label-sm text-ink-soft">
+              {new Date(r.created_at).toLocaleDateString("ko-KR", { month: "short", day: "numeric" })}
+            </span>
+          </Link>
+        </li>
+      ))}
+    </ul>
   );
 }
 

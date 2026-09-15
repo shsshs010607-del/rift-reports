@@ -5,6 +5,7 @@ import { hasSupabaseEnv } from "@/lib/supabase/env";
 import { PageHeading } from "@/components/ui/page-heading";
 import {
   ReportForm,
+  ReportList,
   TournamentForm,
   ShopForm,
   NotificationForm,
@@ -37,6 +38,14 @@ export default async function AdminPage() {
         .is("user_id", null) // 전체공지만 — 댓글 알림 같은 개인 알림은 여기 안 섞음
         .order("created_at", { ascending: false })
         .limit(20)
+    : { data: [] };
+
+  const { data: reports } = isStaff
+    ? await supabase
+        .from("reports")
+        .select("id, slug, title, status, created_at")
+        .order("created_at", { ascending: false })
+        .limit(50)
     : { data: [] };
 
   const { data: metaDecks } = isStaff
@@ -84,6 +93,10 @@ export default async function AdminPage() {
           <h2 className="section-title mb-3">리포트 작성</h2>
           <div className="surface note-card p-5">
             <ReportForm />
+          </div>
+          <div className="mt-3">
+            <h3 className="mb-2 text-label-lg font-bold text-ink-soft">작성한 리포트</h3>
+            <ReportList items={reports ?? []} />
           </div>
         </section>
 
