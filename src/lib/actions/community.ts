@@ -125,7 +125,7 @@ export async function updatePost(
   }
 
   if (parsed.data.category === "report" && !(await isStaff(supabase, userId))) {
-    return { error: "메타 리포트는 관리자만 작성할 수 있습니다" };
+    return { error: "리프트 리포트는 관리자만 작성할 수 있습니다" };
   }
 
   let body = parsed.data.body;
