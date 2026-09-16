@@ -23,6 +23,22 @@
   gtag('config', GA_ID);
 })();
 </script>
+<script>
+/* AdSense 로더 — 이 페이지도 정적 HTML이라 layout.tsx의 AdSenseScript를 안 거친다.
+ * 광고칸 자체(#adUnit)는 본문 하단에 있음. 허용 호스트는 src/lib/ads.ts의
+ * adsAllowedHere()와 동일. */
+(function(){
+  var ADS_CLIENT = 'ca-pub-5310171214105326';
+  var ALLOWED_HOSTS = ['riba.gg', 'www.riba.gg'];
+  if (ALLOWED_HOSTS.indexOf(location.hostname.toLowerCase()) === -1) return;
+  var s = document.createElement('script');
+  s.async = true;
+  s.src = 'https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=' + ADS_CLIENT;
+  s.crossOrigin = 'anonymous';
+  document.head.appendChild(s);
+  window.__adsAllowed = true;
+})();
+</script>
 <title>넥서스 나이트 프로모 팩 시뮬레이터</title>
 <meta name="description" content="리프트바운드 넥서스 나이트 매장 이벤트 참가 시 받는 3장 프로모 팩 개봉 시뮬레이터.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -262,6 +278,28 @@
   <div class="again-row" id="againRow">
     <button class="again-btn" id="againBtn">다시 열기</button>
   </div>
+
+  <aside id="adUnit" aria-label="광고" style="display:none;max-width:760px;width:100%;margin:32px auto 0;text-align:center;">
+    <p style="margin:0 0 6px;font-size:12px;color:#8b8fa3;">광고</p>
+    <ins class="adsbygoogle" style="display:block;min-width:250px;width:100%" data-ad-client="ca-pub-5310171214105326" data-ad-slot="2066782718" data-ad-format="auto" data-full-width-responsive="true"></ins>
+  </aside>
+  <script>
+  (function(){
+    if (!window.__adsAllowed) return;
+    var el = document.getElementById('adUnit');
+    el.style.display = '';
+    var tries = 0;
+    var t = setInterval(function(){
+      tries++;
+      if (el.offsetWidth > 0) {
+        clearInterval(t);
+        try { (window.adsbygoogle = window.adsbygoogle || []).push({}); } catch (e) {}
+      } else if (tries > 20) {
+        clearInterval(t);
+      }
+    }, 150);
+  })();
+  </script>
 
   <a href="/" class="made-in">Made in <b>RIBA.GG</b></a>
   <footer class="note">
