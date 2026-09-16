@@ -11,9 +11,8 @@
 //
 // The 18 "parallel foil" names below are cross-checked by exact name against data/cards.json —
 // every one is a real OGN card, reusing its real (non-foil) art as a stand-in since we don't
-// have the actual foil scan. Only 17 of the 18 resolved: "Portly Poro" isn't in our OGN data at
-// all (promo-exclusive, never in the retail set) and is left out rather than guessed at, so the
-// generated pool is 24 cards, not 25.
+// have the actual foil scan. (One entry, "Pouty Poro", was first mistranscribed as "Portly Poro"
+// from a blurry checklist photo and dropped as not-found — fixed once the real name was confirmed.)
 //
 // The "1 custom-art Teemo" has no equivalent print in our data at all (it's described as bespoke
 // art made for this promo) — falls back to a regular Teemo print, clearly labeled as a stand-in.
@@ -44,6 +43,7 @@ const POOL_NAMES = [
   "Discipline",
   "Void Seeker",
   "Ravenbloom Student",
+  "Pouty Poro",
 ];
 
 // 커스텀 아트 테모 — 실제 프로모 아트 데이터 없음, 기존 테모 카드로 대체 표시.
