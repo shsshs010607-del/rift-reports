@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState, useTransition } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import {
   ArrowRight,
@@ -242,12 +243,12 @@ function DeckCard({
       {/* 레전드 아트 */}
       <div className="relative w-[84px] shrink-0 bg-subcanvas sm:w-[104px]">
         {img ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
+          <Image
             src={img}
             alt=""
-            loading="lazy"
-            className="absolute inset-0 h-full w-full object-cover object-[50%_18%]"
+            fill
+            sizes="104px"
+            className="object-cover object-[50%_18%]"
           />
         ) : (
           <div className="absolute inset-0 grid place-items-center">
