@@ -57,6 +57,7 @@ export function getPosts(opts: {
         ? filter.order("created_at", { ascending: false })
         : filter
             .order("is_notice", { ascending: false })
+            .order("notice_priority", { ascending: false })
             .order("is_pinned", { ascending: false })
             .order("created_at", { ascending: false });
 

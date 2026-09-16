@@ -103,7 +103,11 @@ export default async function PostDetailPage(props: { params: Promise<{ id: stri
           </div>
           {(isOwner || canModerate) && (
             <span className="ml-auto">
-              <PostActions postId={post.id} />
+              <PostActions
+                postId={post.id}
+                noticeOrder={canModerate && post.is_notice}
+                noticePriority={post.notice_priority}
+              />
             </span>
           )}
         </div>

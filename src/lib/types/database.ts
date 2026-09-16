@@ -155,6 +155,7 @@ export interface Database {
           comment_count: number;
           is_notice: boolean;
           is_pinned: boolean;
+          notice_priority: number;
           tags: string[];
           created_at: string;
           updated_at: string;
@@ -168,6 +169,7 @@ export interface Database {
           | "comment_count"
           | "is_notice"
           | "is_pinned"
+          | "notice_priority"
           | "tags"
           | "created_at"
           | "updated_at"
@@ -176,6 +178,7 @@ export interface Database {
           deck_id?: string | null;
           is_notice?: boolean;
           is_pinned?: boolean;
+          notice_priority?: number;
           tags?: string[];
           created_at?: string;
           updated_at?: string;

@@ -168,6 +168,32 @@ export async function updatePost(
   redirect(`/community/post/${postId}`);
 }
 
+/** 공지 글끼리의 노출 순서(높을수록 위) — 스태프 전용. 기본값 0 이면 등록순(최신순)으로 표시. */
+export async function setNoticePriority(postId: string, priority: number) {
+  const { supabase, userId } = await requireUser();
+  if (!(await isStaff(supabase, userId))) return { error: "권한이 없습니다" };
+
+  const { data: post, error: fetchError } = await supabase
+    .from("posts")
+    .select("category, is_notice")
+    .eq("id", postId)
+    .maybeSingle();
+  if (fetchError || !post) return { error: "글을 찾을 수 없습니다" };
+  if (!post.is_notice) return { error: "공지 글만 순서를 지정할 수 있습니다" };
+
+  const { error } = await supabase
+    .from("posts")
+    .update({ notice_priority: Math.trunc(priority) })
+    .eq("id", postId);
+  if (error) return { error: error.message };
+
+  revalidatePath("/community");
+  revalidatePath(`/community/${post.category}`);
+  revalidatePath(`/community/post/${postId}`);
+  revalidatePath("/");
+  return {};
+}
+
 export async function deletePost(postId: string) {
   const { supabase } = await requireUser();
   const { data: post } = await supabase.from("posts").select("category").eq("id", postId).maybeSingle();
