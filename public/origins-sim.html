@@ -96,6 +96,14 @@
   .opt-btn.active{background:linear-gradient(180deg,var(--gold-bright),var(--gold));color:#1a0507;border-color:transparent;}
   .opt-btn .sc{display:block;font-size:10px;opacity:.75;margin-top:1px;}
   .opt-btn.active .sc{opacity:.65;}
+  .tier-note{
+    margin:8px 2px 0;
+    font-size:11.5px;
+    color:var(--text-faint);
+    line-height:1.6;
+    min-height:1em;
+  }
+  .tier-note b{color:var(--gold);font-weight:600;}
 
   .open-btn{
     font-family:var(--font-display);font-weight:400;font-size:20px;letter-spacing:.02em;color:#1a0507;
@@ -342,6 +350,7 @@
         <button class="opt-btn" data-tier="carton">카톤 <span class="sc" id="cartonSc">6박스 · 144팩</span></button>
       </div>
     </div>
+    <p class="tier-note" id="tierNote"></p>
   </div>
 
   <div class="open-row" id="openRow">
@@ -428,8 +437,10 @@
    */
   var HIT_EPIC_RATE = 1 / 4;
   var HIT_ALTART_RATE = 1 / 12;
-  var HIT_OVERNUMBERED_RATE = 1 / 72;
-  var HIT_SIGNATURE_RATE = 1 / 700;
+  // 오버넘버·시그니처는 "[카드 상식 #1]" 글의 팩당 등장률(오버넘버 0.50% · 사인 오버넘버 0.05%)로 맞춤 —
+  // 예전 1/72·1/700 값이 실제보다 훨씬 잘 떴었음. 카톤 단위는 이 확률과 별개로 보장 슬롯을 씀(아래 rollCartonGuarantees).
+  var HIT_OVERNUMBERED_RATE = 0.005;
+  var HIT_SIGNATURE_RATE = 0.0005;
 
   function fmtPct(rate){
     return (rate * 100).toLocaleString('ko-KR', { minimumFractionDigits: rate < 0.01 ? 2 : 1, maximumFractionDigits: 2 }) + '%';
@@ -469,13 +480,20 @@
     });
   }
   var cartonSc = document.getElementById('cartonSc');
+  var tierNote = document.getElementById('tierNote');
   function updateCartonLabel(){
     var boxes = cartonBoxes(state.product);
     cartonSc.textContent = boxes + '박스 · ' + (boxes * BOX_PACKS) + '팩';
   }
+  function updateTierNote(){
+    tierNote.innerHTML = state.tier === 'carton'
+      ? '카톤 1개당 <b>오버넘버 1장 이상 보장</b>(드물게 2장), 시그니처는 0~1장(드물게 2장) 등장합니다.'
+      : '';
+  }
   setActive(productOpts, 'product', state.product);
   setActive(tierOpts, 'tier', state.tier);
   updateCartonLabel();
+  updateTierNote();
 
   productOpts.addEventListener('click', function(e){
     var btn = e.target.closest('.opt-btn');
@@ -490,6 +508,7 @@
     if(!btn) return;
     state.tier = btn.dataset.tier;
     setActive(tierOpts, 'tier', state.tier);
+    updateTierNote();
     resetStage();
   });
 
@@ -608,9 +627,40 @@
     var r = Math.random();
     if(r < HIT_SIGNATURE_RATE && SIGNATURE_POOL.length) return pick(SIGNATURE_POOL);
     if(r < HIT_OVERNUMBERED_RATE && OVERNUMBERED_POOL.length) return pick(OVERNUMBERED_POOL);
+    return drawHitFallback();
+  }
+
+  /** 히트 슬롯 중 오버넘버·시그니처가 아닌 나머지(이색아트/에픽/레어) — 카톤 보장 슬롯 배분에도 재사용. */
+  function drawHitFallback(){
+    var r = Math.random();
     if(r < HIT_ALTART_RATE && ALTART_POOL.length) return pick(ALTART_POOL);
     if(r < HIT_EPIC_RATE) return drawOne('Epic');
     return drawOne('Rare');
+  }
+
+  /**
+   * 카톤 1개 분량의 "보장 슬롯" 구성 — 순수 독립 확률(팩당 0.5%·0.05%)로만 굴리면
+   * 카톤(144~288팩)에도 오버넘버가 아예 안 나오거나 시그니처가 여러 장 겹치는 경우가 흔해서,
+   * 카톤 단위에서만 구조를 따로 둔다: 오버넘버 1장 확정(드물게 2장), 시그니처는 0~1장(드물게 2장).
+   * 반환값은 팩 개수만큼의 배열로, 각 원소는 'signature' | 'overnumbered' | null(=일반 히트 슬롯).
+   */
+  function rollCartonGuarantees(packCount){
+    var overnumberedCount = Math.random() < 0.15 ? 2 : 1;
+    var sigRoll = Math.random();
+    var signatureCount = sigRoll < 0.05 ? 2 : sigRoll < 0.45 ? 1 : 0;
+    overnumberedCount = Math.min(overnumberedCount, OVERNUMBERED_POOL.length, packCount);
+    signatureCount = Math.min(signatureCount, SIGNATURE_POOL.length, Math.max(0, packCount - overnumberedCount));
+
+    var slots = [];
+    for(var i=0;i<signatureCount;i++) slots.push('signature');
+    for(var j=0;j<overnumberedCount;j++) slots.push('overnumbered');
+    while(slots.length < packCount) slots.push(null);
+
+    for(var k=slots.length-1;k>0;k--){
+      var idx = Math.floor(Math.random()*(k+1));
+      var tmp = slots[k]; slots[k] = slots[idx]; slots[idx] = tmp;
+    }
+    return slots;
   }
 
   /** 포일 슬롯 — 등급은 랜덤(보통 커먼·언커먼 위주). */
@@ -624,19 +674,41 @@
     return RUNE_COMMON_POOL.length ? pick(RUNE_COMMON_POOL) : drawOne('Common');
   }
 
-  /** 팩 구성 — 14장 기본 부스터: 7 커먼 · 3 언커먼 · 포일 1 · 룬 1 · 레어 이상 2(그중 1장이 히트 슬롯). */
-  function openPack(size){
+  /**
+   * 팩 구성 — 14장 기본 부스터: 7 커먼 · 3 언커먼 · 포일 1 · 룬 1 · 레어 이상 2(그중 1장이 히트 슬롯).
+   * forcedHit: 카톤 보장 슬롯 배분용 — 'signature' | 'overnumbered' | 'fallback'(둘 다 아닌 일반 히트) | undefined(독립 확률).
+   */
+  function openPack(size, forcedHit){
+    function hitSlot(){
+      if(forcedHit === 'signature' && SIGNATURE_POOL.length) return pick(SIGNATURE_POOL);
+      if(forcedHit === 'overnumbered' && OVERNUMBERED_POOL.length) return pick(OVERNUMBERED_POOL);
+      if(forcedHit) return drawHitFallback();
+      return drawHit();
+    }
     if(size === '5'){
-      return [drawOne('Common'), drawOne('Common'), drawOne('Common'), drawOne('Uncommon'), drawHit()];
+      return [drawOne('Common'), drawOne('Common'), drawOne('Common'), drawOne('Uncommon'), hitSlot()];
     }
     var cards = [];
     for(var i=0;i<7;i++) cards.push(drawOne('Common'));
     for(var j=0;j<3;j++) cards.push(drawOne('Uncommon'));
     cards.push(drawFoil());
     cards.push(drawRune());
-    cards.push(drawHit());
+    cards.push(hitSlot());
     cards.push(drawOne('Rare'));
     return cards;
+  }
+
+  /** 지정한 단위(팩/박스/카톤)만큼 팩 배열을 만든다 — 카톤만 보장 슬롯 배분을 거친다. */
+  function buildPacks(product, tier, packCount){
+    if(tier === 'carton'){
+      var markers = rollCartonGuarantees(packCount);
+      var packs = [];
+      for(var i=0;i<packCount;i++) packs.push(openPack(product, markers[i] || 'fallback'));
+      return packs;
+    }
+    var packs2 = [];
+    for(var j=0;j<packCount;j++) packs2.push(openPack(product));
+    return packs2;
   }
 
   function cartonBoxes(product){
@@ -875,10 +947,9 @@
     againRow.style.display = 'flex';
   }
 
-  function generateCards(packs){
-    var cards = [];
-    for(var i=0;i<packs;i++) cards = cards.concat(openPack(state.product));
-    return cards;
+  function generateCards(packCount){
+    var packs = buildPacks(state.product, state.tier, packCount);
+    return [].concat.apply([], packs);
   }
 
   /** 열기 버튼(들) 표시 상태를 현재 단위(팩/박스/카톤)에 맞춰 갱신. */
@@ -914,8 +985,7 @@
 
   function startPackByPack(instant){
     var n = packsForTier(state.tier);
-    var packs = [];
-    for(var i=0;i<n;i++) packs.push(openPack(state.product));
+    var packs = buildPacks(state.product, state.tier, n);
     session = { packs: packs, index: 0, purchase: purchasePrice(state.product, state.tier), total: 0, instant: !!instant };
     renderSessionPack();
     afterOpen(true);
