@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
+<meta name="theme-color" content="#0a0b10" />
+<title>넥서스 나이트 프로모 팩 시뮬레이터</title>
+<meta name="description" content="리프트바운드 넥서스 나이트 매장 이벤트 참가 시 받는 3장 프로모 팩 개봉 시뮬레이터.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=Chakra+Petch:wght@500;600;700&family=Noto+Sans+KR:wght@400;500;700;900&display=swap">
+<style>
+  :root{
+    --bg:#0a0b10;
+    --surface:#171a22;
+    --surface-2:#1e222c;
+    --line:#2b2f3b;
+    --line-soft:#20232d;
+    --text:#f4f1ea;
+    --text-dim:#9298a8;
+    --text-faint:#5c6273;
+    --red:#e0243f;
+    --gold:#e8b84b;
+    --gold-bright:#ffe8a8;
+    --gold-dim:#5c4a20;
+    --font-display:'Black Han Sans','Noto Sans KR',sans-serif;
+    --font-body:'Noto Sans KR',sans-serif;
+    --font-mono:'Chakra Petch',sans-serif;
+  }
+  *{box-sizing:border-box;}
+  html{color-scheme:dark;}
+  body{
+    margin:0;
+    background:
+      radial-gradient(ellipse 900px 500px at 50% -10%, #14251c 0%, transparent 60%),
+      var(--bg);
+    color:var(--text);
+    font-family:var(--font-body);
+    -webkit-font-smoothing:antialiased;
+    min-height:100vh;
+  }
+  .wrap{max-width:760px;margin:0 auto;padding:36px 20px 80px;display:flex;flex-direction:column;align-items:center;}
+
+  .top{width:100%;display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:30px;flex-wrap:wrap;}
+  .top-left{display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+  .riba-link{
+    font-family:var(--font-display);font-size:14px;color:#1a0507;
+    background:linear-gradient(180deg,var(--gold-bright),var(--gold));
+    padding:4px 12px;border-radius:999px;text-decoration:none;letter-spacing:.02em;
+    box-shadow:0 4px 12px -4px rgba(232,184,75,.5);transition:transform .15s ease;
+  }
+  .riba-link:hover{transform:translateY(-1px);}
+  .brand{font-family:var(--font-mono);font-weight:600;font-size:12px;letter-spacing:.16em;color:var(--text-faint);text-transform:uppercase;}
+  .brand b{color:#4fd18a;}
+
+  .stat-chip{
+    font-family:var(--font-mono);font-size:12px;color:var(--text-dim);
+    background:var(--surface);border:1px solid var(--line-soft);border-radius:999px;padding:6px 14px;
+    font-variant-numeric:tabular-nums;
+  }
+  .stat-chip b{color:var(--gold);font-weight:600;}
+
+  h1.title{font-family:var(--font-display);font-weight:400;font-size:clamp(28px,5vw,44px);line-height:1.1;margin:0 0 10px;text-align:center;text-wrap:balance;}
+  h1.title .em{color:#4fd18a;}
+  .sub{font-size:14px;color:var(--text-dim);text-align:center;margin:0 0 6px;line-height:1.65;max-width:560px;}
+  .sub b{color:var(--text);font-weight:700;}
+  .event-link{
+    display:inline-flex;align-items:center;gap:5px;margin:10px 0 30px;
+    font-family:var(--font-mono);font-size:11.5px;color:#4fd18a;text-decoration:none;
+    border-bottom:1px solid rgba(79,209,138,.4);
+  }
+  .event-link:hover{color:#7de0bf;border-color:#7de0bf;}
+
+  .open-btn{
+    font-family:var(--font-display);font-weight:400;font-size:20px;letter-spacing:.02em;color:#06231a;
+    background:linear-gradient(180deg,#9ff2cf,#4fd18a);border:none;padding:16px 48px;
+    border-radius:999px;cursor:pointer;box-shadow:0 14px 30px -10px rgba(79,209,138,.5);
+    transition:transform .18s ease, box-shadow .18s ease;margin-bottom:14px;
+  }
+  .open-btn:hover{transform:translateY(-2px);box-shadow:0 18px 36px -10px rgba(79,209,138,.65);}
+  .open-btn:active{transform:translateY(0);}
+  .open-btn:disabled{opacity:.4;cursor:default;transform:none;box-shadow:none;}
+
+  .bulk-btn{
+    font-family:var(--font-mono);font-weight:600;font-size:12.5px;color:var(--text-dim);
+    background:none;border:1px solid var(--line-soft);border-radius:999px;padding:8px 18px;
+    cursor:pointer;transition:border-color .2s ease, color .2s ease;margin-bottom:30px;
+  }
+  .bulk-btn:hover{border-color:#4fd18a;color:var(--text);}
+
+  .stage{width:100%;min-height:40px;}
+  .empty-hint{text-align:center;color:var(--text-faint);font-size:13px;padding:20px 0;}
+
+  .packrow{display:flex;flex-wrap:wrap;gap:16px;justify-content:center;perspective:1600px;margin-bottom:22px;}
+  .fcard{width:150px;height:209px;cursor:pointer;}
+  .fcard.locked{cursor:default;}
+  .fcard-inner{position:relative;width:100%;height:100%;transform-style:preserve-3d;transition:transform .7s cubic-bezier(.3,.6,.2,1);}
+  .fcard.flipped .fcard-inner{transform:rotateY(180deg);}
+  .fface{position:absolute;inset:0;border-radius:12px;backface-visibility:hidden;overflow:hidden;display:flex;flex-direction:column;align-items:center;justify-content:center;}
+  .fface-back{
+    background:linear-gradient(155deg,#152018,#12141b 60%);border:1px solid var(--line);
+    box-shadow:0 10px 22px -12px rgba(0,0,0,.6);transition:box-shadow .2s ease, transform .2s ease;
+  }
+  .fface-back svg{width:48px;height:48px;opacity:.6;}
+  .fcard:not(.flipped):hover .fface-back{box-shadow:0 0 0 1px #4fd18a,0 0 24px 2px rgba(79,209,138,.35);transform:translateY(-3px);}
+  .fface-front{transform:rotateY(180deg);background:var(--surface);border:1px solid #2a5540;box-shadow:0 0 0 1px rgba(79,209,138,.4),0 0 22px -4px rgba(79,209,138,.5);}
+  .fface-front img{width:100%;height:100%;object-fit:cover;}
+  .fname{
+    position:absolute;left:0;right:0;bottom:0;padding:8px 8px 7px;
+    background:linear-gradient(0deg, rgba(0,0,0,.85), transparent);
+    font-family:var(--font-mono);font-size:10.5px;font-weight:600;color:#fff;text-align:center;line-height:1.3;
+  }
+
+  .promo-ribbon{
+    position:absolute;top:8px;right:-24px;
+    background:linear-gradient(180deg,#9ff2cf,#4fd18a);color:#06231a;
+    font-family:var(--font-mono);font-weight:700;font-size:8px;letter-spacing:.1em;
+    padding:3px 28px;transform:rotate(38deg);box-shadow:0 3px 8px rgba(0,0,0,.35);z-index:3;
+  }
+
+  .bulk-grid{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-bottom:20px;}
+  .bulk-img{width:84px;border-radius:8px;overflow:hidden;border:1px solid var(--line);opacity:0;animation:pop-in .35s ease forwards;}
+  .bulk-img img{width:100%;display:block;}
+  @keyframes pop-in{0%{opacity:0;transform:scale(.85) translateY(6px);}100%{opacity:1;transform:scale(1) translateY(0);}}
+
+  .again-row{margin-top:20px;display:none;}
+  .again-btn{
+    font-family:var(--font-mono);font-weight:600;font-size:13px;letter-spacing:.05em;color:var(--text);
+    background:var(--surface-2);border:1px solid var(--line-soft);padding:11px 26px;border-radius:999px;
+    cursor:pointer;transition:border-color .2s ease, transform .18s ease;
+  }
+  .again-btn:hover{border-color:#4fd18a;transform:translateY(-1px);}
+
+  .made-in{
+    display:inline-flex;align-items:center;gap:5px;margin-top:44px;padding:8px 18px;border-radius:999px;
+    background:var(--surface);border:1px solid var(--line-soft);color:var(--text-dim);
+    font-family:var(--font-mono);font-size:12px;text-decoration:none;transition:border-color .2s ease, color .2s ease;
+  }
+  .made-in b{color:var(--red);font-weight:700;}
+  .made-in:hover{border-color:var(--red);color:var(--text);}
+  footer.note{margin-top:20px;font-size:11.5px;color:var(--text-faint);text-align:center;line-height:1.7;max-width:520px;}
+
+  @media (max-width:640px){
+    .fcard{width:118px;height:164px;}
+  }
+  @media (prefers-reduced-motion: reduce){
+    *{animation-duration:.01ms !important;animation-iteration-count:1 !important;transition-duration:.2s !important;}
+  }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <div class="top">
+    <div class="top-left">
+      <a href="/" class="riba-link" title="RIBA.GG 홈으로">RIBA.GG</a>
+      <div class="brand"><b>RIFTBOUND</b> · NEXUS NIGHT</div>
+    </div>
+    <div class="stat-chip">오늘 연 팩 <b id="packCount">0</b> · 모은 카드 <b id="uniqueCount">0</b>/<span id="poolSize">–</span></div>
+  </div>
+
+  <h1 class="title">넥서스 나이트 <span class="em">프로모 팩</span> 시뮬레이터</h1>
+  <p class="sub">매장에서 열리는 주간 캐주얼 이벤트 <b>넥서스 나이트</b>에 참가하면 3장짜리 프로모 팩을 받습니다. 그걸 뽑아보는 시뮬레이터입니다.</p>
+  <a href="https://playriftbound.com/ko-KR/events/" target="_blank" rel="noopener noreferrer" class="event-link">내 주변 넥서스 나이트 찾기 →</a>
+
+  <button class="open-btn" id="openBtn" disabled>카드 불러오는 중…</button>
+  <button class="bulk-btn" id="bulkBtn">10팩 한번에 보기</button>
+
+  <div class="stage" id="stage">
+    <div class="empty-hint">위 버튼을 눌러 프로모 팩을 열어보세요.</div>
+  </div>
+
+  <div class="again-row" id="againRow">
+    <button class="again-btn" id="againBtn">다시 열기</button>
+  </div>
+
+  <a href="/" class="made-in">Made in <b>RIBA.GG</b></a>
+  <footer class="note">
+    실제 넥서스 나이트 프로모 풀(공개 체크리스트 기준)에서 뽑은 카드 이름·일러스트를 그대로 쓰지만, 일부 프로모 전용 룬 아트는
+    데이터가 없어 기존 대체 일러스트로 대신 표시합니다. 3장 모두 서로 다른 카드로 나갑니다(중복 없음).
+  </footer>
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  var stage = document.getElementById('stage');
+  var openBtn = document.getElementById('openBtn');
+  var bulkBtn = document.getElementById('bulkBtn');
+  var againRow = document.getElementById('againRow');
+  var againBtn = document.getElementById('againBtn');
+  var packCountEl = document.getElementById('packCount');
+  var uniqueCountEl = document.getElementById('uniqueCount');
+  var poolSizeEl = document.getElementById('poolSize');
+
+  var POOL = null;
+  var packsOpened = 0;
+  var collected = {};
+
+  function updateStats(){
+    packCountEl.textContent = packsOpened;
+    uniqueCountEl.textContent = Object.keys(collected).length;
+  }
+
+  function pickThree(){
+    var pool = POOL.slice();
+    var picks = [];
+    for(var i=0;i<3 && pool.length;i++){
+      var idx = Math.floor(Math.random() * pool.length);
+      picks.push(pool[idx]);
+      pool.splice(idx, 1);
+    }
+    return picks;
+  }
+
+  var BACK_SVG = '<svg viewBox="0 0 100 100"><path d="M50 10 C 65 20, 80 30, 78 50 C 76 68, 62 80, 50 90 C 38 80, 24 68, 22 50 C 20 30, 35 20, 50 10 Z" fill="none" stroke="#4fd18a" stroke-width="4"/><circle cx="50" cy="50" r="8" fill="#4fd18a"/></svg>';
+
+  function buildFlipCard(card){
+    var el = document.createElement('div');
+    el.className = 'fcard';
+    el.innerHTML =
+      '<div class="fcard-inner">' +
+        '<div class="fface fface-back">' + BACK_SVG + '</div>' +
+        '<div class="fface fface-front"></div>' +
+      '</div>';
+    function reveal(){
+      if(el.classList.contains('flipped')) return;
+      el.classList.add('flipped');
+      var front = el.querySelector('.fface-front');
+      front.innerHTML = '<div class="promo-ribbon">PROMO</div><img src="' + card.img + '" alt="' + card.name + '"><div class="fname">' + card.name + '</div>';
+      collected[card.id] = true;
+      updateStats();
+    }
+    el.addEventListener('click', reveal);
+    return el;
+  }
+
+  function renderPack(cards){
+    stage.innerHTML = '<div class="packrow" id="packRow"></div>';
+    var row = document.getElementById('packRow');
+    cards.forEach(function(card){ row.appendChild(buildFlipCard(card)); });
+    packsOpened++;
+    updateStats();
+    againRow.style.display = 'block';
+  }
+
+  function renderBulk(n){
+    var all = [];
+    for(var i=0;i<n;i++) all = all.concat(pickThree());
+    all.forEach(function(c){ collected[c.id] = true; });
+    packsOpened += n;
+    updateStats();
+
+    stage.innerHTML = '<div class="bulk-grid" id="bulkGrid"></div>';
+    var grid = document.getElementById('bulkGrid');
+    all.forEach(function(c, i){
+      var el = document.createElement('div');
+      el.className = 'bulk-img';
+      el.style.animationDelay = Math.min(i * 25, 500) + 'ms';
+      el.title = c.name;
+      el.innerHTML = '<img src="' + c.img + '" alt="' + c.name + '" loading="lazy">';
+      grid.appendChild(el);
+    });
+    againRow.style.display = 'block';
+  }
+
+  fetch('/nexus-promo-cards.json').then(function(r){ return r.json(); }).then(function(payload){
+    POOL = payload.cards || payload;
+    poolSizeEl.textContent = POOL.length;
+    openBtn.disabled = false;
+    openBtn.textContent = '프로모 팩 열기';
+  }).catch(function(){
+    openBtn.textContent = '카드 데이터를 불러오지 못했습니다';
+  });
+
+  openBtn.addEventListener('click', function(){
+    if(!POOL) return;
+    renderPack(pickThree());
+  });
+  bulkBtn.addEventListener('click', function(){
+    if(!POOL) return;
+    renderBulk(10);
+  });
+  againBtn.addEventListener('click', function(){
+    stage.innerHTML = '<div class="empty-hint">위 버튼을 눌러 프로모 팩을 열어보세요.</div>';
+    againRow.style.display = 'none';
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  });
+})();
+</script>
+</body>
+</html>

@@ -168,6 +168,7 @@ export const NAV_PRIMARY: readonly {
   { href: "/community", label: "커뮤니티" },
   { href: "/tiers?quiz=1", label: "MBTI 덱 찾기" },
   { href: "/origins-sim.html", label: "언박싱 시뮬레이터", external: true },
+  { href: "/nexus-promo-sim.html", label: "넥서스 나이트 프로모", external: true },
 ];
 
 /** 상단바 2행 — 소식·룰·용어·지역 (레퍼런스/오프라인). */
