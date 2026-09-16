@@ -4,6 +4,25 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
 <meta name="theme-color" content="#0a0b10" />
+<script>
+/* GA4 — 이 페이지는 public/ 밑 정적 HTML이라 Next.js 레이아웃의 GoogleAnalytics 컴포넌트를
+ * 안 거친다. GTM이 "태그되지 않음"으로 잡아내서 여기 따로 심음. 허용 호스트(riba.gg)만
+ * 전송하는 것도 src/lib/analytics.ts의 gaAllowedHere()와 동일하게 맞춤. */
+(function(){
+  var GA_ID = 'G-YRZTJHB12X';
+  var ALLOWED_HOSTS = ['riba.gg', 'www.riba.gg'];
+  if (ALLOWED_HOSTS.indexOf(location.hostname.toLowerCase()) === -1) return;
+  var s = document.createElement('script');
+  s.async = true;
+  s.src = 'https://www.googletagmanager.com/gtag/js?id=' + GA_ID;
+  document.head.appendChild(s);
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){ dataLayer.push(arguments); }
+  window.gtag = gtag;
+  gtag('js', new Date());
+  gtag('config', GA_ID);
+})();
+</script>
 <title>넥서스 나이트 프로모 팩 시뮬레이터</title>
 <meta name="description" content="리프트바운드 넥서스 나이트 매장 이벤트 참가 시 받는 3장 프로모 팩 개봉 시뮬레이터.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
