@@ -22,6 +22,7 @@ export async function generateMetadata(
     title: report.title,
     description: report.excerpt ?? undefined,
     openGraph: report.cover_image_url ? { images: [report.cover_image_url] } : undefined,
+    alternates: { canonical: `/reports/${params.slug}` },
   };
 }
 

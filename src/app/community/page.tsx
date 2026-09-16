@@ -14,7 +14,7 @@ import {
 } from "@/lib/community";
 import { POSTS_PER_PAGE } from "@/lib/constants";
 
-export const metadata: Metadata = { title: "커뮤니티" };
+export const metadata: Metadata = { title: "커뮤니티", alternates: { canonical: "/community" } };
 export const revalidate = 30;
 
 export default async function CommunityHubPage(

@@ -13,7 +13,7 @@ import {
 import { EMPTY_DECK, type Deck } from "@/lib/types/deck";
 import type { Card } from "@/lib/types/card";
 
-export const metadata: Metadata = { title: "덱 시뮬레이터" };
+export const metadata: Metadata = { title: "덱 시뮬레이터", alternates: { canonical: "/deck-simulator" } };
 
 // searchParams 를 직접 읽으므로 이미 동적 렌더로 처리된다.
 // (force-dynamic 을 두면 전체 카드 목록 fetch 캐시까지 꺼져 방문마다

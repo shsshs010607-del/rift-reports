@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { ChevronLeft, Gift, ArrowRight } from "lucide-react";
@@ -18,6 +19,21 @@ import { CommunityCafeCrossPost } from "@/components/community/community-cafe-cr
 // getPost/getComments/getLikedPostIds 가 cookies() 를 try/catch(safe()) 로
 // 감싸고 있어서 force-dynamic 없이는 빌드 시 정적 생성 시도가 타임아웃난다 — 지우지 말 것.
 export const dynamic = "force-dynamic";
+
+// 이 라우트는 원래 canonical/title 을 따로 안 정해서 루트 레이아웃 값(홈 "/")을
+// 그대로 상속했다 — 게시글마다 다 "canonical=홈"으로 선언되는 꼴이라 Search
+// Console 이 "표준 없는 중복 페이지"로 잡아냈다. 글별 제목·canonical 로 고정.
+export async function generateMetadata(props: {
+  params: Promise<{ id: string }>;
+}): Promise<Metadata> {
+  const params = await props.params;
+  const post = await getPost(params.id);
+  if (!post) return {};
+  return {
+    title: post.title,
+    alternates: { canonical: `/community/post/${params.id}` },
+  };
+}
 
 export default async function PostDetailPage(props: { params: Promise<{ id: string }> }) {
   const params = await props.params;

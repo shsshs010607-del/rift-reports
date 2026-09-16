@@ -23,7 +23,10 @@ export function generateStaticParams() {
 export async function generateMetadata(props: { params: Promise<{ category: string }> }): Promise<Metadata> {
   const params = await props.params;
   const c = COMMUNITY_CATEGORIES.find((x) => x.slug === params.category);
-  return { title: c ? `커뮤니티 · ${c.label}` : "커뮤니티" };
+  return {
+    title: c ? `커뮤니티 · ${c.label}` : "커뮤니티",
+    alternates: { canonical: `/community/${params.category}` },
+  };
 }
 
 export default async function BoardPage(

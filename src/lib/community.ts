@@ -1,4 +1,5 @@
 import "server-only";
+import { cache } from "react";
 import { createClient } from "@/lib/supabase/server";
 import { hasSupabaseEnv } from "@/lib/supabase/env";
 import { POSTS_PER_PAGE, POPULAR_POST } from "@/lib/constants";
@@ -125,7 +126,8 @@ export function getTrendingPosts(limit = 6) {
   }, []);
 }
 
-export function getPost(id: string) {
+// generateMetadata 와 페이지 본문이 같은 요청 안에서 둘 다 호출하므로 cache() 로 중복 조회 방지.
+export const getPost = cache((id: string) => {
   return safe<PostListItem | null>(async () => {
     const supabase = await createClient();
     const { data, error } = await supabase
@@ -136,7 +138,7 @@ export function getPost(id: string) {
     if (error) throw error;
     return (data as unknown as PostListItem) ?? null;
   }, null);
-}
+});
 
 export function getComments(postId: string) {
   return safe<CommentItem[]>(async () => {

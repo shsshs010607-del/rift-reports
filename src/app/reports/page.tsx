@@ -5,7 +5,7 @@ import { fmtKstDate } from "@/lib/datetime";
 import { PageHeading } from "@/components/ui/page-heading";
 import { getReports } from "@/lib/queries";
 
-export const metadata: Metadata = { title: "리포트" };
+export const metadata: Metadata = { title: "리포트", alternates: { canonical: "/reports" } };
 export const revalidate = 120;
 
 export default async function ReportsListPage() {

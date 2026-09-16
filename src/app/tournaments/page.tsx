@@ -4,7 +4,7 @@ import { CARD_SETS } from "@/lib/constants";
 import { getTournaments } from "@/lib/queries";
 import { TournamentsView } from "@/components/tournaments/tournaments-view";
 
-export const metadata: Metadata = { title: "다가오는 대회" };
+export const metadata: Metadata = { title: "다가오는 대회", alternates: { canonical: "/tournaments" } };
 export const revalidate = 120;
 
 export default async function TournamentsPage() {

@@ -3,7 +3,7 @@ import Link from "next/link";
 import { ShopExplorer } from "@/components/shops/shop-explorer";
 import { getShops } from "@/lib/shops";
 
-export const metadata: Metadata = { title: "주변 매장" };
+export const metadata: Metadata = { title: "주변 매장", alternates: { canonical: "/shops" } };
 export const revalidate = 300;
 
 export default async function ShopsPage() {

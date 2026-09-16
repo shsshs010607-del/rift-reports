@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
@@ -12,6 +13,20 @@ import { PriceSparkline } from "@/components/trading/price-sparkline";
 import { FxNote } from "@/components/trading/fx-note";
 
 export const revalidate = 900;
+
+// 카드마다 canonical 을 안 정해서 루트 레이아웃의 홈("/") canonical 을 그대로
+// 상속하던 게 Search Console "표준 없는 중복 페이지" 원인 중 하나였다.
+export async function generateMetadata(props: {
+  params: Promise<{ printId: string }>;
+}): Promise<Metadata> {
+  const params = await props.params;
+  const res = await getPrintWithPrice(params.printId);
+  if (!res) return {};
+  return {
+    title: res.print.ko_name || res.print.name,
+    alternates: { canonical: `/trading/cards/${params.printId}` },
+  };
+}
 
 const langLabel = (s: string) => PRINT_LANGUAGES.find((l) => l.slug === s)?.label ?? s.toUpperCase();
 const condLabel = (s: string) => CARD_CONDITIONS.find((c) => c.slug === s)?.label ?? s;

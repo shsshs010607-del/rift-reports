@@ -13,6 +13,7 @@ import { rethrowIfNextControlFlow } from "@/lib/next-dynamic-error";
 export const metadata: Metadata = {
   title: "메타 덱",
   description: "한국 스탠다드(OGN·OGS) 카드풀 대회 덱리스트 모음. 덱 시뮬레이터로 바로 열어볼 수 있습니다.",
+  alternates: { canonical: "/decks" },
 };
 // 로그인/역할에 따라 삭제 버튼을 노출하므로 동적 렌더.
 // (getMetaDecks/viewerIsStaff 가 cookies() 를 try/catch 로 감싸고 있어서

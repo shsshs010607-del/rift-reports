@@ -3,7 +3,7 @@ import Link from "next/link";
 import { PageHeading } from "@/components/ui/page-heading";
 import { SITE } from "@/lib/constants";
 
-export const metadata: Metadata = { title: "이용약관" };
+export const metadata: Metadata = { title: "이용약관", alternates: { canonical: "/terms" } };
 
 const UPDATED = "2026년 9월 7일";
 

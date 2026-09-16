@@ -10,6 +10,7 @@ import { TIER_DECKS } from "@/lib/data/tier-list";
 export const metadata: Metadata = {
   title: "덱 티어리스트",
   description: "리프트바운드 현재 메타 덱 티어리스트 (S·A·B·C·Z).",
+  alternates: { canonical: "/tiers" },
 };
 // DeckQuiz 의 ?quiz 오픈은 useSearchParams(클라이언트, Suspense 격리)라 페이지 자체는 정적/ISR 가능.
 export const revalidate = 3600;

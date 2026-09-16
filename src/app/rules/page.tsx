@@ -13,6 +13,7 @@ const CORE_RULES_PDF =
 export const metadata: Metadata = {
   title: "초보자 가이드",
   description: "리프트바운드 초보자 가이드 — 게임 목표, 준비, 게임판 구역, 턴 진행, 자원, 전투, 점수.",
+  alternates: { canonical: "/rules" },
 };
 
 export const revalidate = 3600;

@@ -1,4 +1,5 @@
 import "server-only";
+import { cache } from "react";
 import { createClient } from "@/lib/supabase/server";
 import { hasSupabaseEnv } from "@/lib/supabase/env";
 import { PRICE } from "@/lib/constants";
@@ -131,8 +132,8 @@ export function getPriceIndex() {
   }, new Map());
 }
 
-/** 프린트 + 현재 대표 시세 */
-export function getPrintWithPrice(printId: string) {
+/** 프린트 + 현재 대표 시세. generateMetadata 와 페이지 본문이 같은 요청에서 둘 다 부르므로 cache(). */
+export const getPrintWithPrice = cache((printId: string) => {
   return safe<{ print: PrintWithKo; price: PriceSnapshot | null } | null>(async () => {
     const supabase = await createClient();
     const { data: print, error } = await supabase
@@ -153,7 +154,7 @@ export function getPrintWithPrice(printId: string) {
 
     return { print: localizePrint(print as CardPrint), price: (price as PriceSnapshot) ?? null };
   }, null);
-}
+});
 
 /** 프린트의 모든 현재 변형 시세 (condition·printing 별) */
 export function getPrintVariants(printId: string) {

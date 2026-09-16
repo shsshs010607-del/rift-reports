@@ -6,6 +6,7 @@ import { GlossaryBrowser } from "@/components/rules/glossary-browser";
 export const metadata: Metadata = {
   title: "용어",
   description: "리프트바운드 키워드·룰 용어 사전. 한글·영문 검색, 카드 효과 연동.",
+  alternates: { canonical: "/glossary" },
 };
 
 export default function GlossaryPage() {

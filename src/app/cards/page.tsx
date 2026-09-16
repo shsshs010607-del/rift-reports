@@ -18,7 +18,9 @@ import {
   type CardSearchQuery,
 } from "@/lib/types/card";
 
-export const metadata: Metadata = { title: "카드 정보" };
+// 필터/페이지네이션 쿼리(?q=&domain=&page=...)별로 다 다른 URL 취급되지 않게
+// canonical 은 필터 없는 기본 목록으로 고정.
+export const metadata: Metadata = { title: "카드 정보", alternates: { canonical: "/cards" } };
 
 // searchParams 를 직접 읽으므로 Next.js 가 이미 동적 렌더로 처리한다.
 // (force-dynamic 은 여기서 카드 데이터 fetch 캐시까지 꺼버려 매 요청마다

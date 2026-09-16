@@ -22,7 +22,11 @@ export async function generateMetadata(
 ): Promise<Metadata> {
   const params = await props.params;
   const t = await getTournament(params.slug);
-  return t ? { title: t.name, description: t.description ?? undefined } : { title: "대회" };
+  return {
+    title: t ? t.name : "대회",
+    description: t?.description ?? undefined,
+    alternates: { canonical: `/tournaments/${params.slug}` },
+  };
 }
 
 function Row({ icon, children }: { icon: React.ReactNode; children: React.ReactNode }) {

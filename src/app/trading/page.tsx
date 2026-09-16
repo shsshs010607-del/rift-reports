@@ -8,7 +8,7 @@ import { getTopGainers, getTopLosers, getPriceBoard } from "@/lib/prices";
 import { getUsdKrw } from "@/lib/fx";
 import { SITE } from "@/lib/constants";
 
-export const metadata: Metadata = { title: "트레이딩" };
+export const metadata: Metadata = { title: "트레이딩", alternates: { canonical: "/trading" } };
 export const revalidate = 900;
 
 export default async function TradingPage() {

@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { PageHeading } from "@/components/ui/page-heading";
 import { SITE } from "@/lib/constants";
 
-export const metadata: Metadata = { title: "개인정보처리방침" };
+export const metadata: Metadata = { title: "개인정보처리방침", alternates: { canonical: "/privacy" } };
 
 const UPDATED = "2026년 9월 7일";
 const CONTACT = "리바지지 디스코드 커뮤니티 (사이트 하단 채널 링크)를 통해 문의해 주세요.";

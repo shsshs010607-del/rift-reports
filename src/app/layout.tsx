@@ -41,7 +41,6 @@ export const metadata: Metadata = {
     "라이엇 TCG",
     "League of Legends TCG",
   ],
-  alternates: { canonical: "/" },
   openGraph: {
     title: `${SITE.name} · ${SITE.nameEn}`,
     description: SITE.description,
