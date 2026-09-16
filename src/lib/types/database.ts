@@ -23,7 +23,7 @@ export interface Database {
           username: string;
           avatar_url: string | null;
           bio: string | null;
-          role: "user" | "editor" | "admin";
+          role: "user" | "editor" | "admin" | "store";
           onboarded: boolean;
           notifications_seen_at: string;
           created_at: string;
@@ -33,7 +33,7 @@ export interface Database {
           username: string;
           avatar_url?: string | null;
           bio?: string | null;
-          role?: "user" | "editor" | "admin";
+          role?: "user" | "editor" | "admin" | "store";
           onboarded?: boolean;
           notifications_seen_at?: string;
           created_at?: string;
@@ -486,7 +486,7 @@ export interface Database {
       trade_status: TradeStatus;
       tournament_status: TournamentStatus;
       report_status: ReportStatus;
-      user_role: "user" | "editor" | "admin";
+      user_role: "user" | "editor" | "admin" | "store";
       deck_board: "main" | "rune" | "sideboard";
     };
     CompositeTypes: { [_ in never]: never };

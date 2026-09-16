@@ -30,6 +30,7 @@ export default async function EditPostPage(props: { params: Promise<{ id: string
     .eq("id", user.id)
     .maybeSingle();
   const isStaff = profile?.role === "editor" || profile?.role === "admin";
+  const canWriteTournament = isStaff || profile?.role === "store";
 
   if (post.author_id !== user.id && !isStaff) {
     redirect(`/community/post/${params.id}`);
@@ -51,6 +52,7 @@ export default async function EditPostPage(props: { params: Promise<{ id: string
       <div className="note-card p-5 sm:p-6">
         <PostForm
           canWriteNotice={isStaff}
+          canWriteTournament={canWriteTournament}
           edit={{
             postId: post.id,
             title: post.title,

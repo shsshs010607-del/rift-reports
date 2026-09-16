@@ -54,6 +54,12 @@ async function isStaff(supabase: Awaited<ReturnType<typeof createClient>>, userI
   return data?.role === "editor" || data?.role === "admin";
 }
 
+/** 매장 정보 게시판 글쓰기 — 스태프(editor/admin) 또는 role="store"(매장 운영자에게 부여). */
+async function canWriteTournament(supabase: Awaited<ReturnType<typeof createClient>>, userId: string) {
+  const { data } = await supabase.from("profiles").select("role").eq("id", userId).maybeSingle();
+  return data?.role === "editor" || data?.role === "admin" || data?.role === "store";
+}
+
 export async function createPost(_prev: ActionState, formData: FormData): Promise<ActionState> {
   const { supabase, userId } = await requireUser();
 
@@ -76,6 +82,9 @@ export async function createPost(_prev: ActionState, formData: FormData): Promis
   }
   if (parsed.data.category === "report" && !(await isStaff(supabase, userId))) {
     return { error: "리프트 리포트는 관리자만 작성할 수 있습니다" };
+  }
+  if (parsed.data.category === "tournament" && !(await canWriteTournament(supabase, userId))) {
+    return { error: "매장 정보 게시판은 스태프 또는 매장 계정만 작성할 수 있습니다" };
   }
 
   // 덱공략 + 덱 코드 → 본문 상단에 ```deck 블록 삽입 (이미 있으면 생략)
@@ -126,6 +135,9 @@ export async function updatePost(
 
   if (parsed.data.category === "report" && !(await isStaff(supabase, userId))) {
     return { error: "리프트 리포트는 관리자만 작성할 수 있습니다" };
+  }
+  if (parsed.data.category === "tournament" && !(await canWriteTournament(supabase, userId))) {
+    return { error: "매장 정보 게시판은 스태프 또는 매장 계정만 작성할 수 있습니다" };
   }
 
   let body = parsed.data.body;

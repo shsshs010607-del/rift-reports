@@ -68,25 +68,33 @@ export function PostForm({
   defaultCategory,
   defaultTags,
   canWriteNotice,
+  canWriteTournament,
   edit,
 }: {
   defaultCategory?: string;
   /** URL(?tag=)로 미리 채울 태그 — 이벤트 응모 글쓰기 바로가기 등에 사용. */
   defaultTags?: string;
   canWriteNotice: boolean;
+  /** 매장 정보 게시판 글쓰기 권한 — 스태프 또는 role="store". */
+  canWriteTournament: boolean;
   /** 있으면 수정 모드 — 기존 값을 채우고 임시저장을 사용하지 않는다. */
   edit?: { postId: string; title: string; body: string; category: string; tags?: string[] };
 }) {
   const editing = Boolean(edit);
   const boundAction = edit ? updatePost.bind(null, edit.postId) : createPost;
   const [state, formAction] = useFormState(boundAction, initial);
-  // 메타 리포트는 관리자/에디터만 작성 가능 — 목록에서도 숨긴다.
-  const selectableCategories = canWriteNotice
-    ? COMMUNITY_CATEGORIES
-    : COMMUNITY_CATEGORIES.filter((c) => c.slug !== "report");
+  // 메타 리포트는 관리자/에디터만, 매장 정보는 스태프/매장 계정만 — 목록에서도 숨긴다.
+  const selectableCategories = COMMUNITY_CATEGORIES.filter((c) => {
+    if (c.slug === "report") return canWriteNotice;
+    if (c.slug === "tournament") return canWriteTournament;
+    return true;
+  });
   const fallbackCategory = selectableCategories[0].slug;
-  const clampCategory = (c: string) =>
-    !canWriteNotice && c === "report" ? fallbackCategory : c;
+  const clampCategory = (c: string) => {
+    if (!canWriteNotice && c === "report") return fallbackCategory;
+    if (!canWriteTournament && c === "tournament") return fallbackCategory;
+    return c;
+  };
   const [category, setCategory] = useState(
     clampCategory(edit?.category ?? defaultCategory ?? COMMUNITY_CATEGORIES[0].slug),
   );

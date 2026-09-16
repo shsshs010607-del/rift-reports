@@ -27,6 +27,8 @@ export default async function NewPostPage(
     .eq("id", data.user.id)
     .maybeSingle();
   const canWriteNotice = profile?.role === "editor" || profile?.role === "admin";
+  const canWriteTournament =
+    profile?.role === "editor" || profile?.role === "admin" || profile?.role === "store";
 
   const defaultCategory = COMMUNITY_CATEGORIES.find((c) => c.slug === searchParams.category)?.slug;
 
@@ -48,6 +50,7 @@ export default async function NewPostPage(
           defaultCategory={defaultCategory}
           defaultTags={searchParams.tag}
           canWriteNotice={canWriteNotice}
+          canWriteTournament={canWriteTournament}
         />
       </div>
     </div>
