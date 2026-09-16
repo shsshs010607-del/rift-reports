@@ -433,8 +433,10 @@
     '5': { overnumbered: 0.005, signature: 0.0005 },
     '14': { overnumbered: 1 / 72, signature: 0.0014 }
   };
-  /** 카톤 1개당 오버넘버 누적 상한 — 확정 1장 이후로도 확률대로 더 뜰 수 있지만 5장 이상은 나오지 않는다. */
+  /** 카톤 1개당 오버넘버 누적 상한 — 확정 1장 이후로도 더 뜰 수 있지만 5장 이상은 나오지 않는다. */
   var MAX_OVERNUMBERED_PER_CARTON = 4;
+  /** 확정 1장 이후 추가로 한 장씩 더 나올 확률 — 낮게 잡아 "가끔 보너스"로 체감되게 한다(1장 92% · 2장 7% · 3장 이상 1% 미만). */
+  var CARTON_BONUS_OVERNUMBERED_RATE = 0.08;
 
   function fmtPct(rate){
     return (rate * 100).toLocaleString('ko-KR', { minimumFractionDigits: rate < 0.01 ? 2 : 1, maximumFractionDigits: 2 }) + '%';
@@ -658,30 +660,31 @@
   }
 
   /**
-   * 카톤 전용 — 팩 중 하나를 무작위로 골라 오버넘버 확정 지급. 나머지 팩들은 상품별 독립 확률(HIT_RATES)로
-   * 그대로 굴려서, 확정분 이후로도 확률에 따라 오버넘버·시그니처가 더 나올 수 있다. 다만 오버넘버 누적이
-   * MAX_OVERNUMBERED_PER_CARTON(4장)에 닿으면 그 이후로 오버넘버가 나올 자리는 대체 등급으로 대신 받는다.
-   * 시그니처는 별도 보장·상한 없이 순수 확률(보통 0, 가끔 1, 아주 드물게 2 이상)로 둔다.
+   * 카톤 전용 — 오버넘버 장수를 팩 144장 각각의 독립 확률로 누적시키면(144 × 1/72 ≈ 평균 2장) "확정 1장"이
+   * 거의 항상 자연스럽게 채워지고도 2~4장이 흔해져 버려서, 오버넘버 장수를 먼저 통째로 한 번에 정해서
+   * 배분한다: 1장은 항상 확정, 그 이후로는 CARTON_BONUS_OVERNUMBERED_RATE 확률로 한 장씩 더(최대
+   * MAX_OVERNUMBERED_PER_CARTON까지) — "1장 확정 + 가끔 보너스"가 실제로 체감되도록.
+   * 이렇게 정해진 장수만큼 무작위 팩에 오버넘버를 확정 배치하고, 나머지 팩은 상품별 독립 확률(HIT_RATES)로
+   * 그대로 굴리되 거기서 오버넘버가 나오면(이미 배분이 끝났으므로) 대체 등급으로 돌린다. 시그니처는 별도
+   * 보장·상한 없이 순수 확률(보통 0, 가끔 1, 아주 드물게 2 이상)로 둔다.
    */
   function buildCartonPacks(product, packCount){
-    var guaranteedIdx = Math.floor(Math.random() * packCount);
-    var overnumberedTotal = 0;
+    var overnumberedTotal = OVERNUMBERED_POOL.length ? 1 : 0;
+    while(overnumberedTotal > 0 && overnumberedTotal < MAX_OVERNUMBERED_PER_CARTON && Math.random() < CARTON_BONUS_OVERNUMBERED_RATE){
+      overnumberedTotal++;
+    }
+    var forcedIdx = {};
+    while(Object.keys(forcedIdx).length < overnumberedTotal){
+      forcedIdx[Math.floor(Math.random() * packCount)] = true;
+    }
     var packs = [];
     for(var i=0;i<packCount;i++){
       var hitCard;
-      // 확정 슬롯은 "아직 한 장도 안 나왔을 때만" 강제 지급 — 이미 앞선 독립 확률로 상한(4장)까지
-      // 채워진 뒤라면 억지로 더 얹지 않고 이 슬롯도 그냥 일반 확률로 굴린다(상한 유지).
-      if(i === guaranteedIdx && overnumberedTotal === 0 && OVERNUMBERED_POOL.length){
+      if(forcedIdx[i]){
         hitCard = pick(OVERNUMBERED_POOL);
-        overnumberedTotal++;
       } else {
         var draw = drawHit(product);
-        if(draw.type === 'overnumbered' && overnumberedTotal >= MAX_OVERNUMBERED_PER_CARTON){
-          hitCard = drawHitFallback();
-        } else {
-          if(draw.type === 'overnumbered') overnumberedTotal++;
-          hitCard = draw.card;
-        }
+        hitCard = draw.type === 'overnumbered' ? drawHitFallback() : draw.card;
       }
       packs.push(openPack(product, hitCard));
     }
