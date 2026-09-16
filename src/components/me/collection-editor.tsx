@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState, useTransition } from "react";
-import { Search, Plus, Minus, X, Layers } from "lucide-react";
+import { Search, Plus, Minus, X, Layers, ChevronDown } from "lucide-react";
 
 import type { Card } from "@/lib/types/card";
 import { resolveCardText, cardNumber } from "@/lib/types/card";
@@ -86,6 +86,17 @@ export function CollectionEditor({
   }, 0);
 
   const searchRef = useRef<HTMLInputElement>(null);
+  const [activeId, setActiveId] = useState<string | null>(null);
+  const [collapsed, setCollapsed] = useState<Set<string>>(new Set());
+
+  function toggleCollapsed(setCode: string) {
+    setCollapsed((prev) => {
+      const next = new Set(prev);
+      if (next.has(setCode)) next.delete(setCode);
+      else next.add(setCode);
+      return next;
+    });
+  }
 
   /** 검색창에서 엔터 — 첫 검색 결과를 +1 하고 바로 다음 카드를 검색할 수 있게 입력창을 비운다. */
   function addTopResult() {
@@ -201,44 +212,103 @@ export function CollectionEditor({
               아직 담은 카드가 없습니다. 위에서 검색해 수량을 넣어보세요.
             </p>
           ) : (
-            <div className="max-h-[52vh] overflow-y-auto">
-              {ownedBySet.map(([setCode, cards]) => (
-                <div key={setCode}>
-                  <p className="sticky top-0 z-10 bg-card py-1 text-label-sm font-bold text-ink-soft/80">
-                    {setCode} · {cards.length}종 · {cards.reduce((s, c) => s + c.n, 0)}장
-                  </p>
-                  <ul className="flex flex-col divide-y divide-line/40">
-                    {cards.map((o) => {
-                      const price = o.card ? priceFor(o.card) : null;
-                      return (
-                        <li key={o.id} className="flex items-center gap-2.5 py-2">
-                          {o.card ? (
-                            <LocalizedCard card={o.card} className="w-10 shrink-0" sizes="40px" />
-                          ) : (
-                            <span className="aspect-[744/1039] w-10 shrink-0 rounded-[4.5%] bg-subcanvas" />
-                          )}
-                          <span className="min-w-0 flex-1">
-                            <span className="block truncate text-body-md text-ink">
-                              {o.card ? resolveCardText(o.card, "ko").name : o.id}
-                            </span>
-                            {price != null && (
-                              <span className="block text-label-sm font-bold text-primary-strong">
-                                {fmtWon(price)}
-                                {o.n > 1 && (
-                                  <span className="ml-1 font-normal text-ink-soft">
-                                    · {o.n}장 = {fmtWon(price * o.n)}
-                                  </span>
-                                )}
+            <div className="max-h-[65vh] overflow-y-auto pr-1">
+              {ownedBySet.map(([setCode, cards]) => {
+                const isCollapsed = collapsed.has(setCode);
+                const active = cards.find((c) => c.id === activeId);
+                return (
+                  <div key={setCode} className="mb-3">
+                    <button
+                      type="button"
+                      onClick={() => toggleCollapsed(setCode)}
+                      className="sticky top-0 z-10 flex w-full items-center gap-1.5 bg-card py-1.5 text-left text-label-sm font-bold text-ink-soft/80 hover:text-ink"
+                    >
+                      <ChevronDown
+                        className={cn(
+                          "h-3.5 w-3.5 shrink-0 transition-transform",
+                          isCollapsed && "-rotate-90",
+                        )}
+                      />
+                      {setCode} · {cards.length}종 · {cards.reduce((s, c) => s + c.n, 0)}장
+                    </button>
+
+                    {!isCollapsed && (
+                      <>
+                        {/* 카드 이미지 그리드 — 한눈에 훑어보기용. 클릭하면 아래 상세에서 수량 조절. */}
+                        <div className="grid grid-cols-5 gap-2 sm:grid-cols-6 md:grid-cols-8">
+                          {cards.map((o) => (
+                            <button
+                              key={o.id}
+                              type="button"
+                              onClick={() => setActiveId((v) => (v === o.id ? null : o.id))}
+                              title={o.card ? resolveCardText(o.card, "ko").name : o.id}
+                              className={cn(
+                                "relative rounded-[4.5%] transition",
+                                activeId === o.id &&
+                                  "ring-2 ring-primary ring-offset-1 ring-offset-card",
+                              )}
+                            >
+                              {o.card ? (
+                                <LocalizedCard
+                                  card={o.card}
+                                  sizes="(max-width:640px) 18vw, 100px"
+                                />
+                              ) : (
+                                <span className="block aspect-[744/1039] rounded-[4.5%] bg-subcanvas" />
+                              )}
+                              <span className="absolute right-1 top-1 rounded-full bg-primary px-1.5 py-0.5 text-[10px] font-black leading-none text-white shadow">
+                                ×{o.n}
                               </span>
+                            </button>
+                          ))}
+                        </div>
+
+                        {active && (
+                          <div className="mt-2 flex items-center gap-2.5 rounded-xl border border-line/70 bg-subcanvas/50 p-2.5">
+                            {active.card ? (
+                              <LocalizedCard
+                                card={active.card}
+                                className="w-10 shrink-0"
+                                sizes="40px"
+                              />
+                            ) : (
+                              <span className="aspect-[744/1039] w-10 shrink-0 rounded-[4.5%] bg-subcanvas" />
                             )}
-                          </span>
-                          <Stepper n={o.n} onChange={(v) => save(o.id, v)} />
-                        </li>
-                      );
-                    })}
-                  </ul>
-                </div>
-              ))}
+                            <span className="min-w-0 flex-1">
+                              <span className="block truncate text-body-md font-bold text-ink">
+                                {active.card ? resolveCardText(active.card, "ko").name : active.id}
+                              </span>
+                              {(() => {
+                                const price = active.card ? priceFor(active.card) : null;
+                                if (price == null) return null;
+                                return (
+                                  <span className="block text-label-sm font-bold text-primary-strong">
+                                    {fmtWon(price)}
+                                    {active.n > 1 && (
+                                      <span className="ml-1 font-normal text-ink-soft">
+                                        · {active.n}장 = {fmtWon(price * active.n)}
+                                      </span>
+                                    )}
+                                  </span>
+                                );
+                              })()}
+                            </span>
+                            <Stepper n={active.n} onChange={(v) => save(active.id, v)} />
+                            <button
+                              type="button"
+                              onClick={() => setActiveId(null)}
+                              className="text-ink-soft hover:text-ink"
+                              aria-label="닫기"
+                            >
+                              <X className="h-4 w-4" />
+                            </button>
+                          </div>
+                        )}
+                      </>
+                    )}
+                  </div>
+                );
+              })}
             </div>
           )}
         </div>
