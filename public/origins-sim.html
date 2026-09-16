@@ -362,9 +362,10 @@
   <a href="/" class="made-in">Made in <b>RIBA.GG</b></a>
   <footer class="note">
     실제 카드 데이터(이름·레어도·일러스트)는 오리진(OGN) 세트를 그대로 사용합니다. 팩 봉입 확률은 중국 정식 유통사
-    Shining Soul 공개 팩 구성(7 커먼·3 언커먼·포일 1·룬 1·레어 이상 2)과 공개 확률표(희귀 이상 72.50%, 서사 이상
-    10.00%, 대체 일러스트 이상 3.13%, 오버넘버 이상 0.50%, 시그니처 0.05%)를 참고한 추정치이며, 공식 확률표가
-    아닙니다. 14장입 오버넘버·시그니처만 실측 개봉 통계(오버넘버 1/72팩, 시그니처 0.14%)를 따로 씁니다.<br>
+    Shining Soul 공개 팩 구성(7 커먼·3 언커먼·포일 1·룬 1·레어 이상 2)과 공개 확률표를 참고한 추정치이며, 공식
+    확률표가 아닙니다. 5장입/14장입은 히트 슬롯 등장률 자체가 다릅니다 — 5장입 희귀 이상 72.50%·서사 이상
+    10.00%·대체 일러스트 이상 3.13%·오버넘버 이상 0.50%·시그니처 0.05%, 14장입 희귀 이상 94.17%·서사 이상
+    25.83%·대체 일러스트 이상 8.33%·오버넘버 이상 1.38%·시그니처 0.14%.<br>
     한국판 오리진 한정 "구미호(한복)" 아리는 기존 오버넘버·시그니처 아리를 대체해 표시됩니다(아트는 추후 교체 예정).<br>
     카드별 시세는 리바지지 실시간 시세(JustTCG · <span id="priceAsOf">-</span> 기준, 원화 환산)를 참고한
     추정가입니다. <b>이 시세는 해외(주로 미국) 판매자 등록가(호가)</b>라 실제 되팔 때 받는 값보다 높고, 신작
@@ -421,23 +422,23 @@
   var CARTON_BOXES = { '5': 12, '14': 6 };
 
   /**
-   * 봉입 확률 — "[카드 상식 #1] 카드 등급 알아보기" 글의 5장입 팩 기준 공식 확률표
-   * (희귀 이상 72.50% · 서사 이상 10.00% · 대체일러 이상 3.13% · 오버넘버 이상 0.50% ·
-   * 사인 오버넘버 0.05%)를 그대로 따릅니다. 이 표는 중국 정식 유통사 Shining Soul 공개
-   * 확률표 기준이라 5장입/14장입 공통으로 적용합니다 — 팩 크기가 달라진다고 등급별
-   * 등장률 자체가 바뀔 근거는 없습니다. 다만 오버넘버·시그니처는 14장입 실측 개봉
-   * 통계(오버넘버 1/72 · 시그니처 0.14%)가 별도로 있어 상품별로 다르게 둡니다.
-   * 각 HIT_* 값은 "이 등급 이상이 나올 확률"(누적치)이며, r 이 그보다 작으면 해당 등급
-   * 이상으로 판정합니다 — HIT_RARE_RATE 밑으로도 못 미치면(27.5%) 레어조차 못 뜨고
-   * 그냥 특별(언커먼)로 채워집니다(예전엔 이 케이스가 없어 히트 슬롯이 100% 레어 이상
-   * 확정이었는데, 표의 72.50%와 맞지 않아 추가).
+   * 봉입 확률 — "[카드 상식 #1] 카드 등급 알아보기" 글의 공식 확률표(5장입/14장입 각각
+   * 따로 실려 있음) 그대로. 5장입과 14장입은 희귀·서사·대체일러 등장률 자체가 다르다 —
+   * 팩 크기가 커질수록 히트 슬롯 품질도 같이 올라가는 구조(단순히 5장입 확률 × 14/5 가
+   * 아니라 상품마다 독립적으로 공시된 값):
+   *   5장입  — 희귀 이상 72.50% · 서사 이상 10.00% · 대체일러 이상 3.13%
+   *            · 오버넘버 이상 0.50% · 시그니처 0.05%
+   *   14장입 — 희귀 이상 94.17% · 서사 이상 25.83% · 대체일러 이상 8.33%
+   *            · 오버넘버 이상 1.38%(≈1/72) · 시그니처 0.14%
+   * 각 값은 "이 등급 이상이 나올 확률"(누적치)이며, r 이 그보다 작으면 해당 등급 이상으로
+   * 판정한다. rare 밑으로도 못 미치면(5장입 27.5% · 14장입 5.83%) 레어조차 못 뜨고 그냥
+   * 특별(언커먼)로 채워진다 — 예전엔 이 케이스가 없어 히트 슬롯이 두 상품 모두 100% 레어
+   * 이상 확정이었는데, 표와 맞지 않아 추가했다. (예전엔 5장입 값을 14장입에도 그대로
+   * 돌려썼는데, 실제로는 상품별로 달라서 상품별 표로 분리함.)
    */
-  var HIT_EPIC_RATE = 0.10;
-  var HIT_ALTART_RATE = 0.0313;
-  var HIT_RARE_RATE = 0.725;
   var HIT_RATES = {
-    '5': { overnumbered: 0.005, signature: 0.0005 },
-    '14': { overnumbered: 1 / 72, signature: 0.0014 }
+    '5': { rare: 0.7250, epic: 0.1000, altart: 0.0313, overnumbered: 0.005, signature: 0.0005 },
+    '14': { rare: 0.9417, epic: 0.2583, altart: 0.0833, overnumbered: 1 / 72, signature: 0.0014 }
   };
   /** 카톤 1개당 오버넘버 누적 상한 — 확정 1장 이후로도 더 뜰 수 있지만 5장 이상은 나오지 않는다. */
   var MAX_OVERNUMBERED_PER_CARTON = 4;
@@ -447,9 +448,8 @@
   function fmtPct(rate){
     return (rate * 100).toLocaleString('ko-KR', { minimumFractionDigits: rate < 0.01 ? 2 : 1, maximumFractionDigits: 2 }) + '%';
   }
-  RARITY_GUIDE_NOTE.Rare = fmtPct(HIT_RARE_RATE) + ' 이상';
-  RARITY_GUIDE_NOTE.Epic = fmtPct(HIT_EPIC_RATE) + ' 이상';
-  RARITY_GUIDE_NOTE.AltArt = fmtPct(HIT_ALTART_RATE) + ' 이상';
+  // Rare/Epic/AltArt/Overnumbered/Signature 는 상품(5/14장입)마다 값이 달라 renderRarityGuide()에서
+  // state.product 기준으로 매번 다시 채운다 (여기서 한 번만 채우지 않음).
 
   /**
    * 오리진 부스터팩 1팩당 원화 가격 — 국내 카드샵 예약판매 공지(2026-09-13 마감분) 기준.
@@ -556,6 +556,9 @@
   function renderRarityGuide(){
     if(!rgGrid) return;
     var rates = HIT_RATES[state.product] || HIT_RATES['14'];
+    RARITY_GUIDE_NOTE.Rare = fmtPct(rates.rare) + ' 이상';
+    RARITY_GUIDE_NOTE.Epic = fmtPct(rates.epic) + ' 이상';
+    RARITY_GUIDE_NOTE.AltArt = fmtPct(rates.altart) + ' 이상';
     RARITY_GUIDE_NOTE.Overnumbered = fmtPct(rates.overnumbered) + ' 이상';
     RARITY_GUIDE_NOTE.Signature = fmtPct(rates.signature) + ' 이상';
     var poolFor = {
@@ -619,22 +622,35 @@
     return pick(POOLS[rarity]);
   }
 
-  /** 히트 슬롯 중 오버넘버·시그니처가 아닌 나머지(이색아트/에픽/레어/미스). */
-  function drawHitFallback(){
+  /**
+   * 히트 슬롯 중 오버넘버·시그니처가 아닌 나머지(이색아트/에픽/레어/미스)만 다시 뽑을 때 쓰는
+   * 헬퍼 — 카톤에서 오버넘버 배분이 이미 끝난 팩이 우연히 오버넘버를 굴렸을 때 대체용으로만 쓴다.
+   */
+  function drawHitFallback(rates){
     var r = Math.random();
-    if(r < HIT_ALTART_RATE && ALTART_POOL.length) return pick(ALTART_POOL);
-    if(r < HIT_EPIC_RATE) return drawOne('Epic');
-    if(r < HIT_RARE_RATE) return drawOne('Rare');
+    if(r < rates.altart && ALTART_POOL.length) return pick(ALTART_POOL);
+    if(r < rates.epic) return drawOne('Epic');
+    if(r < rates.rare) return drawOne('Rare');
     return drawOne('Uncommon');
   }
 
-  /** 레어 이상 "히트" 슬롯 — 상품별(5장입/14장입) 독립 확률로 순차 판정. { card, type } 반환. */
+  /**
+   * 레어 이상 "히트" 슬롯 — 상품별(5장입/14장입) 확률표를 난수 하나로 순서대로 판정한다.
+   * signature < overnumbered < altart < epic < rare 순으로 문턱값이 커지도록 표에 이미 중첩돼
+   * 있어서(예: 대체일러 이상 3.13% 안에 오버넘버·시그니처가 포함됨), 한 번의 난수를 그 순서로만
+   * 비교하면 표의 "이 등급 이상" 수치가 그대로 재현된다. (예전엔 오버넘버/시그니처 판정과 이색아트
+   * /에픽/레어 판정을 서로 다른 난수 두 번으로 나눠 굴렸는데, 그러면 두 확률이 곱해져서 표보다
+   * 살짝 낮은 값이 나오는 버그가 있었다 — 지금은 난수 하나로 합쳐서 고쳤다.)
+   */
   function drawHit(product){
     var rates = HIT_RATES[product] || HIT_RATES['14'];
     var r = Math.random();
     if(r < rates.signature && SIGNATURE_POOL.length) return { card: pick(SIGNATURE_POOL), type: 'signature' };
     if(r < rates.overnumbered && OVERNUMBERED_POOL.length) return { card: pick(OVERNUMBERED_POOL), type: 'overnumbered' };
-    return { card: drawHitFallback(), type: 'fallback' };
+    if(r < rates.altart && ALTART_POOL.length) return { card: pick(ALTART_POOL), type: 'fallback' };
+    if(r < rates.epic) return { card: drawOne('Epic'), type: 'fallback' };
+    if(r < rates.rare) return { card: drawOne('Rare'), type: 'fallback' };
+    return { card: drawOne('Uncommon'), type: 'fallback' };
   }
 
   /** 포일 슬롯 — 등급은 랜덤(보통 커먼·언커먼 위주). */
@@ -642,9 +658,9 @@
     return Math.random() < 0.7 ? drawOne('Common') : drawOne('Uncommon');
   }
 
-  /** 룬 슬롯 — 대부분 기본 룬, 이색아트 룬은 다른 이색아트와 같은 확률로만. */
+  /** 룬 슬롯 — 대부분 기본 룬, 이색아트 룬은 다른 이색아트와 같은 확률로만. 룬 슬롯은 14장입에만 있다. */
   function drawRune(){
-    if(Math.random() < HIT_ALTART_RATE && RUNE_ALTART_POOL.length) return pick(RUNE_ALTART_POOL);
+    if(Math.random() < HIT_RATES['14'].altart && RUNE_ALTART_POOL.length) return pick(RUNE_ALTART_POOL);
     return RUNE_COMMON_POOL.length ? pick(RUNE_COMMON_POOL) : drawOne('Common');
   }
 
@@ -692,7 +708,7 @@
         hitCard = pick(OVERNUMBERED_POOL);
       } else {
         var draw = drawHit(product);
-        hitCard = draw.type === 'overnumbered' ? drawHitFallback() : draw.card;
+        hitCard = draw.type === 'overnumbered' ? drawHitFallback(HIT_RATES[product] || HIT_RATES['14']) : draw.card;
       }
       packs.push(openPack(product, hitCard));
     }
