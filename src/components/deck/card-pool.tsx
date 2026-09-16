@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Plus, Minus, Search, Layers } from "lucide-react";
+import { Minus, Search, Layers } from "lucide-react";
 
 import type { Card, CardType } from "@/lib/types/card";
 import type { Deck, ResolvedDeck } from "@/lib/types/deck";
@@ -250,53 +250,55 @@ export function CardPool({
               <li key={card.id}>
                 <div
                   className={cn(
-                    "relative overflow-hidden rounded-xl border border-line bg-subcanvas transition",
+                    "group relative overflow-hidden rounded-xl border border-line bg-subcanvas transition",
                     blocked && inDeck === 0 && "opacity-45",
                     inDeck > 0 && "border-primary/50",
                   )}
                 >
-                  <div className="relative">
-                    <LocalizedCard card={card} sizes="150px" className="!rounded-none" />
-                    {typeof card.cost === "number" && (
-                      <span className="absolute left-1 top-1 grid h-5 w-5 place-items-center rounded-full bg-black/70 text-label-sm font-bold text-white">
-                        {card.cost}
-                      </span>
-                    )}
-                    {inDeck > 0 && (
-                      <span className="absolute right-1 top-1 rounded-full bg-primary px-1.5 text-label-sm font-bold text-white">
-                        ×{inDeck}
-                      </span>
-                    )}
-                    {owned > 0 && (
-                      <span className="absolute left-1 bottom-1 rounded bg-emerald/90 px-1 text-[10px] font-bold text-white">
-                        보유 {owned}
-                      </span>
-                    )}
-                  </div>
-                  <p className="truncate px-1.5 pt-1 text-label-sm text-ink">{card.name}</p>
-                  <div className="mt-1 flex items-center border-t border-line">
+                  <button
+                    type="button"
+                    onClick={() => onPick(card)}
+                    disabled={plusDisabled}
+                    title={plusTitle}
+                    className="block w-full disabled:cursor-not-allowed"
+                  >
+                    <div className="relative">
+                      <LocalizedCard
+                        card={card}
+                        sizes="150px"
+                        className={cn(
+                          "!rounded-none transition",
+                          !plusDisabled && "group-hover:brightness-90",
+                        )}
+                      />
+                      {typeof card.cost === "number" && (
+                        <span className="absolute left-1 top-1 grid h-5 w-5 place-items-center rounded-full bg-black/70 text-label-sm font-bold text-white">
+                          {card.cost}
+                        </span>
+                      )}
+                      {inDeck > 0 && (
+                        <span className="absolute right-1 top-1 rounded-full bg-primary px-1.5 text-label-sm font-bold text-white">
+                          ×{inDeck}
+                        </span>
+                      )}
+                      {owned > 0 && (
+                        <span className="absolute left-1 bottom-1 rounded bg-emerald/90 px-1 text-[10px] font-bold text-white">
+                          보유 {owned}
+                        </span>
+                      )}
+                    </div>
+                    <p className="truncate px-1.5 py-1 text-label-sm text-ink">{card.name}</p>
+                  </button>
+                  {inDeck > 0 && (
                     <button
                       type="button"
                       onClick={() => onRemove(card)}
-                      disabled={inDeck === 0}
                       title="한 장 빼기"
-                      className="flex flex-1 items-center justify-center py-2.5 text-ink-soft transition hover:bg-error/10 hover:text-error disabled:cursor-not-allowed disabled:opacity-30"
+                      className="absolute right-1 bottom-8 grid h-6 w-6 place-items-center rounded-full bg-black/70 text-white shadow-xs transition hover:bg-error"
                     >
-                      <Minus className="h-4 w-4" />
+                      <Minus className="h-3.5 w-3.5" />
                     </button>
-                    <span className="w-7 shrink-0 text-center text-label-md font-bold text-ink">
-                      {inDeck}
-                    </span>
-                    <button
-                      type="button"
-                      onClick={() => onPick(card)}
-                      disabled={plusDisabled}
-                      title={plusTitle}
-                      className="flex flex-1 items-center justify-center py-2.5 text-primary-strong transition hover:bg-primary/10 disabled:cursor-not-allowed disabled:text-ink-soft disabled:opacity-30"
-                    >
-                      <Plus className="h-4 w-4" />
-                    </button>
-                  </div>
+                  )}
                 </div>
               </li>
             );

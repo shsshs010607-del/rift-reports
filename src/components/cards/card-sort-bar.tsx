@@ -8,8 +8,8 @@ import { cn } from "@/lib/utils";
 export type CardSortKey = "number" | "cost" | "name" | "power";
 
 const SORTS: { key: CardSortKey; label: string }[] = [
-  { key: "number", label: "수집번호" },
   { key: "cost", label: "코스트" },
+  { key: "number", label: "수집번호" },
   { key: "power", label: "위력" },
   { key: "name", label: "이름" },
 ];
@@ -20,13 +20,13 @@ export function CardSortBar() {
   const params = useSearchParams();
   const [pending, start] = useTransition();
 
-  const sort = (params.get("sort") as CardSortKey) || "number";
+  const sort = (params.get("sort") as CardSortKey) || "cost";
   const dir = params.get("dir") === "desc" ? "desc" : "asc";
 
   const push = (nextSort: CardSortKey, nextDir: "asc" | "desc") => {
     const next = new URLSearchParams(params.toString());
     next.delete("page");
-    if (nextSort === "number") next.delete("sort");
+    if (nextSort === "cost") next.delete("sort");
     else next.set("sort", nextSort);
     if (nextDir === "asc") next.delete("dir");
     else next.set("dir", nextDir);

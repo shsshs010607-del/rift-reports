@@ -73,7 +73,7 @@ export default async function CardsPage(props: { searchParams: Promise<RawSearch
   const sortRaw = Array.isArray(searchParams.sort) ? searchParams.sort[0] : searchParams.sort;
   const sort = (["number", "cost", "name", "power"] as const).includes(sortRaw as CardSortKey)
     ? (sortRaw as CardSortKey)
-    : "number";
+    : "cost";
   const dir = (Array.isArray(searchParams.dir) ? searchParams.dir[0] : searchParams.dir) === "desc"
     ? "desc"
     : "asc";
@@ -87,7 +87,7 @@ export default async function CardsPage(props: { searchParams: Promise<RawSearch
     if (query.rarity) sp.set("rarity", String(query.rarity));
     if (typeof query.cost === "number") sp.set("cost", String(query.cost));
     if (query.setCode) sp.set("setCode", query.setCode);
-    if (sort !== "number") sp.set("sort", sort);
+    if (sort !== "cost") sp.set("sort", sort);
     if (dir !== "asc") sp.set("dir", dir);
     if (next > 1) sp.set("page", String(next));
     const qs = sp.toString();

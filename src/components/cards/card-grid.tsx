@@ -140,11 +140,14 @@ function CardTile({
           <span className="block truncate text-label-md font-bold text-ink transition group-hover:text-primary-strong">
             {ko.name}
           </span>
-          <span className="block truncate text-label-sm text-ink-soft">
-            {num ?? card.setCode}
-            {" · "}
-            {TYPE_LABEL.get(card.type) ?? card.type}
-            {typeof card.power === "number" && ` · ⚔ ${card.power}`}
+          <span className="flex items-center gap-1 truncate text-label-sm text-ink-soft">
+            <span className="rounded bg-subcanvas px-1 py-px font-mono text-[10px] text-ink-soft ring-1 ring-line">
+              {num ?? card.setCode}
+            </span>
+            <span className="truncate">
+              {TYPE_LABEL.get(card.type) ?? card.type}
+              {typeof card.power === "number" && ` · ⚔ ${card.power}`}
+            </span>
           </span>
         </span>
         {price != null && (

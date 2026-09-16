@@ -36,7 +36,7 @@ export async function CardResults({
   query,
   page,
   perPage,
-  sort = "number",
+  sort = "cost",
   dir = "asc",
   hrefForPage,
 }: {
