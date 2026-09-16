@@ -247,7 +247,7 @@
   <a href="/" class="made-in">Made in <b>RIBA.GG</b></a>
   <footer class="note">
     라이엇 공식 "Nexus Night Prize Pack" 안내(25장 = 커스텀 아트 테모 1 · 프로모 룬 6 · 패럴렐 포일 18) 기준으로 구성했습니다.
-    카드 한 장당 테모 1.5% · 프로모 룬 15% · 나머지는 일반 카드로 등장하며, 3장 모두 서로 다른 카드로 나갑니다(중복 없음).
+    팩 하나당 테모 1.5% · 프로모 룬 15% 확률로 한 장 포함되며(둘 다 아니면 3장 모두 일반 카드), 3장 모두 서로 다른 카드로 나갑니다(중복 없음).
     테모 커스텀 아트·프로모 룬·패럴렐 포일 25종 전부 실제 넥서스 나이트 프로모 스캔 이미지입니다.
     시세는 TCGplayer 실거래 호가(2026-09-16 기준, 원화 환산)를 참고해 되팔 때 받을 만한 값으로 50% 할인 표시한 추정치입니다.
   </footer>
@@ -316,7 +316,8 @@
     return typeof c.price === 'number' ? Math.round(c.price * REALIZED_VALUE_RATE) : null;
   }
 
-  // 슬롯 하나당 등급 판정 — 커스텀 아트 테모 1.5%, 프로모 룬 15%, 나머지는 일반 카드.
+  // 팩 하나당(3장 슬롯 전체 기준) 등급 판정 — 커스텀 아트 테모 1.5%, 프로모 룬 15%, 나머지는 일반 카드.
+  // 슬롯마다 따로 굴리지 않고 팩당 한 번만 굴려서, 팩 하나에 테모/룬이 둘 다 나오는 일은 없다(둘 중 하나 or 없음).
   var TEEMO_RATE = 0.015;
   var RUNE_RATE = 0.15;
 
@@ -331,22 +332,19 @@
     return candidates[Math.floor(Math.random() * candidates.length)];
   }
 
-  function drawSlot(usedIds){
-    var r = Math.random();
-    var card = null;
-    if(r < TEEMO_RATE) card = pickFrom(TEEMO_POOL, usedIds);
-    if(!card && r < TEEMO_RATE + RUNE_RATE) card = pickFrom(RUNE_POOL, usedIds);
-    if(!card) card = pickFrom(REGULAR_POOL, usedIds);
-    if(!card) card = pickFrom(RUNE_POOL, usedIds);
-    if(!card) card = pickFrom(TEEMO_POOL, usedIds);
-    return card;
-  }
-
   function pickThree(){
     var picks = [];
     var usedIds = [];
-    for(var i=0;i<3;i++){
-      var card = drawSlot(usedIds);
+
+    // 팩 하나당 딱 한 번 굴려서 테모/룬 당첨 여부를 정한다(슬롯별 독립 굴림 아님).
+    var r = Math.random();
+    var hitCard = null;
+    if(r < TEEMO_RATE) hitCard = pickFrom(TEEMO_POOL, usedIds);
+    else if(r < TEEMO_RATE + RUNE_RATE) hitCard = pickFrom(RUNE_POOL, usedIds);
+    if(hitCard){ picks.push(hitCard); usedIds.push(hitCard.id); }
+
+    while(picks.length < 3){
+      var card = pickFrom(REGULAR_POOL, usedIds);
       if(!card) break;
       picks.push(card);
       usedIds.push(card.id);
