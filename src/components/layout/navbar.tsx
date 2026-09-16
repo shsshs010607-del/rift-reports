@@ -70,7 +70,7 @@ export function Navbar() {
             className="hidden items-center gap-2 rounded-lg bg-primary px-4 py-2.5 text-body-md font-bold text-white shadow-[0_4px_14px_rgba(70,72,212,0.3)] transition hover:bg-primary-container sm:inline-flex"
           >
             <PenSquare className="h-[18px] w-[18px]" />
-            <span className="hidden lg:inline">새 글 쓰기</span>
+            <span className="hidden lg:inline xl:hidden 2xl:inline">새 글 쓰기</span>
           </Link>
 
           {user ? (
@@ -81,7 +81,7 @@ export function Navbar() {
               <span className="grid h-9 w-9 place-items-center rounded-full bg-primary-fixed text-body-md font-bold text-on-primary-fixed-variant ring-1 ring-outline-variant">
                 {(user.email ?? "U")[0].toUpperCase()}
               </span>
-              <span className="hidden text-body-md font-bold leading-tight text-on-surface lg:block">
+              <span className="hidden text-body-md font-bold leading-tight text-on-surface lg:block xl:hidden 2xl:block">
                 내 프로필
               </span>
             </Link>
@@ -318,7 +318,7 @@ function NavPill({
   };
 
   const pillCls = cn(
-    "whitespace-nowrap rounded-full px-3.5 py-2 text-body-md transition-all",
+    "whitespace-nowrap rounded-full px-2.5 py-2 text-body-md transition-all xl:px-2 2xl:px-3.5",
     active
       ? "bg-surface-container-high font-bold text-primary"
       : "text-on-surface-variant hover:bg-surface-container hover:text-on-surface",
