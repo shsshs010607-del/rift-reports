@@ -1,4 +1,6 @@
 import type { Metadata } from "next";
+import Link from "next/link";
+import { ArrowRight } from "lucide-react";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { hasSupabaseEnv } from "@/lib/supabase/env";
@@ -112,6 +114,19 @@ export default async function AdminPage() {
           <div className="surface note-card p-5">
             <ShopForm />
           </div>
+        </section>
+
+        <section>
+          <h2 className="section-title mb-3">매장 소식 초안</h2>
+          <Link
+            href="/admin/cafe-posts"
+            className="surface note-card flex items-center justify-between gap-3 p-5 transition hover:border-primary/40"
+          >
+            <span className="text-body-sm text-ink-soft">
+              디시인사이드 매장 이벤트 공지를 네이버 카페 「매장 소식」에 붙여넣기 좋게 정리한 페이지
+            </span>
+            <ArrowRight className="h-5 w-5 shrink-0 text-primary-strong" />
+          </Link>
         </section>
 
         <section>
