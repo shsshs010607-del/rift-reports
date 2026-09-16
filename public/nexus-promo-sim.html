@@ -64,11 +64,19 @@
   .sub{font-size:14px;color:var(--text-dim);text-align:center;margin:0 0 6px;line-height:1.65;max-width:560px;}
   .sub b{color:var(--text);font-weight:700;}
   .event-link{
-    display:inline-flex;align-items:center;gap:5px;margin:10px 0 30px;
+    display:inline-flex;align-items:center;gap:5px;margin:10px 0 20px;
     font-family:var(--font-mono);font-size:11.5px;color:#4fd18a;text-decoration:none;
     border-bottom:1px solid rgba(79,209,138,.4);
   }
   .event-link:hover{color:#7de0bf;border-color:#7de0bf;}
+
+  .cafe-banner{display:flex;align-items:center;gap:10px;max-width:560px;width:100%;margin:0 0 28px;padding:12px 16px;border-radius:12px;background:var(--surface-2);border:1px solid var(--gold-dim);text-decoration:none;transition:border-color .15s,transform .15s;}
+  .cafe-banner:hover{border-color:var(--gold);transform:translateY(-1px);}
+  .cafe-banner .cb-emoji{font-size:20px;flex-shrink:0;}
+  .cafe-banner .cb-text{flex:1;min-width:0;}
+  .cafe-banner .cb-title{font-size:13px;font-weight:700;color:var(--gold-bright);}
+  .cafe-banner .cb-desc{font-size:12px;color:var(--text-faint);margin-top:1px;}
+  .cafe-banner .cb-arrow{font-size:14px;color:var(--gold);flex-shrink:0;}
 
   .open-btn{
     font-family:var(--font-display);font-weight:400;font-size:20px;letter-spacing:.02em;color:#06231a;
@@ -210,6 +218,15 @@
   <p class="sub">매장에서 열리는 주간 캐주얼 이벤트 <b>넥서스 나이트</b>에 참가하면 3장짜리 프로모 팩을 받습니다. 그걸 뽑아보는 시뮬레이터입니다.</p>
   <a href="https://playriftbound.com/ko-KR/events/" target="_blank" rel="noopener noreferrer" class="event-link">내 주변 넥서스 나이트 찾기 →</a>
 
+  <a href="https://riba.gg/community/post/c7a23d3b-6ee5-42a2-b868-d78a79efa7f8" target="_blank" rel="noopener noreferrer" class="cafe-banner">
+    <span class="cb-emoji">🎉</span>
+    <span class="cb-text">
+      <span class="cb-title">카페 오픈 기념 추첨 이벤트 (~9/22)</span>
+      <span class="cb-desc">오리진 부스터 박스 증정! 카페 가입 + 인증 글만 쓰면 참여 완료</span>
+    </span>
+    <span class="cb-arrow">→</span>
+  </a>
+
   <button class="open-btn" id="openBtn" disabled>카드 불러오는 중…</button>
   <button class="bulk-btn" id="bulkBtn">10팩 한번에 보기</button>
 
@@ -225,7 +242,8 @@
   <footer class="note">
     라이엇 공식 "Nexus Night Prize Pack" 안내(25장 = 커스텀 아트 테모 1 · 프로모 룬 6 · 패럴렐 포일 18) 기준으로 구성했습니다.
     카드 한 장당 테모 1.5% · 프로모 룬 15% · 나머지는 일반 카드로 등장하며, 3장 모두 서로 다른 카드로 나갑니다(중복 없음).
-    테모 커스텀 아트·프로모 룬 아트는 실제 프로모 이미지 데이터가 없어 기존 카드 일러스트로 대신 표시합니다.
+    테모 커스텀 아트·프로모 룬·패럴렐 포일 25종 전부 실제 넥서스 나이트 프로모 스캔 이미지입니다.
+    시세는 TCGplayer 실거래 호가(2026-09-16 기준, 원화 환산)를 참고해 되팔 때 받을 만한 값으로 50% 할인 표시한 추정치입니다.
   </footer>
 </div>
 
@@ -283,6 +301,15 @@
   var packsOpened = 0;
   var collected = {};
 
+  function formatWon(n){
+    return '₩' + n.toLocaleString('ko-KR');
+  }
+  // 시세(호가) → "현실적으로 되팔 때 받을 만한 값" 할인. origins-sim과 동일한 50% 할인 기준.
+  var REALIZED_VALUE_RATE = 0.5;
+  function cardPrice(c){
+    return typeof c.price === 'number' ? Math.round(c.price * REALIZED_VALUE_RATE) : null;
+  }
+
   // 슬롯 하나당 등급 판정 — 커스텀 아트 테모 1.5%, 프로모 룬 15%, 나머지는 일반 카드.
   var TEEMO_RATE = 0.015;
   var RUNE_RATE = 0.15;
@@ -337,7 +364,9 @@
       var front = el.querySelector('.fface-front');
       var ribbonCls = card.tier === 'teemo' ? 'tier-teemo' : card.tier === 'rune' ? 'tier-rune' : '';
       var ribbonText = card.tier === 'teemo' ? 'CUSTOM' : card.tier === 'rune' ? 'RUNE' : 'PROMO';
-      front.innerHTML = '<div class="promo-ribbon ' + ribbonCls + '">' + ribbonText + '</div><img src="' + card.img + '" alt="' + card.name + '"><div class="fname">' + card.name + '</div>';
+      var price = cardPrice(card);
+      var priceHtml = price != null ? '<span style="display:block;color:var(--gold-bright);font-weight:700;">' + formatWon(price) + '</span>' : '';
+      front.innerHTML = '<div class="promo-ribbon ' + ribbonCls + '">' + ribbonText + '</div><img src="' + card.img + '" alt="' + card.name + '"><div class="fname">' + card.name + priceHtml + '</div>';
       collected[card.id] = true;
       updateStats();
       if(card.tier === 'teemo' || card.tier === 'rune') celebrate(card.tier, card.name);
@@ -368,7 +397,8 @@
       var el = document.createElement('div');
       el.className = 'bulk-img';
       el.style.animationDelay = Math.min(i * 25, 500) + 'ms';
-      el.title = c.name;
+      var price = cardPrice(c);
+      el.title = c.name + (price != null ? ' · ' + formatWon(price) : '');
       el.innerHTML = '<img src="' + c.img + '" alt="' + c.name + '" loading="lazy">';
       grid.appendChild(el);
     });
