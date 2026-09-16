@@ -636,7 +636,7 @@
       return '' +
         '<div class="rg-card">' +
           '<div class="rg-img" style="--r-color:' + color + ';--r-glow:' + glow + '">' +
-            '<img src="' + card.img + '" alt="' + card.name + '" loading="lazy">' +
+            '<img src="' + sized(card.img, 184) + '" alt="' + card.name + '" loading="lazy">' +
           '</div>' +
           '<div class="rg-label" style="--rg-color:' + color + '">' + RARITY_LABEL[r] + '</div>' +
           '<div class="rg-pct">' + (RARITY_GUIDE_NOTE[r] || '') + '</div>' +
@@ -673,6 +673,16 @@
 
   function pick(arr){
     return arr[Math.floor(Math.random() * arr.length)];
+  }
+
+  /**
+   * 카드 이미지는 원본이 744×1039 풀사이즈라 장당 ~700KB — 카톤(최대 288팩) "전체 바로
+   * 까기"처럼 2,000장 넘게 한 번에 그리면 디코딩 메모리만 수 GB까지 튀어서 브라우저 탭이
+   * out of memory 로 죽는다. Sanity CDN(cmsassets.rgpub.io)이 ?w= 리사이즈를 지원해서
+   * 렌더 크기에 맞는 폭만 요청한다 — 이 한 줄이 없으면 위 문제가 실제로 재현된다.
+   */
+  function sized(url, w){
+    return url + (url.indexOf('?') > -1 ? '&' : '?') + 'w=' + w;
   }
 
   function drawOne(rarity){
@@ -828,7 +838,7 @@
       if(card.hanbok) front.classList.add('hanbok');
       if(card.rarity === 'Showcase') el.classList.add('showcase-hit');
       var img = document.createElement('img');
-      img.src = card.img;
+      img.src = sized(card.img, 260);
       img.alt = card.name;
       front.appendChild(img);
       var price = cardPrice(card);
@@ -993,7 +1003,7 @@
           var price = cardPrice(c);
           return '<div class="hl-card' + (c.hanbok?' hanbok':'') + '" style="--r-color:' + v.color + ';--r-glow:' + v.glow + ';animation-delay:' + Math.min(i*15,600) + 'ms">' +
             (c.hanbok ? '<div class="hl-ribbon">한정</div>' : '') +
-            '<img src="' + c.img + '" alt="' + c.name + '" loading="lazy">' +
+            '<img src="' + sized(c.img, 220) + '" alt="' + c.name + '" loading="lazy">' +
             '<div class="hl-name">' + c.name + (price != null ? '<span class="hl-price">' + formatWon(price) + '</span>' : '') + '</div>' +
           '</div>';
         }).join('') +
@@ -1006,9 +1016,9 @@
         var delay = Math.min((i % 60) * 12, 700);
         var price = cardPrice(c);
         if(isHitTier(c)){
-          return '<div class="bulk-img" style="--r-color:' + v.color + ';--r-glow:' + v.glow + ';animation-delay:' + delay + 'ms" title="' + c.name + (price != null ? ' · ' + formatWon(price) : '') + '"><img src="' + c.img + '" alt="' + c.name + '" loading="lazy"></div>';
+          return '<div class="bulk-img" style="--r-color:' + v.color + ';--r-glow:' + v.glow + ';animation-delay:' + delay + 'ms" title="' + c.name + (price != null ? ' · ' + formatWon(price) : '') + '"><img src="' + sized(c.img, 128) + '" alt="' + c.name + '" loading="lazy"></div>';
         }
-        return '<div class="bulk-img-sm" style="--r-color:' + v.color + ';animation-delay:' + delay + 'ms" title="' + c.name + (price != null ? ' · ' + formatWon(price) : '') + '"><img src="' + c.img + '" alt="' + c.name + '" loading="lazy"></div>';
+        return '<div class="bulk-img-sm" style="--r-color:' + v.color + ';animation-delay:' + delay + 'ms" title="' + c.name + (price != null ? ' · ' + formatWon(price) : '') + '"><img src="' + sized(c.img, 76) + '" alt="' + c.name + '" loading="lazy"></div>';
       }).join('') +
     '</div></div>';
 
