@@ -33,7 +33,7 @@ export default async function NewPostPage(
   const defaultCategory = COMMUNITY_CATEGORIES.find((c) => c.slug === searchParams.category)?.slug;
 
   return (
-    <div className="mx-auto max-w-2xl">
+    <div className="mx-auto max-w-4xl">
       <Link
         href={defaultCategory ? `/community/${defaultCategory}` : "/community"}
         className="mb-3 inline-flex items-center gap-1 text-body-sm text-ink-soft hover:text-primary-strong"

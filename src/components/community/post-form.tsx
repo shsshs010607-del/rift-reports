@@ -404,7 +404,7 @@ export function PostForm({
             ref={bodyRef}
             name="body"
             required
-            rows={16}
+            rows={22}
             value={body}
             onChange={(e) => setBody(e.target.value)}
             onKeyDown={onBodyKeyDown}

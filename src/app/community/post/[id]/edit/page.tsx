@@ -37,7 +37,7 @@ export default async function EditPostPage(props: { params: Promise<{ id: string
   }
 
   return (
-    <div className="mx-auto max-w-2xl">
+    <div className="mx-auto max-w-4xl">
       <Link
         href={`/community/post/${post.id}`}
         className="mb-3 inline-flex items-center gap-1 text-body-sm text-ink-soft hover:text-primary-strong"
