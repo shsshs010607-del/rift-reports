@@ -96,14 +96,6 @@
   .opt-btn.active{background:linear-gradient(180deg,var(--gold-bright),var(--gold));color:#1a0507;border-color:transparent;}
   .opt-btn .sc{display:block;font-size:10px;opacity:.75;margin-top:1px;}
   .opt-btn.active .sc{opacity:.65;}
-  .tier-note{
-    margin:8px 2px 0;
-    font-size:11.5px;
-    color:var(--text-faint);
-    line-height:1.6;
-    min-height:1em;
-  }
-  .tier-note b{color:var(--gold);font-weight:600;}
 
   .open-btn{
     font-family:var(--font-display);font-weight:400;font-size:20px;letter-spacing:.02em;color:#1a0507;
@@ -350,7 +342,6 @@
         <button class="opt-btn" data-tier="carton">카톤 <span class="sc" id="cartonSc">6박스 · 144팩</span></button>
       </div>
     </div>
-    <p class="tier-note" id="tierNote"></p>
   </div>
 
   <div class="open-row" id="openRow">
@@ -432,23 +423,24 @@
   /**
    * 봉입 확률 — 정부 공시(중국 실물카드 확률표기 의무) 수준의 정확한 %표는 공개돼 있지 않아,
    * 중국 정식 유통사 Shining Soul 이 공개한 "起源(오리진)" 팩 구성(7 普通/3 不凡/포일 1/룬 1/레어 이상 2)과
-   * 해외 커뮤니티 개봉 통계(카드게이머 등 — 에픽 1/4팩, 이색아트 1/12팩, 초편(오버넘버) 1/72팩,
-   * 서명 초편(시그니처) 1/700+팩)를 조합한 추정치입니다. 실제 확률과 다를 수 있습니다.
+   * 해외 커뮤니티 개봉 통계(에픽 1/4팩, 이색아트 1/12팩)를 조합한 추정치입니다.
+   * 오버넘버·시그니처는 5장입/14장입 팩당 등장률이 서로 달라 상품별로 따로 둡니다 — "[카드 상식 #1]" 글의
+   * 5장입 표(오버넘버 0.50% · 시그니처 0.05%)와, 14장입 실측 개봉 통계(오버넘버 1/72 · 시그니처 0.14%) 기준.
    */
   var HIT_EPIC_RATE = 1 / 4;
   var HIT_ALTART_RATE = 1 / 12;
-  // 오버넘버·시그니처는 "[카드 상식 #1]" 글의 팩당 등장률(오버넘버 0.50% · 사인 오버넘버 0.05%)로 맞춤 —
-  // 예전 1/72·1/700 값이 실제보다 훨씬 잘 떴었음. 카톤 단위는 이 확률과 별개로 보장 슬롯을 씀(아래 rollCartonGuarantees).
-  var HIT_OVERNUMBERED_RATE = 0.005;
-  var HIT_SIGNATURE_RATE = 0.0005;
+  var HIT_RATES = {
+    '5': { overnumbered: 0.005, signature: 0.0005 },
+    '14': { overnumbered: 1 / 72, signature: 0.0014 }
+  };
+  /** 카톤 1개당 오버넘버 누적 상한 — 확정 1장 이후로도 확률대로 더 뜰 수 있지만 5장 이상은 나오지 않는다. */
+  var MAX_OVERNUMBERED_PER_CARTON = 4;
 
   function fmtPct(rate){
     return (rate * 100).toLocaleString('ko-KR', { minimumFractionDigits: rate < 0.01 ? 2 : 1, maximumFractionDigits: 2 }) + '%';
   }
   RARITY_GUIDE_NOTE.Epic = fmtPct(HIT_EPIC_RATE) + ' 이상';
   RARITY_GUIDE_NOTE.AltArt = fmtPct(HIT_ALTART_RATE) + ' 이상';
-  RARITY_GUIDE_NOTE.Overnumbered = fmtPct(HIT_OVERNUMBERED_RATE) + ' 이상';
-  RARITY_GUIDE_NOTE.Signature = fmtPct(HIT_SIGNATURE_RATE) + ' 이상';
 
   /**
    * 오리진 부스터팩 1팩당 원화 가격 — 국내 카드샵 예약판매 공지(2026-09-13 마감분) 기준.
@@ -480,20 +472,13 @@
     });
   }
   var cartonSc = document.getElementById('cartonSc');
-  var tierNote = document.getElementById('tierNote');
   function updateCartonLabel(){
     var boxes = cartonBoxes(state.product);
     cartonSc.textContent = boxes + '박스 · ' + (boxes * BOX_PACKS) + '팩';
   }
-  function updateTierNote(){
-    tierNote.innerHTML = state.tier === 'carton'
-      ? '카톤 1개당 <b>오버넘버 1장 이상 보장</b>(드물게 2장), 시그니처는 0~1장(드물게 2장) 등장합니다.'
-      : '';
-  }
   setActive(productOpts, 'product', state.product);
   setActive(tierOpts, 'tier', state.tier);
   updateCartonLabel();
-  updateTierNote();
 
   productOpts.addEventListener('click', function(e){
     var btn = e.target.closest('.opt-btn');
@@ -501,6 +486,7 @@
     state.product = btn.dataset.product;
     setActive(productOpts, 'product', state.product);
     updateCartonLabel();
+    renderRarityGuide();
     resetStage();
   });
   tierOpts.addEventListener('click', function(e){
@@ -508,7 +494,6 @@
     if(!btn) return;
     state.tier = btn.dataset.tier;
     setActive(tierOpts, 'tier', state.tier);
-    updateTierNote();
     resetStage();
   });
 
@@ -561,6 +546,9 @@
   /** 레어도별 대표 카드 하나씩 뽑아 색·확률과 함께 보여주는 안내 그리드. */
   function renderRarityGuide(){
     if(!rgGrid) return;
+    var rates = HIT_RATES[state.product] || HIT_RATES['14'];
+    RARITY_GUIDE_NOTE.Overnumbered = fmtPct(rates.overnumbered) + ' 이상';
+    RARITY_GUIDE_NOTE.Signature = fmtPct(rates.signature) + ' 이상';
     var poolFor = {
       Common: POOLS.Common,
       Uncommon: POOLS.Uncommon,
@@ -622,15 +610,7 @@
     return pick(POOLS[rarity]);
   }
 
-  /** 레어 이상 "히트" 슬롯 — 등급이 높을수록 드문 순서로 순차 판정(중복 방지). */
-  function drawHit(){
-    var r = Math.random();
-    if(r < HIT_SIGNATURE_RATE && SIGNATURE_POOL.length) return pick(SIGNATURE_POOL);
-    if(r < HIT_OVERNUMBERED_RATE && OVERNUMBERED_POOL.length) return pick(OVERNUMBERED_POOL);
-    return drawHitFallback();
-  }
-
-  /** 히트 슬롯 중 오버넘버·시그니처가 아닌 나머지(이색아트/에픽/레어) — 카톤 보장 슬롯 배분에도 재사용. */
+  /** 히트 슬롯 중 오버넘버·시그니처가 아닌 나머지(이색아트/에픽/레어). */
   function drawHitFallback(){
     var r = Math.random();
     if(r < HIT_ALTART_RATE && ALTART_POOL.length) return pick(ALTART_POOL);
@@ -638,29 +618,13 @@
     return drawOne('Rare');
   }
 
-  /**
-   * 카톤 1개 분량의 "보장 슬롯" 구성 — 순수 독립 확률(팩당 0.5%·0.05%)로만 굴리면
-   * 카톤(144~288팩)에도 오버넘버가 아예 안 나오거나 시그니처가 여러 장 겹치는 경우가 흔해서,
-   * 카톤 단위에서만 구조를 따로 둔다: 오버넘버 1장 확정(드물게 2장), 시그니처는 0~1장(드물게 2장).
-   * 반환값은 팩 개수만큼의 배열로, 각 원소는 'signature' | 'overnumbered' | null(=일반 히트 슬롯).
-   */
-  function rollCartonGuarantees(packCount){
-    var overnumberedCount = Math.random() < 0.15 ? 2 : 1;
-    var sigRoll = Math.random();
-    var signatureCount = sigRoll < 0.05 ? 2 : sigRoll < 0.45 ? 1 : 0;
-    overnumberedCount = Math.min(overnumberedCount, OVERNUMBERED_POOL.length, packCount);
-    signatureCount = Math.min(signatureCount, SIGNATURE_POOL.length, Math.max(0, packCount - overnumberedCount));
-
-    var slots = [];
-    for(var i=0;i<signatureCount;i++) slots.push('signature');
-    for(var j=0;j<overnumberedCount;j++) slots.push('overnumbered');
-    while(slots.length < packCount) slots.push(null);
-
-    for(var k=slots.length-1;k>0;k--){
-      var idx = Math.floor(Math.random()*(k+1));
-      var tmp = slots[k]; slots[k] = slots[idx]; slots[idx] = tmp;
-    }
-    return slots;
+  /** 레어 이상 "히트" 슬롯 — 상품별(5장입/14장입) 독립 확률로 순차 판정. { card, type } 반환. */
+  function drawHit(product){
+    var rates = HIT_RATES[product] || HIT_RATES['14'];
+    var r = Math.random();
+    if(r < rates.signature && SIGNATURE_POOL.length) return { card: pick(SIGNATURE_POOL), type: 'signature' };
+    if(r < rates.overnumbered && OVERNUMBERED_POOL.length) return { card: pick(OVERNUMBERED_POOL), type: 'overnumbered' };
+    return { card: drawHitFallback(), type: 'fallback' };
   }
 
   /** 포일 슬롯 — 등급은 랜덤(보통 커먼·언커먼 위주). */
@@ -676,39 +640,60 @@
 
   /**
    * 팩 구성 — 14장 기본 부스터: 7 커먼 · 3 언커먼 · 포일 1 · 룬 1 · 레어 이상 2(그중 1장이 히트 슬롯).
-   * forcedHit: 카톤 보장 슬롯 배분용 — 'signature' | 'overnumbered' | 'fallback'(둘 다 아닌 일반 히트) | undefined(독립 확률).
+   * hitCard: 히트 슬롯에 넣을 카드를 미리 정해서 줄 때(카톤 보장 슬롯용) — 없으면 독립 확률로 직접 뽑는다.
    */
-  function openPack(size, forcedHit){
-    function hitSlot(){
-      if(forcedHit === 'signature' && SIGNATURE_POOL.length) return pick(SIGNATURE_POOL);
-      if(forcedHit === 'overnumbered' && OVERNUMBERED_POOL.length) return pick(OVERNUMBERED_POOL);
-      if(forcedHit) return drawHitFallback();
-      return drawHit();
-    }
+  function openPack(size, hitCard){
+    var hit = hitCard || drawHit(size).card;
     if(size === '5'){
-      return [drawOne('Common'), drawOne('Common'), drawOne('Common'), drawOne('Uncommon'), hitSlot()];
+      return [drawOne('Common'), drawOne('Common'), drawOne('Common'), drawOne('Uncommon'), hit];
     }
     var cards = [];
     for(var i=0;i<7;i++) cards.push(drawOne('Common'));
     for(var j=0;j<3;j++) cards.push(drawOne('Uncommon'));
     cards.push(drawFoil());
     cards.push(drawRune());
-    cards.push(hitSlot());
+    cards.push(hit);
     cards.push(drawOne('Rare'));
     return cards;
   }
 
+  /**
+   * 카톤 전용 — 팩 중 하나를 무작위로 골라 오버넘버 확정 지급. 나머지 팩들은 상품별 독립 확률(HIT_RATES)로
+   * 그대로 굴려서, 확정분 이후로도 확률에 따라 오버넘버·시그니처가 더 나올 수 있다. 다만 오버넘버 누적이
+   * MAX_OVERNUMBERED_PER_CARTON(4장)에 닿으면 그 이후로 오버넘버가 나올 자리는 대체 등급으로 대신 받는다.
+   * 시그니처는 별도 보장·상한 없이 순수 확률(보통 0, 가끔 1, 아주 드물게 2 이상)로 둔다.
+   */
+  function buildCartonPacks(product, packCount){
+    var guaranteedIdx = Math.floor(Math.random() * packCount);
+    var overnumberedTotal = 0;
+    var packs = [];
+    for(var i=0;i<packCount;i++){
+      var hitCard;
+      // 확정 슬롯은 "아직 한 장도 안 나왔을 때만" 강제 지급 — 이미 앞선 독립 확률로 상한(4장)까지
+      // 채워진 뒤라면 억지로 더 얹지 않고 이 슬롯도 그냥 일반 확률로 굴린다(상한 유지).
+      if(i === guaranteedIdx && overnumberedTotal === 0 && OVERNUMBERED_POOL.length){
+        hitCard = pick(OVERNUMBERED_POOL);
+        overnumberedTotal++;
+      } else {
+        var draw = drawHit(product);
+        if(draw.type === 'overnumbered' && overnumberedTotal >= MAX_OVERNUMBERED_PER_CARTON){
+          hitCard = drawHitFallback();
+        } else {
+          if(draw.type === 'overnumbered') overnumberedTotal++;
+          hitCard = draw.card;
+        }
+      }
+      packs.push(openPack(product, hitCard));
+    }
+    return packs;
+  }
+
   /** 지정한 단위(팩/박스/카톤)만큼 팩 배열을 만든다 — 카톤만 보장 슬롯 배분을 거친다. */
   function buildPacks(product, tier, packCount){
-    if(tier === 'carton'){
-      var markers = rollCartonGuarantees(packCount);
-      var packs = [];
-      for(var i=0;i<packCount;i++) packs.push(openPack(product, markers[i] || 'fallback'));
-      return packs;
-    }
-    var packs2 = [];
-    for(var j=0;j<packCount;j++) packs2.push(openPack(product));
-    return packs2;
+    if(tier === 'carton') return buildCartonPacks(product, packCount);
+    var packs = [];
+    for(var i=0;i<packCount;i++) packs.push(openPack(product));
+    return packs;
   }
 
   function cartonBoxes(product){
