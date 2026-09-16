@@ -5,7 +5,7 @@ import { TrendingUp, TrendingDown } from "lucide-react";
 import { getTopGainers, getTopLosers } from "@/lib/prices";
 import { getUsdKrw } from "@/lib/fx";
 import type { PriceRow } from "@/lib/prices";
-import { deltaUsd, fmtKrwSigned, fmtPct } from "@/lib/money";
+import { deltaUsd, fmtKrw, fmtKrwSigned, fmtPct } from "@/lib/money";
 import { cn } from "@/lib/utils";
 
 /** 홈 우측 — 시세 변동 압축 패널. */
@@ -83,18 +83,21 @@ function Group({
                 <span className="min-w-0 flex-1 truncate text-body-sm text-ink">
                   {r.print?.ko_name || r.print?.name || "—"}
                 </span>
-                <span
-                  className={cn(
-                    "shrink-0 text-right text-body-sm font-bold",
-                    (d ?? 0) >= 0 ? "text-emerald" : "text-coral",
-                  )}
-                >
-                  <span className="block">{fmtKrwSigned(d, fxKrw)}</span>
-                  {r.change_7d != null && (
-                    <span className="block text-label-sm font-semibold opacity-80">
-                      {fmtPct(r.change_7d)}
-                    </span>
-                  )}
+                <span className="shrink-0 text-right">
+                  <span className="block text-body-sm font-bold text-ink">
+                    {fmtKrw(r.market_price, fxKrw)}
+                  </span>
+                  <span
+                    className={cn(
+                      "block text-label-sm font-semibold",
+                      (d ?? 0) >= 0 ? "text-emerald" : "text-coral",
+                    )}
+                  >
+                    {fmtKrwSigned(d, fxKrw)}
+                    {r.change_7d != null && (
+                      <span className="opacity-80"> ({fmtPct(r.change_7d)})</span>
+                    )}
+                  </span>
                 </span>
               </Link>
             </li>
