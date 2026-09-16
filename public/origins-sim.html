@@ -362,8 +362,9 @@
   <a href="/" class="made-in">Made in <b>RIBA.GG</b></a>
   <footer class="note">
     실제 카드 데이터(이름·레어도·일러스트)는 오리진(OGN) 세트를 그대로 사용합니다. 팩 봉입 확률은 중국 정식 유통사
-    Shining Soul 공개 팩 구성(7 커먼·3 언커먼·포일 1·룬 1·레어 이상 2)과 해외 개봉 통계(서사 1/4팩, 대체 일러스트
-    1/12팩, 오버넘버 1/72팩, 시그니처 1/700+팩)를 참고한 추정치이며, 공식 확률표가 아닙니다.<br>
+    Shining Soul 공개 팩 구성(7 커먼·3 언커먼·포일 1·룬 1·레어 이상 2)과 공개 확률표(희귀 이상 72.50%, 서사 이상
+    10.00%, 대체 일러스트 이상 3.13%, 오버넘버 이상 0.50%, 시그니처 0.05%)를 참고한 추정치이며, 공식 확률표가
+    아닙니다. 14장입 오버넘버·시그니처만 실측 개봉 통계(오버넘버 1/72팩, 시그니처 0.14%)를 따로 씁니다.<br>
     한국판 오리진 한정 "구미호(한복)" 아리는 기존 오버넘버·시그니처 아리를 대체해 표시됩니다(아트는 추후 교체 예정).<br>
     카드별 시세는 리바지지 실시간 시세(JustTCG · <span id="priceAsOf">-</span> 기준, 원화 환산)를 참고한
     추정가입니다. <b>이 시세는 해외(주로 미국) 판매자 등록가(호가)</b>라 실제 되팔 때 받는 값보다 높고, 신작
@@ -406,8 +407,7 @@
   var RARITY_GUIDE_ORDER = ['Common', 'Uncommon', 'Rare', 'Epic', 'AltArt', 'Overnumbered', 'Signature'];
   var RARITY_GUIDE_NOTE = {
     Common: '팩마다 기본 포함',
-    Uncommon: '팩마다 기본 포함',
-    Rare: '레어 이상 슬롯 기본값'
+    Uncommon: '팩마다 기본 포함'
   };
 
   /** 카드 표시용 등급 키 (Showcase 는 하위 유형으로 세분화). */
@@ -421,14 +421,20 @@
   var CARTON_BOXES = { '5': 12, '14': 6 };
 
   /**
-   * 봉입 확률 — 정부 공시(중국 실물카드 확률표기 의무) 수준의 정확한 %표는 공개돼 있지 않아,
-   * 중국 정식 유통사 Shining Soul 이 공개한 "起源(오리진)" 팩 구성(7 普通/3 不凡/포일 1/룬 1/레어 이상 2)과
-   * 해외 커뮤니티 개봉 통계(에픽 1/4팩, 이색아트 1/12팩)를 조합한 추정치입니다.
-   * 오버넘버·시그니처는 5장입/14장입 팩당 등장률이 서로 달라 상품별로 따로 둡니다 — "[카드 상식 #1]" 글의
-   * 5장입 표(오버넘버 0.50% · 시그니처 0.05%)와, 14장입 실측 개봉 통계(오버넘버 1/72 · 시그니처 0.14%) 기준.
+   * 봉입 확률 — "[카드 상식 #1] 카드 등급 알아보기" 글의 5장입 팩 기준 공식 확률표
+   * (희귀 이상 72.50% · 서사 이상 10.00% · 대체일러 이상 3.13% · 오버넘버 이상 0.50% ·
+   * 사인 오버넘버 0.05%)를 그대로 따릅니다. 이 표는 중국 정식 유통사 Shining Soul 공개
+   * 확률표 기준이라 5장입/14장입 공통으로 적용합니다 — 팩 크기가 달라진다고 등급별
+   * 등장률 자체가 바뀔 근거는 없습니다. 다만 오버넘버·시그니처는 14장입 실측 개봉
+   * 통계(오버넘버 1/72 · 시그니처 0.14%)가 별도로 있어 상품별로 다르게 둡니다.
+   * 각 HIT_* 값은 "이 등급 이상이 나올 확률"(누적치)이며, r 이 그보다 작으면 해당 등급
+   * 이상으로 판정합니다 — HIT_RARE_RATE 밑으로도 못 미치면(27.5%) 레어조차 못 뜨고
+   * 그냥 특별(언커먼)로 채워집니다(예전엔 이 케이스가 없어 히트 슬롯이 100% 레어 이상
+   * 확정이었는데, 표의 72.50%와 맞지 않아 추가).
    */
-  var HIT_EPIC_RATE = 1 / 4;
-  var HIT_ALTART_RATE = 1 / 12;
+  var HIT_EPIC_RATE = 0.10;
+  var HIT_ALTART_RATE = 0.0313;
+  var HIT_RARE_RATE = 0.725;
   var HIT_RATES = {
     '5': { overnumbered: 0.005, signature: 0.0005 },
     '14': { overnumbered: 1 / 72, signature: 0.0014 }
@@ -441,6 +447,7 @@
   function fmtPct(rate){
     return (rate * 100).toLocaleString('ko-KR', { minimumFractionDigits: rate < 0.01 ? 2 : 1, maximumFractionDigits: 2 }) + '%';
   }
+  RARITY_GUIDE_NOTE.Rare = fmtPct(HIT_RARE_RATE) + ' 이상';
   RARITY_GUIDE_NOTE.Epic = fmtPct(HIT_EPIC_RATE) + ' 이상';
   RARITY_GUIDE_NOTE.AltArt = fmtPct(HIT_ALTART_RATE) + ' 이상';
 
@@ -612,12 +619,13 @@
     return pick(POOLS[rarity]);
   }
 
-  /** 히트 슬롯 중 오버넘버·시그니처가 아닌 나머지(이색아트/에픽/레어). */
+  /** 히트 슬롯 중 오버넘버·시그니처가 아닌 나머지(이색아트/에픽/레어/미스). */
   function drawHitFallback(){
     var r = Math.random();
     if(r < HIT_ALTART_RATE && ALTART_POOL.length) return pick(ALTART_POOL);
     if(r < HIT_EPIC_RATE) return drawOne('Epic');
-    return drawOne('Rare');
+    if(r < HIT_RARE_RATE) return drawOne('Rare');
+    return drawOne('Uncommon');
   }
 
   /** 레어 이상 "히트" 슬롯 — 상품별(5장입/14장입) 독립 확률로 순차 판정. { card, type } 반환. */
