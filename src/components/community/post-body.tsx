@@ -5,7 +5,7 @@ import { CardInline } from "@/components/community/card-inline";
 /**
  * 의존성 없는 마크다운-라이트 렌더러.
  * 지원: # ## ### 제목 · > 인용 · ``` 코드블록 · ```deck 덱 미리보기 · - / 1. 목록
- *       · **굵게** · [텍스트](url) · [[카드명]] 카드 이미지 · 빈 줄 문단
+ *       · **굵게** · [텍스트](url) · ![대체텍스트](url) 첨부 이미지 · [[카드명]] 카드 이미지 · 빈 줄 문단
  */
 export function PostBody({ text }: { text: string }) {
   const lines = text
@@ -203,9 +203,11 @@ export function PostBody({ text }: { text: string }) {
   return <div className="text-ink">{blocks}</div>;
 }
 
-/** **굵게** · [텍스트](url) · [[카드명]] 인라인 처리 */
+/** **굵게** · [텍스트](url) · ![대체텍스트](url) · [[카드명]] 인라인 처리 */
 function inline(s: string): React.ReactNode {
-  const parts = s.split(/(\[\[[^\]]+\]\]|\*\*[^*]+\*\*|\[[^\]]+\]\([^)]+\))/g);
+  const parts = s.split(
+    /(\[\[[^\]]+\]\]|\*\*[^*]+\*\*|!\[[^\]]*\]\([^)]+\)|\[[^\]]+\]\([^)]+\))/g,
+  );
   return parts.map((part, i) => {
     const cardRef = part.match(/^\[\[([^\]]+)\]\]$/);
     if (cardRef) return <CardInline key={i} name={cardRef[1].trim()} />;
@@ -214,6 +216,18 @@ function inline(s: string): React.ReactNode {
         <strong key={i} className="font-bold text-ink">
           {part.slice(2, -2)}
         </strong>
+      );
+    }
+    const image = part.match(/^!\[([^\]]*)\]\(([^)]+)\)$/);
+    if (image) {
+      return (
+        // eslint-disable-next-line @next/next/no-img-element -- 외부/업로드 이미지 URL, 도메인 사전 등록 불필요
+        <img
+          key={i}
+          src={image[2]}
+          alt={image[1]}
+          className="my-2 block max-w-full rounded-xl border border-line shadow-xs"
+        />
       );
     }
     const link = part.match(/^\[([^\]]+)\]\(([^)]+)\)$/);
