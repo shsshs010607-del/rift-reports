@@ -30,7 +30,10 @@ export default async function CollectionPage() {
 
   return (
     <div className="mx-auto max-w-2xl">
-      <PageHeading title="내 컬렉션" description="보유한 카드를 정리하고 추정 시세를 확인하세요" />
+      <PageHeading
+        title="내 컬렉션"
+        description="보유 카드를 검색해서 담으면, 실시간 시세로 총 가치를 바로 계산해 드려요."
+      />
       <CollectionEditor initial={collection} priceByNumber={priceByNumber} />
     </div>
   );

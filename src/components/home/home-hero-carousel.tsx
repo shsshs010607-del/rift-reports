@@ -1,6 +1,6 @@
 import Link from "next/link";
 import Image from "next/image";
-import { ArrowRight, Gift, Layers, MessagesSquare, Package, TrendingUp, Wand2 } from "lucide-react";
+import { ArrowRight, Gift, Layers, MessagesSquare, Package, TrendingUp, Wallet, Wand2 } from "lucide-react";
 
 import { CarouselClient } from "@/components/home/carousel-client";
 import { T1EditionBanner } from "@/components/home/t1-edition-banner";
@@ -16,6 +16,7 @@ export function HomeHeroCarousel() {
       <CafeEventSlide />
       <IntroSlide />
       <MbtiSlide />
+      <CollectionValueSlide />
       <T1EditionBanner />
       <ToolsSlide />
     </CarouselClient>
@@ -182,6 +183,35 @@ function MbtiSlide() {
         >
           덱 티어표
         </Link>
+      </div>
+    </SlideShell>
+  );
+}
+
+function CollectionValueSlide() {
+  return (
+    <SlideShell className="border-[#f2b73a]/25 bg-gradient-to-br from-[#f2b73a]/[0.09] via-card to-card">
+      <div className="max-w-[78%] sm:max-w-[64%]">
+        <p className="inline-flex items-center gap-1.5 text-label-sm font-bold uppercase tracking-wide text-[#c8901e]">
+          <Wallet className="h-3.5 w-3.5" />
+          실시간 시세 자동 계산
+        </p>
+        <h2 className="mt-1 font-display text-headline-md leading-tight text-ink">
+          내 카드, 얼마어치야?
+        </h2>
+        <p className="mt-1.5 text-body-sm leading-snug text-ink-soft">
+          보유 카드를 검색해서 수량만 담으면 실시간 시세로 총 가치를 바로 계산해 드려요.
+        </p>
+        <div className="mt-3.5 flex flex-wrap gap-2">
+          <Link
+            href="/collection"
+            className="inline-flex items-center gap-1.5 rounded-lg bg-[#c8901e] px-4 py-2 text-label-sm font-bold text-white transition hover:opacity-90"
+          >
+            <Wallet className="h-4 w-4" />
+            내 컬렉션 가치 계산하기
+            <ArrowRight className="h-4 w-4" />
+          </Link>
+        </div>
       </div>
     </SlideShell>
   );
