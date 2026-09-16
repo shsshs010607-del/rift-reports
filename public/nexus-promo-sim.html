@@ -217,7 +217,7 @@
       <a href="/" class="riba-link" title="RIBA.GG 홈으로">RIBA.GG</a>
       <div class="brand"><b>RIFTBOUND</b> · NEXUS NIGHT</div>
     </div>
-    <div class="stat-chip">오늘 연 팩 <b id="packCount">0</b> · 모은 카드 <b id="uniqueCount">0</b>/<span id="poolSize">–</span></div>
+    <div class="stat-chip">오늘 연 팩 <b id="packCount">0</b> · 모은 카드 <b id="uniqueCount">0</b>/<span id="poolSize">–</span> · 누적 시세 <b id="totalValue">₩0</b></div>
   </div>
 
   <h1 class="title">넥서스 나이트 <span class="em">프로모 팩</span> 시뮬레이터</h1>
@@ -270,6 +270,7 @@
   var packCountEl = document.getElementById('packCount');
   var uniqueCountEl = document.getElementById('uniqueCount');
   var poolSizeEl = document.getElementById('poolSize');
+  var totalValueEl = document.getElementById('totalValue');
   var celFlash = document.getElementById('celFlash');
   var banner = document.getElementById('banner');
   var bannerB1 = document.getElementById('bannerB1');
@@ -306,6 +307,7 @@
   var TEEMO_POOL = [], RUNE_POOL = [], REGULAR_POOL = [];
   var packsOpened = 0;
   var collected = {};
+  var totalValue = 0;
 
   function formatWon(n){
     return '₩' + n.toLocaleString('ko-KR');
@@ -324,6 +326,7 @@
   function updateStats(){
     packCountEl.textContent = packsOpened;
     uniqueCountEl.textContent = Object.keys(collected).length;
+    totalValueEl.textContent = formatWon(totalValue);
   }
 
   function pickFrom(pool, excludeIds){
@@ -372,6 +375,7 @@
       var priceHtml = price != null ? '<span style="display:block;color:var(--gold-bright);font-weight:700;">' + formatWon(price) + '</span>' : '';
       front.innerHTML = '<div class="promo-ribbon ' + ribbonCls + '">' + ribbonText + '</div><img src="' + card.img + '" alt="' + card.name + '"><div class="fname">' + card.name + priceHtml + '</div>';
       collected[card.id] = true;
+      if(price != null) totalValue += price;
       updateStats();
       if(card.tier === 'teemo' || card.tier === 'rune') celebrate(card.tier, card.name);
     }
@@ -391,7 +395,11 @@
   function renderBulk(n){
     var all = [];
     for(var i=0;i<n;i++) all = all.concat(pickThree());
-    all.forEach(function(c){ collected[c.id] = true; });
+    all.forEach(function(c){
+      collected[c.id] = true;
+      var price = cardPrice(c);
+      if(price != null) totalValue += price;
+    });
     packsOpened += n;
     updateStats();
 
