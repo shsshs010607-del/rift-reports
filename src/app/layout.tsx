@@ -50,6 +50,8 @@ export const metadata: Metadata = {
     type: "website",
   },
   twitter: { card: "summary_large_image", title: SITE.name, description: SITE.description },
+  // 네이버 서치어드바이저 사이트 소유 확인용.
+  verification: { other: { "naver-site-verification": "3fe7501efd690a5e973aeaa0d555b7edad4b0122" } },
   // AdSense 사이트 확인용 <meta name="google-adsense-account"> (head 에 렌더됨)
   ...(ADSENSE.client ? { other: { "google-adsense-account": ADSENSE.client } } : {}),
 };
