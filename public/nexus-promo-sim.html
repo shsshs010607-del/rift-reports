@@ -131,9 +131,15 @@
     50%{box-shadow:0 3px 8px rgba(0,0,0,.35), 0 0 16px 2px rgba(232,184,75,.7);}
   }
 
-  .bulk-grid{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-bottom:20px;}
-  .bulk-img{width:84px;border-radius:8px;overflow:hidden;border:1px solid var(--line);opacity:0;animation:pop-in .35s ease forwards;}
-  .bulk-img img{width:100%;display:block;}
+  .bulk-grid{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;margin-bottom:20px;}
+  .bulk-card{width:92px;border-radius:10px;overflow:hidden;background:var(--surface);border:1px solid var(--line);opacity:0;animation:pop-in .35s ease forwards;position:relative;}
+  .bulk-card img{width:100%;display:block;}
+  .bulk-card.tier-teemo{border-color:var(--gold);box-shadow:0 0 16px -2px rgba(232,184,75,.6);}
+  .bulk-card.tier-rune{border-color:#a370f0;box-shadow:0 0 14px -2px rgba(163,112,240,.5);}
+  .bulk-count{position:absolute;top:5px;right:5px;background:rgba(10,11,16,.82);color:#fff;font-family:var(--font-mono);font-weight:700;font-size:10px;padding:1px 6px;border-radius:999px;z-index:2;}
+  .bulk-cap{padding:5px 6px 6px;line-height:1.3;}
+  .bulk-name{font-size:9.5px;color:var(--text-dim);display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .bulk-price{display:block;margin-top:2px;font-size:10.5px;color:var(--gold-bright);font-weight:700;font-variant-numeric:tabular-nums;}
   @keyframes pop-in{0%{opacity:0;transform:scale(.85) translateY(6px);}100%{opacity:1;transform:scale(1) translateY(0);}}
 
   .again-row{margin-top:20px;display:none;}
@@ -391,15 +397,31 @@
     packsOpened += n;
     updateStats();
 
+    // 같은 카드는 한 칸에 모아서 ×N 배지로 보여주고, 비싼 카드 순서로 정렬.
+    var groups = {};
+    var order = [];
+    all.forEach(function(c){
+      if(!groups[c.id]){ groups[c.id] = { card: c, count: 0 }; order.push(c.id); }
+      groups[c.id].count++;
+    });
+    var list = order.map(function(id){ return groups[id]; });
+    list.sort(function(a, b){ return (cardPrice(b.card) || 0) - (cardPrice(a.card) || 0); });
+
     stage.innerHTML = '<div class="bulk-grid" id="bulkGrid"></div>';
     var grid = document.getElementById('bulkGrid');
-    all.forEach(function(c, i){
-      var el = document.createElement('div');
-      el.className = 'bulk-img';
-      el.style.animationDelay = Math.min(i * 25, 500) + 'ms';
+    list.forEach(function(g, i){
+      var c = g.card;
       var price = cardPrice(c);
-      el.title = c.name + (price != null ? ' · ' + formatWon(price) : '');
-      el.innerHTML = '<img src="' + c.img + '" alt="' + c.name + '" loading="lazy">';
+      var tierCls = c.tier === 'teemo' ? ' tier-teemo' : c.tier === 'rune' ? ' tier-rune' : '';
+      var el = document.createElement('div');
+      el.className = 'bulk-card' + tierCls;
+      el.style.animationDelay = Math.min(i * 30, 500) + 'ms';
+      el.innerHTML =
+        (g.count > 1 ? '<span class="bulk-count">×' + g.count + '</span>' : '') +
+        '<img src="' + c.img + '" alt="' + c.name + '" loading="lazy">' +
+        '<div class="bulk-cap"><span class="bulk-name">' + c.name + '</span>' +
+        (price != null ? '<span class="bulk-price">' + formatWon(price) + '</span>' : '') +
+        '</div>';
       grid.appendChild(el);
     });
     againRow.style.display = 'block';
