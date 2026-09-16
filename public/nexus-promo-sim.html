@@ -116,6 +116,12 @@
     font-family:var(--font-mono);font-weight:700;font-size:8px;letter-spacing:.1em;
     padding:3px 28px;transform:rotate(38deg);box-shadow:0 3px 8px rgba(0,0,0,.35);z-index:3;
   }
+  .promo-ribbon.tier-teemo{background:linear-gradient(180deg,var(--gold-bright),var(--gold));animation:teemo-glow 1.6s ease-in-out infinite;}
+  .promo-ribbon.tier-rune{background:linear-gradient(180deg,#d6b8ff,#a370f0);}
+  @keyframes teemo-glow{
+    0%,100%{box-shadow:0 3px 8px rgba(0,0,0,.35);}
+    50%{box-shadow:0 3px 8px rgba(0,0,0,.35), 0 0 16px 2px rgba(232,184,75,.7);}
+  }
 
   .bulk-grid{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-bottom:20px;}
   .bulk-img{width:84px;border-radius:8px;overflow:hidden;border:1px solid var(--line);opacity:0;animation:pop-in .35s ease forwards;}
@@ -175,8 +181,10 @@
 
   <a href="/" class="made-in">Made in <b>RIBA.GG</b></a>
   <footer class="note">
-    실제 넥서스 나이트 프로모 풀(공개 체크리스트 기준)에서 뽑은 카드 이름·일러스트를 그대로 쓰지만, 일부 프로모 전용 룬 아트는
-    데이터가 없어 기존 대체 일러스트로 대신 표시합니다. 3장 모두 서로 다른 카드로 나갑니다(중복 없음).
+    라이엇 공식 "Nexus Night Prize Pack" 안내(25장 = 커스텀 아트 테모 1 · 프로모 룬 6 · 패럴렐 포일 18) 기준으로 구성했습니다.
+    카드 한 장당 테모 1.5% · 프로모 룬 15% · 나머지는 일반 카드로 등장하며, 3장 모두 서로 다른 카드로 나갑니다(중복 없음).
+    테모 커스텀 아트·프로모 룬 아트는 실제 프로모 이미지 데이터가 없어 기존 카드 일러스트로 대신 표시하며,
+    체크리스트의 "Portly Poro"는 저희 카드 데이터에 없어 목록에서 제외했습니다(포일 18장 중 17장만 반영).
   </footer>
 </div>
 
@@ -194,21 +202,44 @@
   var poolSizeEl = document.getElementById('poolSize');
 
   var POOL = null;
+  var TEEMO_POOL = [], RUNE_POOL = [], REGULAR_POOL = [];
   var packsOpened = 0;
   var collected = {};
+
+  // 슬롯 하나당 등급 판정 — 커스텀 아트 테모 1.5%, 프로모 룬 15%, 나머지는 일반 카드.
+  var TEEMO_RATE = 0.015;
+  var RUNE_RATE = 0.15;
 
   function updateStats(){
     packCountEl.textContent = packsOpened;
     uniqueCountEl.textContent = Object.keys(collected).length;
   }
 
+  function pickFrom(pool, excludeIds){
+    var candidates = pool.filter(function(c){ return excludeIds.indexOf(c.id) === -1; });
+    if(!candidates.length) return null;
+    return candidates[Math.floor(Math.random() * candidates.length)];
+  }
+
+  function drawSlot(usedIds){
+    var r = Math.random();
+    var card = null;
+    if(r < TEEMO_RATE) card = pickFrom(TEEMO_POOL, usedIds);
+    if(!card && r < TEEMO_RATE + RUNE_RATE) card = pickFrom(RUNE_POOL, usedIds);
+    if(!card) card = pickFrom(REGULAR_POOL, usedIds);
+    if(!card) card = pickFrom(RUNE_POOL, usedIds);
+    if(!card) card = pickFrom(TEEMO_POOL, usedIds);
+    return card;
+  }
+
   function pickThree(){
-    var pool = POOL.slice();
     var picks = [];
-    for(var i=0;i<3 && pool.length;i++){
-      var idx = Math.floor(Math.random() * pool.length);
-      picks.push(pool[idx]);
-      pool.splice(idx, 1);
+    var usedIds = [];
+    for(var i=0;i<3;i++){
+      var card = drawSlot(usedIds);
+      if(!card) break;
+      picks.push(card);
+      usedIds.push(card.id);
     }
     return picks;
   }
@@ -227,7 +258,9 @@
       if(el.classList.contains('flipped')) return;
       el.classList.add('flipped');
       var front = el.querySelector('.fface-front');
-      front.innerHTML = '<div class="promo-ribbon">PROMO</div><img src="' + card.img + '" alt="' + card.name + '"><div class="fname">' + card.name + '</div>';
+      var ribbonCls = card.tier === 'teemo' ? 'tier-teemo' : card.tier === 'rune' ? 'tier-rune' : '';
+      var ribbonText = card.tier === 'teemo' ? 'CUSTOM' : card.tier === 'rune' ? 'RUNE' : 'PROMO';
+      front.innerHTML = '<div class="promo-ribbon ' + ribbonCls + '">' + ribbonText + '</div><img src="' + card.img + '" alt="' + card.name + '"><div class="fname">' + card.name + '</div>';
       collected[card.id] = true;
       updateStats();
     }
@@ -266,6 +299,11 @@
 
   fetch('/nexus-promo-cards.json').then(function(r){ return r.json(); }).then(function(payload){
     POOL = payload.cards || payload;
+    POOL.forEach(function(c){
+      if(c.tier === 'teemo') TEEMO_POOL.push(c);
+      else if(c.tier === 'rune') RUNE_POOL.push(c);
+      else REGULAR_POOL.push(c);
+    });
     poolSizeEl.textContent = POOL.length;
     openBtn.disabled = false;
     openBtn.textContent = '프로모 팩 열기';
