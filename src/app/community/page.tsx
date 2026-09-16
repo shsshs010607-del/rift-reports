@@ -28,11 +28,12 @@ export default async function CommunityHubPage(
   const tag = searchParams.tag?.trim() || undefined;
   const popular = searchParams.tab === "popular" && !q && !tag;
 
+  const browsing = !q && !tag;
   const [list, recent, trending] = await Promise.all([
     popular
       ? getPopularPosts({ page })
-      : // 전체 최신글에서 게시판별 고정글(리프트 리포트 등)은 제외 — 각 게시판 탭에서 확인
-        getPosts({ q, tag, page, excludePinned: !q && !tag }),
+      : // 전체 최신글에서는 리프트 리포트(공식 글)를 빼고 사이드바에 따로 노출 — 검색/태그 필터 중엔 전부 포함
+        getPosts({ q, tag, page, excludePinned: browsing, excludeCategory: browsing ? "report" : undefined }),
     getRecentByCategory(3),
     getTrendingPosts(6),
   ]);

@@ -1,11 +1,14 @@
 import Link from "next/link";
-import { Flame, MessageSquare } from "lucide-react";
+import { Flame, MessageSquare, Newspaper } from "lucide-react";
 
 import { fmtKstRelative } from "@/lib/datetime";
 import { COMMUNITY_CATEGORIES } from "@/lib/constants";
 import type { PostListItem } from "@/lib/community";
 import type { CommunityCategory } from "@/lib/types/database";
 import { CategoryBadge, metaFor } from "./category-meta";
+
+/** 게시판별 최신 목록에서는 뺀다 — 리프트 리포트는 위에 전용 섹션으로 따로 노출. */
+const SIDEBAR_CATEGORIES = COMMUNITY_CATEGORIES.filter((c) => c.slug !== "report");
 
 /** 커뮤니티 허브 우측 사이드바 — 실시간 인기글 + 게시판별 최신글 (작게). */
 export function CommunitySidebar({
@@ -57,10 +60,37 @@ export function CommunitySidebar({
         </section>
       )}
 
+      {(recent.report ?? []).length > 0 && (
+        <section className="rounded-xl border border-primary/25 bg-primary-wash/40 p-3.5">
+          <Link
+            href="/community/report"
+            className="group mb-2 flex items-center gap-1.5 text-label-lg font-bold text-ink"
+          >
+            <Newspaper className="h-4 w-4 text-primary-strong" />
+            <span className="group-hover:text-primary-strong">리프트 리포트</span>
+          </Link>
+          <ul className="flex flex-col">
+            {recent.report.map((p) => (
+              <li key={p.id}>
+                <Link
+                  href={`/community/post/${p.id}`}
+                  className="flex items-baseline gap-1.5 py-1 text-[13px] text-ink hover:text-primary-strong"
+                >
+                  <span className="min-w-0 flex-1 truncate font-medium">{p.title}</span>
+                  <time className="shrink-0 text-[11px] text-ink-soft/60">
+                    {fmtKstRelative(p.created_at)}
+                  </time>
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
+
       <section className="rounded-xl border border-line/70 bg-card p-3.5">
         <h2 className="mb-2 text-label-lg font-bold text-ink">게시판별 최신</h2>
         <div className="flex flex-col gap-3">
-          {COMMUNITY_CATEGORIES.map((c) => {
+          {SIDEBAR_CATEGORIES.map((c) => {
             const posts = (recent[c.slug] ?? []).slice(0, 3);
             const m = metaFor(c.slug);
             const Icon = m.icon;
