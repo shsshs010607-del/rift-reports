@@ -4,18 +4,10 @@ import { cn } from "@/lib/utils";
 import { fmtKstListTime, fmtKstRelative } from "@/lib/datetime";
 import { POPULAR_POST } from "@/lib/constants";
 import type { PostListItem } from "@/lib/community";
+import { thumbOf } from "@/lib/community-preview";
 import { CategoryBadge, metaFor } from "./category-meta";
 
 const isFresh = (iso: string) => Date.now() - new Date(iso).getTime() < 1000 * 60 * 60 * 6;
-
-const IMG_RE =
-  /!\[[^\]]*\]\(\s*(https?:\/\/[^\s)]+?)\s*\)|(https?:\/\/[^\s)]+\.(?:png|jpe?g|gif|webp|avif))(?:\?[^\s)]*)?/i;
-
-/** 본문에서 대표 썸네일 후보(붙여넣은 이미지 URL) 하나. */
-function thumbOf(body: string): string | null {
-  const m = body?.match(IMG_RE);
-  return m ? m[1] || m[2] : null;
-}
 
 export function PostList({
   posts,

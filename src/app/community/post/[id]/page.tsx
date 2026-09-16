@@ -5,6 +5,7 @@ import { ChevronLeft, Gift, ArrowRight } from "lucide-react";
 import { fmtKstShort } from "@/lib/datetime";
 import { createClient } from "@/lib/supabase/server";
 import { getPost, getComments, getLikedPostIds } from "@/lib/community";
+import { thumbOf, excerptOf } from "@/lib/community-preview";
 import { COMMUNITY_CATEGORIES, SITE, CAFE_EVENT } from "@/lib/constants";
 import { cn } from "@/lib/utils";
 import { LikeButton } from "@/components/community/like-button";
@@ -29,9 +30,15 @@ export async function generateMetadata(props: {
   const params = await props.params;
   const post = await getPost(params.id);
   if (!post) return {};
+  const description = excerptOf(post.body);
+  const image = thumbOf(post.body) ?? "/brand/logo.png";
   return {
     title: post.title,
+    description,
     alternates: { canonical: `/community/post/${params.id}` },
+    // 네이버 블로그/카페 등에 링크 공유될 때 미리보기(썸네일)가 뜨도록.
+    openGraph: { title: post.title, description, images: [image], type: "article" },
+    twitter: { card: "summary_large_image", title: post.title, description, images: [image] },
   };
 }
 

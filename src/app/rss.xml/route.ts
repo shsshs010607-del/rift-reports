@@ -1,6 +1,7 @@
 import { SITE, COMMUNITY_CATEGORIES } from "@/lib/constants";
 import { createClient } from "@/lib/supabase/server";
 import { hasSupabaseEnv } from "@/lib/supabase/env";
+import { excerptOf } from "@/lib/community-preview";
 
 /**
  * 커뮤니티 최신 글 RSS 2.0 피드 — 네이버 서치어드바이저 등 검색로봇이 새 글을
@@ -17,15 +18,6 @@ function escapeXml(s: string): string {
     .replace(/>/g, "&gt;")
     .replace(/"/g, "&quot;")
     .replace(/'/g, "&apos;");
-}
-
-function excerptOf(body: string, max = 200): string {
-  const plain = body
-    .replace(/```[\s\S]*?```/g, " ")
-    .replace(/[#>*_`[\]()!-]/g, " ")
-    .replace(/\s+/g, " ")
-    .trim();
-  return plain.length > max ? plain.slice(0, max) + "…" : plain;
 }
 
 export async function GET() {
