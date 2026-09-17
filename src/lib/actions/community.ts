@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { COMMUNITY_CATEGORIES, SITE } from "@/lib/constants";
 import type { CommunityCategory } from "@/lib/types/database";
 import { notifyDiscordNews } from "@/lib/discord";
@@ -59,6 +60,29 @@ async function isStaff(supabase: Awaited<ReturnType<typeof createClient>>, userI
 async function canWriteTournament(supabase: Awaited<ReturnType<typeof createClient>>, userId: string) {
   const { data } = await supabase.from("profiles").select("role").eq("id", userId).maybeSingle();
   return data?.role === "editor" || data?.role === "admin" || data?.role === "store";
+}
+
+const MAX_IMAGE_BYTES = 5 * 1024 * 1024;
+const ALLOWED_IMAGE_TYPES = new Set(["image/png", "image/jpeg", "image/webp", "image/gif"]);
+
+/** 글쓰기 폼 이미지 첨부 — RLS 정책 없이 서비스 롤로 업로드하는 대신, 여기서 로그인·용량·타입을 직접 검증한다. */
+export async function uploadPostImage(formData: FormData): Promise<{ url?: string; error?: string }> {
+  const { userId } = await requireUser();
+
+  const file = formData.get("file");
+  if (!(file instanceof File) || file.size === 0) return { error: "파일을 선택하세요" };
+  if (!ALLOWED_IMAGE_TYPES.has(file.type)) return { error: "PNG·JPG·WebP·GIF 이미지만 올릴 수 있어요" };
+  if (file.size > MAX_IMAGE_BYTES) return { error: "5MB 이하 이미지만 가능해요" };
+
+  const ext = file.type === "image/jpeg" ? "jpg" : file.type.split("/")[1];
+  const path = `${userId}/${Date.now()}-${crypto.randomUUID()}.${ext}`;
+
+  const admin = createAdminClient();
+  const { error } = await admin.storage.from("post-images").upload(path, file, { contentType: file.type });
+  if (error) return { error: "업로드에 실패했어요" };
+
+  const { data } = admin.storage.from("post-images").getPublicUrl(path);
+  return { url: data.publicUrl };
 }
 
 export async function createPost(_prev: ActionState, formData: FormData): Promise<ActionState> {

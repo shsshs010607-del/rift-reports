@@ -11,11 +11,13 @@ import {
   Code,
   Layers,
   ImagePlus,
+  Upload,
   Eye,
   Pencil,
   Check,
+  Loader2,
 } from "lucide-react";
-import { createPost, updatePost, type ActionState } from "@/lib/actions/community";
+import { createPost, updatePost, uploadPostImage, type ActionState } from "@/lib/actions/community";
 import { COMMUNITY_CATEGORIES } from "@/lib/constants";
 import { PostBody } from "@/components/community/post-body";
 import { cn } from "@/lib/utils";
@@ -109,6 +111,9 @@ export function PostForm({
   const bodyRef = useRef<HTMLTextAreaElement>(null);
   const submittedRef = useRef(false);
   const hydratedRef = useRef(false);
+  const imageFileRef = useRef<HTMLInputElement>(null);
+  const [uploadingImage, setUploadingImage] = useState(false);
+  const [imageError, setImageError] = useState<string | null>(null);
 
   // ── 임시 저장 복구 ──────────────────────────────────────
   useEffect(() => {
@@ -218,6 +223,31 @@ export function PostForm({
       el.selectionStart = el.selectionEnd = s + pre.length + block.length;
     });
   }, []);
+
+  const onPickImage = useCallback(
+    async (e: React.ChangeEvent<HTMLInputElement>) => {
+      const file = e.target.files?.[0];
+      e.target.value = "";
+      if (!file) return;
+      if (!file.type.startsWith("image/")) return setImageError("이미지 파일만 올릴 수 있어요.");
+      if (file.size > 5 * 1024 * 1024) return setImageError("5MB 이하 이미지만 가능해요.");
+
+      setUploadingImage(true);
+      setImageError(null);
+      try {
+        const fd = new FormData();
+        fd.set("file", file);
+        const res = await uploadPostImage(fd);
+        if (res.error || !res.url) throw new Error(res.error ?? "업로드에 실패했어요.");
+        insertBlock(`![${file.name}](${res.url})`);
+      } catch (err) {
+        setImageError(err instanceof Error ? err.message : "업로드에 실패했어요.");
+      } finally {
+        setUploadingImage(false);
+      }
+    },
+    [insertBlock],
+  );
 
   const onBodyKeyDown = (ev: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if ((ev.metaKey || ev.ctrlKey) && ev.key.toLowerCase() === "b") {
@@ -389,6 +419,26 @@ export function PostForm({
               <t.icon className="h-4 w-4" />
             </button>
           ))}
+          <button
+            type="button"
+            title="사진 첨부"
+            disabled={tab === "preview" || uploadingImage}
+            onClick={() => imageFileRef.current?.click()}
+            className="grid h-8 w-8 place-items-center rounded-md text-ink-soft transition hover:bg-card hover:text-ink disabled:pointer-events-none"
+          >
+            {uploadingImage ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <Upload className="h-4 w-4" />
+            )}
+          </button>
+          <input
+            ref={imageFileRef}
+            type="file"
+            accept="image/png,image/jpeg,image/webp,image/gif"
+            onChange={onPickImage}
+            className="hidden"
+          />
           <span className="ml-auto pr-1 text-[11px] text-ink-soft/70">
             {!editing && saved === "saving" && "저장 중…"}
             {!editing && saved === "saved" && (
@@ -425,11 +475,12 @@ export function PostForm({
           </div>
         )}
 
+        {imageError && <p className="mt-1 text-body-sm text-coral">{imageError}</p>}
         <div className="mt-1 flex items-center justify-between text-body-sm">
           <span className={cn("text-ink-soft", tooShort && "text-coral")}>
             {tooShort
               ? `${BODY_MIN}자 이상 권장`
-              : "서식: **굵게** · ## 제목 · - 목록 · [[카드명]] 카드 이미지 · ```deck 덱코드"}
+              : "서식: **굵게** · ## 제목 · - 목록 · [[카드명]] 카드 이미지 · ```deck 덱코드 · 📎 사진 첨부(5MB 이하)"}
           </span>
           <span className={cn("tabular-nums text-ink-soft/70", bodyLen > BODY_MAX && "text-coral")}>
             {bodyLen.toLocaleString()} / {BODY_MAX.toLocaleString()}
