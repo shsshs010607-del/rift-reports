@@ -315,21 +315,31 @@ interface PbSnapshot {
 }
 
 /**
- * playriftbound 갤러리 CMS 데이터 결번 보정.
- *
- * 야스오("Unforgiven")·징크스("Loose Cannon") 두 인쇄판은 사이트 원본에서 챔피언 본명이
- * 빠진 채 부제만 `name` 에 들어온다(en/ko 로케일 공통 버그, id 로 확인됨).
- * 여기서 본명+부제를 되살린다 — 두 챔피언은 어차피 [[PRESERVE_RIFTNARU_KO]] 대상이라
- * 한글 표시엔 영향 없지만, 영문 표시·번역 키 매칭(`baseNameKey`)에는 필요하다.
+ * playriftbound 레전드 카드는 `name` 에 칭호(예: "Daughter of the Void")만 오고 챔피언 본명은
+ * 안 준다 — 대신 `tags[0]` 에 챔피언 영문명이 있다(스타터 레전드도 동일, `superType`에 champion
+ * 이 섞여 있어도 마찬가지). 기존 Riftcodex 관례("챔피언 - 칭호", 스타터는 "(Starter)" 접미사)와
+ * 맞춰 재구성해야 `tier-list.ts` 의 하드코딩된 `legendEn` 매칭이 깨지지 않는다.
+ * 한글 챔피언명은 태그가 로케일 불문 영문 고정이라 별도로 챔피언 유닛 카드에서 찾아야 함
+ * (→ `buildChampionKoMap`).
  */
-const NAME_FIXUPS: Record<string, { en: { name: string; subtitle: string }; ko: { name: string; subtitle: string } }> = {
-  "ogn-251-298": { en: { name: "Jinx", subtitle: "Loose Cannon" }, ko: { name: "징크스", subtitle: "난폭한 말괄량이" } },
-  "ogn-301-298": { en: { name: "Jinx", subtitle: "Loose Cannon" }, ko: { name: "징크스", subtitle: "난폭한 말괄량이" } },
-  "ogn-301-star-298": { en: { name: "Jinx", subtitle: "Loose Cannon" }, ko: { name: "징크스", subtitle: "난폭한 말괄량이" } },
-  "ogn-259-298": { en: { name: "Yasuo", subtitle: "Unforgiven" }, ko: { name: "야스오", subtitle: "용서받지 못한 자" } },
-  "ogn-305-298": { en: { name: "Yasuo", subtitle: "Unforgiven" }, ko: { name: "야스오", subtitle: "용서받지 못한 자" } },
-  "ogn-305-star-298": { en: { name: "Yasuo", subtitle: "Unforgiven" }, ko: { name: "야스오", subtitle: "용서받지 못한 자" } },
-};
+function isLegendType(raw: PbRawCard): boolean {
+  return (raw.cardType?.type ?? []).some((t) => t.id === "legend");
+}
+
+/** 챔피언 영문 태그(예: "Kai'Sa") → 그 챔피언 유닛 카드의 한글명(예: "카이사"). */
+function buildChampionKoMap(enCards: PbRawCard[], koById: Map<string, PbRawCard>): Map<string, string> {
+  const map = new Map<string, string>();
+  for (const c of enCards) {
+    const isChampionUnit =
+      (c.cardType?.type ?? []).some((t) => t.id === "unit") &&
+      (c.cardType?.superType ?? []).some((t) => t.id === "champion");
+    const nameEn = c.name?.trim();
+    if (!isChampionUnit || !nameEn || map.has(nameEn)) continue;
+    const nameKo = koById.get(c.id)?.name?.trim();
+    if (nameKo && HANGUL_RE.test(nameKo)) map.set(nameEn, nameKo);
+  }
+  return map;
+}
 
 /**
  * 야스오·징크스는 playriftbound 공식 한글 대신 기존 리프트나루 번역(`cards-ko.json`)을
@@ -521,10 +531,17 @@ function mapPlayriftboundCard(
   koRaw: PbRawCard | undefined,
   setMax: number | undefined,
   ko: Map<string, KoEntry>,
+  championKoByEn: Map<string, string>,
 ): Card {
-  const fixEn = NAME_FIXUPS[enRaw.id]?.en;
-  const nameEn = fixEn?.name ?? enRaw.name?.trim() ?? enRaw.id;
-  const subtitleEn = fixEn?.subtitle ?? enRaw.subtitle;
+  const legend = isLegendType(enRaw);
+  const championTag = enRaw.tags?.tags?.[0];
+
+  let nameEn = enRaw.name?.trim() || enRaw.id;
+  let subtitleEn = enRaw.subtitle;
+  if (legend && championTag && nameEn) {
+    subtitleEn = subtitleEn ? `${nameEn} (${subtitleEn})` : nameEn;
+    nameEn = championTag;
+  }
   const fullEn = fullNameOf(nameEn, subtitleEn);
   const key = baseNameKey(fullEn);
 
@@ -538,9 +555,13 @@ function mapPlayriftboundCard(
     const entry = ko.get(key);
     if (entry) koLoc = { name: entry.n, text: entry.t ? humanizeSymbols(entry.t) : textEn, imageUrl: imageKo };
   } else if (koRaw) {
-    const fixKo = NAME_FIXUPS[koRaw.id]?.ko;
-    const nameKo = fixKo?.name ?? koRaw.name?.trim();
-    const subtitleKo = fixKo?.subtitle ?? koRaw.subtitle;
+    let nameKo = koRaw.name?.trim();
+    let subtitleKo = koRaw.subtitle;
+    const championKo = championTag ? championKoByEn.get(championTag) : undefined;
+    if (legend && championKo && nameKo) {
+      subtitleKo = subtitleKo ? `${nameKo} (${subtitleKo})` : nameKo;
+      nameKo = championKo;
+    }
     const fullKo = nameKo ? fullNameOf(nameKo, subtitleKo) : undefined;
     const textKo = cleanText(stripHtml(koRaw.text?.richText?.body), "ko");
     // 아직 공식 한글화가 안 된 세트는 ko-kr 로케일도 이름·텍스트가 영문 그대로 내려온다
@@ -701,8 +722,15 @@ export class OpenSourceCardService implements ICardService {
     ]);
 
     const koById = new Map(koGallery.cards.map((c) => [c.id, c]));
+    const championKo = buildChampionKoMap(en.cards, koById);
     const mapped = en.cards.map((raw) =>
-      mapPlayriftboundCard(raw, koById.get(raw.id), en.setMax[String(raw.set?.value?.id ?? "").toUpperCase()], ko),
+      mapPlayriftboundCard(
+        raw,
+        koById.get(raw.id),
+        en.setMax[String(raw.set?.value?.id ?? "").toUpperCase()],
+        ko,
+        championKo,
+      ),
     );
 
     return groupCards(mapped.filter((c) => SUPPORTED_SETS.has(c.setCode)));
@@ -721,8 +749,15 @@ export class OpenSourceCardService implements ICardService {
       const ko = await loadKoTranslations();
       const koById = new Map((snapshot.ko ?? []).map((c) => [c.id, c]));
       const setMax = snapshot.setMax ?? {};
+      const championKo = buildChampionKoMap(snapshot.en ?? [], koById);
       const mapped = (snapshot.en ?? []).map((raw) =>
-        mapPlayriftboundCard(raw, koById.get(raw.id), setMax[String(raw.set?.value?.id ?? "").toUpperCase()], ko),
+        mapPlayriftboundCard(
+          raw,
+          koById.get(raw.id),
+          setMax[String(raw.set?.value?.id ?? "").toUpperCase()],
+          ko,
+          championKo,
+        ),
       );
       return groupCards(mapped.filter((c) => SUPPORTED_SETS.has(c.setCode)));
     } catch (err) {
