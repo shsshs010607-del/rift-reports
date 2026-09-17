@@ -1,12 +1,14 @@
-/**
- * 사이트 소식 → Discord 웹후크 알림. DISCORD_WEBHOOK_URL 없으면 조용히 무시(로컬/미설정 환경 대비).
- * 여러 채널에 동시에 보내려면 DISCORD_WEBHOOK_URL 에 쉼표로 구분해 여러 개 넣으면 된다.
- */
-export async function notifyDiscordNews(input: { title: string; excerpt?: string | null; url: string }) {
-  const webhookUrls = (process.env.DISCORD_WEBHOOK_URL ?? "")
+function parseWebhookUrls(envVar: string | undefined): string[] {
+  return (envVar ?? "")
     .split(",")
     .map((u) => u.trim())
     .filter(Boolean);
+}
+
+async function sendDiscordEmbed(
+  webhookUrls: string[],
+  input: { title: string; excerpt?: string | null; url: string },
+) {
   if (webhookUrls.length === 0) return;
 
   const payload = JSON.stringify({
@@ -30,4 +32,20 @@ export async function notifyDiscordNews(input: { title: string; excerpt?: string
       }).catch((e) => console.error("Discord 웹후크 전송 실패", e)),
     ),
   );
+}
+
+/**
+ * 사이트 소식(리포트 발행) → #사이트-소식 채널. DISCORD_WEBHOOK_URL 없으면 조용히 무시.
+ * 여러 채널에 동시에 보내려면 DISCORD_WEBHOOK_URL 에 쉼표로 구분해 여러 개 넣으면 된다.
+ */
+export async function notifyDiscordNews(input: { title: string; excerpt?: string | null; url: string }) {
+  await sendDiscordEmbed(parseWebhookUrls(process.env.DISCORD_WEBHOOK_URL), input);
+}
+
+/**
+ * 매장 정보(tournament) 게시글 → #매장-소식 채널 전용 웹훅. DISCORD_WEBHOOK_URL_STORE 없으면 조용히 무시.
+ * #사이트-소식과 별도 채널이라 DISCORD_WEBHOOK_URL 과 분리해서 관리한다.
+ */
+export async function notifyDiscordStoreNews(input: { title: string; excerpt?: string | null; url: string }) {
+  await sendDiscordEmbed(parseWebhookUrls(process.env.DISCORD_WEBHOOK_URL_STORE), input);
 }
