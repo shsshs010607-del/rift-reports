@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { ChevronDown } from "lucide-react";
 
 import type { Tournament } from "@/lib/types/database";
 import { KR_SIDO } from "@/lib/constants";
@@ -31,6 +32,7 @@ export function TournamentsView({ tournaments }: { tournaments: Tournament[] }) 
   const [cat, setCat] = useState<Cat>("all");
   const [region, setRegion] = useState<string>("all");
   const [evType, setEvType] = useState<EvType>("all");
+  const [calendarOpen, setCalendarOpen] = useState(true);
 
   const eventTypes = useMemo(
     () => EVENT_TYPES.filter((et) => tournaments.some((t) => eventTypeOf(t) === et)),
@@ -102,8 +104,17 @@ export function TournamentsView({ tournaments }: { tournaments: Tournament[] }) 
       </div>
 
       <section>
-        <h2 className="section-title mb-3">달력</h2>
-        <TournamentCalendar tournaments={filtered} />
+        <button
+          type="button"
+          onClick={() => setCalendarOpen((v) => !v)}
+          className="section-title mb-3 flex w-full items-center gap-1.5 text-left"
+        >
+          달력
+          <ChevronDown
+            className={cn("h-4 w-4 text-ink-soft transition-transform", !calendarOpen && "-rotate-90")}
+          />
+        </button>
+        {calendarOpen && <TournamentCalendar tournaments={filtered} />}
       </section>
 
       {groups.length === 0 ? (

@@ -1,6 +1,6 @@
 import Link from "next/link";
 import Image from "next/image";
-import { CalendarDays, MapPin, Globe, Trophy } from "lucide-react";
+import { CalendarDays, MapPin, Globe, Trophy, Star } from "lucide-react";
 import type { Tournament } from "@/lib/types/database";
 import { fmtKstShort } from "@/lib/datetime";
 import { cn } from "@/lib/utils";
@@ -34,13 +34,16 @@ export function categoryOf(t: Pick<Tournament, "category" | "organizer">): "offi
 export const EVENT_TYPES = ["넥서스 나이트", "오리진 스토어 예선"] as const;
 export type EventType = (typeof EVENT_TYPES)[number];
 
-export function eventTypeOf(t: Pick<Tournament, "format">): EventType | null {
-  return EVENT_TYPES.find((label) => t.format?.startsWith(label)) ?? null;
+export function eventTypeOf(t: Pick<Tournament, "name" | "format">): EventType | null {
+  const hay = `${t.name} ${t.format ?? ""}`;
+  if (hay.includes("스토어 예선")) return "오리진 스토어 예선";
+  if (hay.includes("넥서스 나이트")) return "넥서스 나이트";
+  return null;
 }
 
 const EVENT_TYPE_STYLE: Record<EventType, string> = {
   "넥서스 나이트": "bg-tertiary-fixed text-on-tertiary-fixed",
-  "오리진 스토어 예선": "bg-primary-fixed text-on-primary-fixed-variant",
+  "오리진 스토어 예선": "bg-amber-500 text-white",
 };
 
 const STATUS_STYLE: Record<Tournament["status"], string> = {
@@ -51,10 +54,17 @@ const STATUS_STYLE: Record<Tournament["status"], string> = {
 
 export function TournamentCard({ t }: { t: Tournament }) {
   const eventType = eventTypeOf(t);
+  // 오리진 스토어 예선은 상위 대회로 이어지는 예선이라 다른 대회보다 눈에 띄게 강조한다.
+  const isOriginQualifier = eventType === "오리진 스토어 예선";
   return (
     <Link
       href={`/tournaments/${t.slug}`}
-      className="group flex h-full flex-col overflow-hidden rounded-2xl border border-line/80 bg-card transition hover:border-primary/50"
+      className={cn(
+        "group flex h-full flex-col overflow-hidden rounded-2xl border bg-card transition",
+        isOriginQualifier
+          ? "border-amber-500/60 shadow-[0_0_0_1px_rgba(245,158,11,0.15)] hover:border-amber-500"
+          : "border-line/80 hover:border-primary/50",
+      )}
     >
       <div className="relative aspect-[16/9] bg-subcanvas">
         {t.banner_url && (
@@ -89,10 +99,11 @@ export function TournamentCard({ t }: { t: Tournament }) {
         {eventType && (
           <span
             className={cn(
-              "inline-flex w-fit items-center rounded-full px-2 py-0.5 text-label-sm font-bold",
+              "inline-flex w-fit items-center gap-1 rounded-full px-2 py-0.5 text-label-sm font-bold",
               EVENT_TYPE_STYLE[eventType],
             )}
           >
+            {isOriginQualifier && <Star className="h-3 w-3 fill-current" />}
             {eventType}
           </span>
         )}

@@ -2,11 +2,19 @@
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
-import { ChevronLeft, ChevronRight, MapPin, Globe, CalendarDays } from "lucide-react";
+import { ChevronLeft, ChevronRight, MapPin, Globe, CalendarDays, Star } from "lucide-react";
 import type { Tournament } from "@/lib/types/database";
 import { fmtKstMonthDayTime, kstYmd } from "@/lib/datetime";
-import { CATEGORY_LABEL, CATEGORY_STYLE, categoryOf } from "@/components/tournaments/tournament-card";
+import {
+  CATEGORY_LABEL,
+  CATEGORY_STYLE,
+  categoryOf,
+  eventTypeOf,
+} from "@/components/tournaments/tournament-card";
 import { cn } from "@/lib/utils";
+
+/** 오리진 스토어 예선 — 공식 경쟁 대회 상위 라운드로 이어지는 예선이라 다른 이벤트보다 눈에 띄게 강조한다. */
+const isOriginQualifier = (t: Tournament) => eventTypeOf(t) === "오리진 스토어 예선";
 
 const WEEKDAYS = ["일", "월", "화", "수", "목", "금", "토"];
 const ymd = (d: Date) => `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`;
@@ -129,7 +137,13 @@ export function TournamentCalendar({ tournaments }: { tournaments: Tournament[] 
               {evs.length > 0 && (
                 <span className="flex gap-0.5">
                   {evs.slice(0, 3).map((e) => (
-                    <span key={e.id} className="h-1.5 w-1.5 rounded-full bg-primary" />
+                    <span
+                      key={e.id}
+                      className={cn(
+                        "h-1.5 w-1.5 rounded-full",
+                        isOriginQualifier(e) ? "bg-amber-500" : "bg-primary",
+                      )}
+                    />
                   ))}
                 </span>
               )}
@@ -138,54 +152,81 @@ export function TournamentCalendar({ tournaments }: { tournaments: Tournament[] 
         })}
       </div>
 
-      <div className="flex flex-col divide-y divide-line/40">
+      <div className="flex flex-col">
         {listed.length === 0 ? (
           <p className="flex items-center justify-center gap-1.5 p-6 text-center text-body-sm text-ink-soft">
             <CalendarDays className="h-4 w-4" />
             {selected ? "이 날 예정된 대회가 없습니다." : "이번 달 예정된 대회가 없습니다."}
           </p>
         ) : (
-          listed.map((t) => (
-            <Link
-              key={t.id}
-              href={`/tournaments/${t.slug}`}
-              className="flex items-start gap-3 p-3.5 hover:bg-subcanvas/50"
-            >
-              <div className="grid shrink-0 place-items-center rounded-lg bg-primary/10 px-2 py-1 text-center">
-                <span className="text-label-sm font-bold text-primary-strong">
-                  {kstYmd(t.starts_at).m}월
-                </span>
-                <span className="font-display text-title-md font-black leading-none text-ink">
-                  {kstYmd(t.starts_at).d}
-                </span>
-              </div>
-              <div className="min-w-0 flex-1">
-                <p className="flex items-center gap-1.5">
+          listed.map((t, i) => {
+            // "전체"(날짜 미선택) 보기에서는 날짜가 바뀔 때만 굵은 구분선을 넣어
+            // 같은 날 여러 대회와 다른 날 대회를 한눈에 구별할 수 있게 한다.
+            const prev = listed[i - 1];
+            const isNewDay = !selected && (!prev || ymdKst(t.starts_at) !== ymdKst(prev.starts_at));
+            const originQualifier = isOriginQualifier(t);
+            return (
+              <Link
+                key={t.id}
+                href={`/tournaments/${t.slug}`}
+                className={cn(
+                  "flex items-start gap-3 p-3.5 hover:bg-subcanvas/50",
+                  i > 0 && (isNewDay ? "border-t-2 border-line" : "border-t border-line/40"),
+                  originQualifier && "bg-amber-500/5",
+                )}
+              >
+                <div
+                  className={cn(
+                    "grid shrink-0 place-items-center rounded-lg px-2 py-1 text-center",
+                    originQualifier ? "bg-amber-500/15" : "bg-primary/10",
+                  )}
+                >
                   <span
                     className={cn(
-                      "shrink-0 rounded px-1.5 py-0.5 text-[11px] font-bold",
-                      CATEGORY_STYLE[categoryOf(t)],
+                      "text-label-sm font-bold",
+                      originQualifier ? "text-amber-700 dark:text-amber-300" : "text-primary-strong",
                     )}
                   >
-                    {CATEGORY_LABEL[categoryOf(t)]}
+                    {kstYmd(t.starts_at).m}월
                   </span>
-                  <span className="truncate text-body-md font-bold text-ink">{t.name}</span>
-                </p>
-                <p className="mt-0.5 text-body-sm text-ink-soft">{fmtRange(t)}</p>
-                <p className="mt-0.5 flex items-center gap-1 text-body-sm text-ink-soft">
-                  {t.is_online ? (
-                    <>
-                      <Globe className="h-3.5 w-3.5" /> 온라인
-                    </>
-                  ) : (
-                    <>
-                      <MapPin className="h-3.5 w-3.5" /> {t.location ?? "장소 미정"}
-                    </>
-                  )}
-                </p>
-              </div>
-            </Link>
-          ))
+                  <span className="font-display text-title-md font-black leading-none text-ink">
+                    {kstYmd(t.starts_at).d}
+                  </span>
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="flex items-center gap-1.5">
+                    <span
+                      className={cn(
+                        "shrink-0 rounded px-1.5 py-0.5 text-[11px] font-bold",
+                        CATEGORY_STYLE[categoryOf(t)],
+                      )}
+                    >
+                      {CATEGORY_LABEL[categoryOf(t)]}
+                    </span>
+                    {originQualifier && (
+                      <span className="inline-flex shrink-0 items-center gap-0.5 rounded bg-amber-500/15 px-1.5 py-0.5 text-[11px] font-bold text-amber-700 dark:text-amber-300">
+                        <Star className="h-2.5 w-2.5 fill-current" />
+                        오리진 스토어 예선
+                      </span>
+                    )}
+                    <span className="truncate text-body-md font-bold text-ink">{t.name}</span>
+                  </p>
+                  <p className="mt-0.5 text-body-sm text-ink-soft">{fmtRange(t)}</p>
+                  <p className="mt-0.5 flex items-center gap-1 text-body-sm text-ink-soft">
+                    {t.is_online ? (
+                      <>
+                        <Globe className="h-3.5 w-3.5" /> 온라인
+                      </>
+                    ) : (
+                      <>
+                        <MapPin className="h-3.5 w-3.5" /> {t.location ?? "장소 미정"}
+                      </>
+                    )}
+                  </p>
+                </div>
+              </Link>
+            );
+          })
         )}
       </div>
     </div>
