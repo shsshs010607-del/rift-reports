@@ -7,6 +7,7 @@ import {
   type Card,
   type CardDataSource,
   type CardDomain,
+  type CardLocalizedText,
   type CardPrinting,
   type CardRarity,
   type CardSearchQuery,
@@ -27,7 +28,7 @@ const SUPPORTED_SETS = new Set<string>(CARD_SET_CODES);
  * 카드 데이터 접근 계층 (어댑터 패턴).
  *
  * ┌─ ICardService ............ 상위(페이지/라우트)가 의존하는 유일한 추상 (SOLID: DIP)
- * ├─ OpenSourceCardService ... 현재 사용. Riftcodex 공개 REST API + 로컬 JSON 스냅샷 폴백
+ * ├─ OpenSourceCardService ... 현재 사용. playriftbound.com 공식 카드 갤러리 + 로컬 JSON 스냅샷 폴백
  * ├─ OfficialRiotCardService . 스텁. Riot Production API 승인되면 여기만 채우면 됨
  * └─ getCardService() ........ NEXT_PUBLIC_DATA_SOURCE 로 구현체를 선택하는 팩토리
  *
@@ -252,74 +253,173 @@ function normalizeDomains(domains: string[] | undefined): CardDomain[] {
 }
 
 // ════════════════════════════════════════════════════════════════════
-//  OpenSourceCardService — Riftcodex 공개 API (현재 사용)
+//  OpenSourceCardService — playriftbound.com 공식 카드 갤러리 (현재 사용)
 // ════════════════════════════════════════════════════════════════════
 //
-//  Riftcodex: https://riftcodex.com  (커뮤니티 DB, Riot "Legal Jibber Jabber" 준수)
-//   - 인증 불필요
-//   - GET /cards?page=<n>&size=<=100  →  { items: RiftcodexCard[], total, page, size, pages }
-//   - 이미지는 Riot 공식 CDN(cmsassets.rgpub.io) URL 제공
-//   - 한국어 번역은 없음(en 만). 공식 한글 나오면 OfficialRiotCardService 로.
+//  https://playriftbound.com/{locale}/card-gallery/  (Riot 공식 사이트, Next.js SSR)
+//   - 인증 불필요. 별도 REST API 없이 페이지 HTML의 `__NEXT_DATA__` 에 전체 카드가 내려온다
+//     (`prefetchAll:true`) — locale 당 GET 1회로 지원 세트(OGN·OGS) 전량 획득.
+//   - **`ko-kr` 로케일이 실제로 한글 카드명·룰텍스트·카드 이미지를 준다** (OGN·OGS 만 공식 한글화됨).
+//     `en-us` 로 canonical 영문을 같은 id 로 함께 받아 매칭한다.
+//   - 이미지는 Riot 공식 CDN(cmsassets.rgpub.io) URL, 한글 로케일은 실제 한글 인쇄 이미지(고해상도).
 
 export interface OpenSourceCardServiceConfig {
-  /** 카드 목록 엔드포인트. 기본: Riftcodex `/cards`. */
+  /** 카드 갤러리 베이스 URL. 기본: `https://playriftbound.com`. */
   endpoint?: string;
   /** 엔드포인트 실패 시 읽을 로컬 JSON 스냅샷의 절대 경로. */
   localFallbackPath?: string;
   /** Next.js fetch 재검증 주기(초). 기본 24시간. */
   revalidateSeconds?: number;
-  /** 페이지 크기(Riftcodex 최대 100). */
-  pageSize?: number;
-  /** 무한 루프 방지용 상한. */
-  maxPages?: number;
-  /** 엔드포인트가 키를 요구하면(현재 Riftcodex 는 불필요). */
-  apiKey?: string;
+}
+
+/** 아이콘 등 `{id, label}` 형태 참조값. */
+interface PbRef {
+  id: string;
+  label?: string;
 }
 
 /**
- * Riftcodex `/cards` 응답의 카드 1건.
- * 필드명이 바뀌거나 다른 오픈소스로 갈아탈 때 수정 지점은 이 타입 + `mapRiftcodexCard` 딱 두 곳.
+ * playriftbound.com `card-gallery` 블레이드의 카드 1건(`__NEXT_DATA__` 임베드).
+ * 필드명이 바뀌거나 다른 소스로 갈아탈 때 수정 지점은 이 타입 + `mapPlayriftboundCard` 딱 두 곳.
  */
-interface RiftcodexCard {
+interface PbRawCard {
   id: string;
+  collectorNumber?: number;
   name: string;
-  riftbound_id?: string;
-  tcgplayer_id?: string | null;
-  collector_number?: number;
-  attributes?: { energy?: number | null; might?: number | null; power?: number | null };
-  classification?: {
-    type?: string;
-    supertype?: string | null;
-    rarity?: string;
-    domain?: string[];
-  };
-  text?: { rich?: string; plain?: string; flavour?: string | null };
-  set?: { set_id?: string; label?: string };
-  media?: { image_url?: string; artist?: string; accessibility_text?: string };
-  tags?: string[];
+  subtitle?: string;
+  set?: { value?: { id?: string } };
+  cardType?: { type?: PbRef[]; superType?: PbRef[] };
+  publicCode?: string;
+  rarity?: { value?: { id?: string } };
+  domain?: { values?: PbRef[] };
+  cardImage?: { url?: string };
   orientation?: string;
-  metadata?: {
-    clean_name?: string | null;
-    overnumbered?: boolean;
-    signature?: boolean;
-    alternate_art?: boolean;
-  };
+  illustrator?: { values?: { label?: string }[] };
+  text?: { richText?: { body?: string } };
+  energy?: { value?: { id?: number } };
+  might?: { value?: { id?: number } };
+  tags?: { tags?: string[] };
 }
 
-interface RiftcodexPage {
-  items: RiftcodexCard[];
-  total: number;
-  page: number;
-  size: number;
-  pages: number;
+interface PbGalleryData {
+  cards: PbRawCard[];
+  /** 세트 코드 → 정규 최대 수집번호. 이보다 큰 수집번호 = 오버넘버드. */
+  setMax: Record<string, number>;
 }
 
-type LocalSnapshot = RiftcodexPage | { items: RiftcodexCard[] } | RiftcodexCard[];
+/** 로컬 폴백 스냅샷 형태 (locale 별 원본 그대로 저장). */
+interface PbSnapshot {
+  en: PbRawCard[];
+  ko: PbRawCard[];
+  setMax: Record<string, number>;
+}
 
-// ── 한글 번역 (리프트나루 스냅샷) ────────────────────────────────
+/**
+ * playriftbound 갤러리 CMS 데이터 결번 보정.
+ *
+ * 야스오("Unforgiven")·징크스("Loose Cannon") 두 인쇄판은 사이트 원본에서 챔피언 본명이
+ * 빠진 채 부제만 `name` 에 들어온다(en/ko 로케일 공통 버그, id 로 확인됨).
+ * 여기서 본명+부제를 되살린다 — 두 챔피언은 어차피 [[PRESERVE_RIFTNARU_KO]] 대상이라
+ * 한글 표시엔 영향 없지만, 영문 표시·번역 키 매칭(`baseNameKey`)에는 필요하다.
+ */
+const NAME_FIXUPS: Record<string, { en: { name: string; subtitle: string }; ko: { name: string; subtitle: string } }> = {
+  "ogn-251-298": { en: { name: "Jinx", subtitle: "Loose Cannon" }, ko: { name: "징크스", subtitle: "난폭한 말괄량이" } },
+  "ogn-301-298": { en: { name: "Jinx", subtitle: "Loose Cannon" }, ko: { name: "징크스", subtitle: "난폭한 말괄량이" } },
+  "ogn-301-star-298": { en: { name: "Jinx", subtitle: "Loose Cannon" }, ko: { name: "징크스", subtitle: "난폭한 말괄량이" } },
+  "ogn-259-298": { en: { name: "Yasuo", subtitle: "Unforgiven" }, ko: { name: "야스오", subtitle: "용서받지 못한 자" } },
+  "ogn-305-298": { en: { name: "Yasuo", subtitle: "Unforgiven" }, ko: { name: "야스오", subtitle: "용서받지 못한 자" } },
+  "ogn-305-star-298": { en: { name: "Yasuo", subtitle: "Unforgiven" }, ko: { name: "야스오", subtitle: "용서받지 못한 자" } },
+};
+
+/**
+ * 야스오·징크스는 playriftbound 공식 한글 대신 기존 리프트나루 번역(`cards-ko.json`)을
+ * 그대로 유지한다 (사용자 지정 — 이미 검증된 원래 한글판을 바꾸지 않음). 키는 `baseNameKey`.
+ */
+const PRESERVE_RIFTNARU_KO = new Set([
+  "yasuo - remorseful",
+  "yasuo - windrider",
+  "yasuo - unforgiven",
+  "jinx - demolitionist",
+  "jinx - rebel",
+  "jinx - loose cannon",
+]);
+
+const PB_NEXT_DATA_RE = /<script id="__NEXT_DATA__"[^>]*>([\s\S]*?)<\/script>/;
+/** 한글 포함 여부 — 아직 번역 안 된 세트는 ko-kr 로케일도 영문 그대로라 이걸로 걸러낸다. */
+const HANGUL_RE = /[가-힣]/;
+
+/** richText(HTML) → 심볼 코드(`:rb_*:`)는 보존한 평문. */
+function stripHtml(html: string | undefined | null): string {
+  if (!html) return "";
+  return html
+    .replace(/<br\s*\/?>/gi, "\n")
+    .replace(/<\/p>\s*<p[^>]*>/gi, "\n\n")
+    .replace(/<[^>]+>/g, "")
+    .replace(/&nbsp;/g, " ")
+    .replace(/&amp;/g, "&")
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'")
+    .trim();
+}
+
+/** 카드 1건의 `__NEXT_DATA__` 페이지에서 `card-gallery` 블레이드를 뽑아 카드+세트 정보를 반환. */
+function parsePbGalleryHtml(html: string, supportedSets: Set<string>): PbGalleryData {
+  const match = PB_NEXT_DATA_RE.exec(html);
+  if (!match) throw new CardServiceError("카드 갤러리 __NEXT_DATA__ 를 찾지 못함");
+
+  let data: unknown;
+  try {
+    data = JSON.parse(match[1]);
+  } catch (err) {
+    throw new CardServiceError("카드 갤러리 __NEXT_DATA__ JSON 파싱 실패", err);
+  }
+
+  const blades = (data as { props?: { pageProps?: { page?: { blades?: unknown[] } } } })?.props?.pageProps?.page
+    ?.blades;
+  const gallery = Array.isArray(blades)
+    ? (blades.find((b) => (b as { fragmentId?: string }).fragmentId === "card-gallery") as
+        | {
+            cards?: { items?: PbRawCard[] };
+            sets?: { items?: { id?: string; collectorNumberMax?: number }[] };
+          }
+        | undefined)
+    : undefined;
+
+  const cards = (gallery?.cards?.items ?? []).filter((c) =>
+    supportedSets.has(String(c.set?.value?.id ?? "").toUpperCase()),
+  );
+  const setMax: Record<string, number> = {};
+  for (const s of gallery?.sets?.items ?? []) {
+    if (s.id) setMax[String(s.id).toUpperCase()] = Number(s.collectorNumberMax) || 0;
+  }
+  return { cards, setMax };
+}
+
+async function fetchPbGallery(
+  base: string,
+  locale: "ko-kr" | "en-us",
+  revalidateSeconds: number,
+): Promise<PbGalleryData> {
+  const url = `${base}/${locale}/card-gallery/`;
+  let res: Response;
+  try {
+    res = await fetch(url, {
+      next: { revalidate: revalidateSeconds, tags: ["cards"] },
+      signal: AbortSignal.timeout(15_000),
+    });
+  } catch (err) {
+    throw new CardServiceError(`카드 갤러리 네트워크 오류: ${url}`, err);
+  }
+  if (!res.ok) throw new CardServiceError(`카드 갤러리 ${res.status} ${res.statusText}: ${url}`);
+
+  const html = await res.text();
+  return parsePbGalleryHtml(html, SUPPORTED_SETS);
+}
+
+// ── 한글 번역 오버라이드 (리프트나루 스냅샷 — 야스오·징크스 전용) ──────
 //
-//  data/cards-ko.json = 영문 카드명(소문자) → { n: 한글명, t: 한글 룰텍스트, img: 한글 카드이미지 }.
-//  `npm run sync:cards-ko` 로 갱신. 번역이 없는 카드는 맵에 없음 → 영문 그대로 표시.
+//  data/cards-ko.json = 영문 카드명(소문자) → { n: 한글명, t: 한글 룰텍스트 }.
+//  `npm run sync:cards-ko` 로 갱신. [[PRESERVE_RIFTNARU_KO]] 대상 카드에만 쓰인다.
 
 interface KoEntry {
   n: string;
@@ -371,87 +471,107 @@ function humanizeSymbols(text: string, locale: "ko" | "en" = "ko"): string {
     .replace(/:(rb_\w+):/g, (_m, code: string) => words[code] ?? `[${code.replace(/^rb_/, "")}]`);
 }
 
-/** Riftcodex 는 룰 텍스트가 없을 때 "[NO TEXT]" 를 준다. */
 function cleanText(plain: string | undefined | null, locale: "ko" | "en" = "en"): string {
   const t = (plain ?? "").trim();
-  if (t === "" || t === "[NO TEXT]") return "";
+  if (t === "") return "";
   return humanizeSymbols(t, locale);
 }
 
-/** 이 인쇄판이 어떤 트리트먼트인지. */
-function treatmentOf(raw: RiftcodexCard): CardPrinting["treatment"] {
-  const m = raw.metadata ?? {};
-  const rar = (raw.classification?.rarity ?? "").toLowerCase();
-  if (m.signature) return "signature";
-  if (m.overnumbered) return "overnumbered";
-  if (rar === "promo") return "promo";
-  if (m.alternate_art) return "alt_art";
-  if (rar === "showcase") return "showcase";
+function fullNameOf(name: string, subtitle: string | undefined): string {
+  return subtitle ? `${name} - ${subtitle}` : name;
+}
+
+/** 이 인쇄판이 어떤 트리트먼트인지 (playriftbound 는 명시 플래그가 없어 규칙으로 판정). */
+function treatmentOfPb(raw: PbRawCard, setMax: number | undefined): CardPrinting["treatment"] {
+  const superIds = (raw.cardType?.superType ?? []).map((t) => t.id);
+  if (superIds.includes("signature")) return "signature";
+
+  const num = raw.collectorNumber ?? null;
+  if (setMax != null && num != null && num > setMax) return "overnumbered";
+
+  const suffix = /^[A-Z]+-\d+([a-z]|\*)\//.exec(raw.publicCode ?? "")?.[1];
+  if (suffix) return "alt_art";
+
+  if ((raw.rarity?.value?.id ?? "") === "showcase") return "showcase";
   return "base";
 }
 
-function toPrinting(raw: RiftcodexCard): CardPrinting {
-  const t = treatmentOf(raw);
+function toPrintingPb(raw: PbRawCard, treatment: CardPrinting["treatment"]): CardPrinting {
   return {
     id: raw.id,
-    treatment: t,
-    rarity: (raw.classification?.rarity ?? "").toLowerCase() || "common",
-    collectorNumber: raw.collector_number != null ? String(raw.collector_number) : null,
-    imageUrl: raw.media?.image_url ?? null,
-    isBase: t === "base",
+    treatment,
+    rarity: raw.rarity?.value?.id || "common",
+    collectorNumber: raw.collectorNumber != null ? String(raw.collectorNumber) : null,
+    imageUrl: raw.cardImage?.url ?? null,
+    isBase: treatment === "base",
   };
 }
 
 /**
- * Riftcodex 카드(인쇄판 1건) → 앱 도메인 모델.
+ * playriftbound 카드(인쇄판 1건, en/ko 로케일 쌍) → 앱 도메인 모델.
  * 이 단계에서는 인쇄판 하나만 담긴다. `groupCards()` 가 같은 카드의 인쇄판들을 묶는다.
  *
  * ─ 이미지 정책 ─
- *   imageUrl 은 **항상 Riftcodex 의 고화질 공식(rgpub) 이미지**. 한글 카드는 `<LocalizedCard>` 가
- *   이 영문 이미지 위에 한글 이름·룰텍스트를 얹어 렌더한다.
+ *   `localization.ko.imageUrl` 은 **실제 한글 인쇄 카드 이미지**(playriftbound ko-kr, 고해상도).
+ *   대표 `imageUrl`/`localization.en.imageUrl` 은 영문 이미지. `<LocalizedCard>` 는 한글 이미지가
+ *   있으면 그걸 그대로 보여주고, 없을 때만 영문 이미지 위에 텍스트를 얹는 기존 오버레이로 폴백한다.
  */
-function mapRiftcodexCard(raw: RiftcodexCard, ko?: Map<string, KoEntry>): Card {
-  const nameEn = raw.name?.trim() || raw.id;
-  const textEn = cleanText(raw.text?.plain);
-  const flavour = raw.text?.flavour?.trim();
-  const imageEn = raw.media?.image_url ?? null;
+function mapPlayriftboundCard(
+  enRaw: PbRawCard,
+  koRaw: PbRawCard | undefined,
+  setMax: number | undefined,
+  ko: Map<string, KoEntry>,
+): Card {
+  const fixEn = NAME_FIXUPS[enRaw.id]?.en;
+  const nameEn = fixEn?.name ?? enRaw.name?.trim() ?? enRaw.id;
+  const subtitleEn = fixEn?.subtitle ?? enRaw.subtitle;
+  const fullEn = fullNameOf(nameEn, subtitleEn);
+  const key = baseNameKey(fullEn);
 
-  const en = {
-    name: nameEn,
-    text: textEn,
-    imageUrl: imageEn,
-    ...(flavour ? { flavor: flavour } : {}),
-  };
+  const textEn = cleanText(stripHtml(enRaw.text?.richText?.body), "en");
+  const imageEn = enRaw.cardImage?.url ?? null;
+  const imageKo = koRaw?.cardImage?.url ?? imageEn;
+  const en = { name: fullEn, text: textEn, imageUrl: imageEn };
 
-  const koEntry = ko?.get(baseNameKey(nameEn));
-  const koLoc = koEntry
-    ? {
-        name: koEntry.n,
-        text: koEntry.t ? humanizeSymbols(koEntry.t) : textEn,
-        ...(flavour ? { flavor: flavour } : {}),
-      }
-    : undefined;
+  let koLoc: CardLocalizedText | undefined;
+  if (PRESERVE_RIFTNARU_KO.has(key)) {
+    const entry = ko.get(key);
+    if (entry) koLoc = { name: entry.n, text: entry.t ? humanizeSymbols(entry.t) : textEn, imageUrl: imageKo };
+  } else if (koRaw) {
+    const fixKo = NAME_FIXUPS[koRaw.id]?.ko;
+    const nameKo = fixKo?.name ?? koRaw.name?.trim();
+    const subtitleKo = fixKo?.subtitle ?? koRaw.subtitle;
+    const fullKo = nameKo ? fullNameOf(nameKo, subtitleKo) : undefined;
+    const textKo = cleanText(stripHtml(koRaw.text?.richText?.body), "ko");
+    // 아직 공식 한글화가 안 된 세트는 ko-kr 로케일도 이름·텍스트가 영문 그대로 내려온다
+    // (UI 라벨만 한글). 그런 경우 ko 를 채우지 않아야 en 으로 자연히 폴백된다.
+    if (fullKo && HANGUL_RE.test(fullKo)) koLoc = { name: fullKo, text: textKo || textEn, imageUrl: imageKo };
+  }
+
+  const typeIds = enRaw.cardType?.type ?? [];
+  const superIds = enRaw.cardType?.superType ?? [];
+  const treatment = treatmentOfPb(enRaw, setMax);
 
   return {
-    id: raw.id,
-    setCode: raw.set?.set_id?.toUpperCase() || "UNKNOWN",
-    collectorNumber: raw.collector_number != null ? String(raw.collector_number) : null,
+    id: enRaw.id,
+    setCode: String(enRaw.set?.value?.id ?? "UNKNOWN").toUpperCase(),
+    collectorNumber: enRaw.collectorNumber != null ? String(enRaw.collectorNumber) : null,
     name: koLoc?.name ?? en.name,
     text: koLoc?.text ?? en.text,
-    cost: raw.attributes?.energy ?? null,
-    power: raw.attributes?.might ?? null,
+    cost: enRaw.energy?.value?.id ?? null,
+    power: enRaw.might?.value?.id ?? null,
     toughness: null,
-    type: normalizeType(raw.classification?.type, raw.classification?.supertype ?? undefined),
-    supertype: normalizeSupertype(raw.classification?.supertype ?? undefined),
-    orientation: raw.orientation === "landscape" ? "landscape" : "portrait",
-    subtypes: isBanned(raw.id) ? [BAN_TAG, ...(raw.tags ?? [])] : (raw.tags ?? []),
-    domains: normalizeDomains(raw.classification?.domain),
-    rarity: normalizeRarity(raw.classification?.rarity),
+    type: normalizeType(typeIds[0]?.id, superIds[0]?.id),
+    supertype: normalizeSupertype(superIds[0]?.id),
+    orientation: enRaw.orientation === "landscape" ? "landscape" : "portrait",
+    subtypes: isBanned(enRaw.id) ? [BAN_TAG, ...(enRaw.tags?.tags ?? [])] : (enRaw.tags?.tags ?? []),
+    domains: normalizeDomains((enRaw.domain?.values ?? []).map((d) => d.id)),
+    rarity: normalizeRarity(enRaw.rarity?.value?.id),
     imageUrl: imageEn,
-    artist: raw.media?.artist ?? null,
+    artist: enRaw.illustrator?.values?.[0]?.label ?? null,
     localization: { en, ...(koLoc ? { ko: koLoc } : {}) },
     source: "opensource",
-    printings: [toPrinting(raw)],
+    printings: [toPrintingPb(enRaw, treatment)],
   };
 }
 
@@ -492,20 +612,19 @@ function groupCards(cards: Card[]): Card[] {
       members.find((m) => m.printings.some((p) => p.isBase)) ??
       members.sort((a, b) => (Number(a.collectorNumber) || 0) - (Number(b.collectorNumber) || 0))[0];
 
+    // 진짜 "base" 트리트먼트가 없는 카드(시그니처 단독 인쇄 등) — 대표로 고른 인쇄판을 표시용 기본으로 취급
+    if (!printings.some((p) => p.isBase)) {
+      const rep = printings.find((p) => p.id === base.printings[0]?.id);
+      if (rep) rep.isBase = true;
+    }
+
     out.push({ ...base, printings });
   }
   return out;
 }
 
-function itemsOf(snapshot: LocalSnapshot): RiftcodexCard[] {
-  if (Array.isArray(snapshot)) return snapshot;
-  return snapshot.items ?? [];
-}
-
 export class OpenSourceCardService implements ICardService {
-  private readonly config: Required<
-    Pick<OpenSourceCardServiceConfig, "revalidateSeconds" | "pageSize" | "maxPages">
-  > &
+  private readonly config: Required<Pick<OpenSourceCardServiceConfig, "revalidateSeconds">> &
     OpenSourceCardServiceConfig;
 
   /** getAllCards 결과 메모이즈 (요청마다 fetch/파일읽기 반복 방지). */
@@ -514,8 +633,6 @@ export class OpenSourceCardService implements ICardService {
   constructor(config: OpenSourceCardServiceConfig = {}) {
     this.config = {
       revalidateSeconds: DEFAULT_REVALIDATE,
-      pageSize: 100,
-      maxPages: 100,
       ...config,
     };
   }
@@ -557,7 +674,7 @@ export class OpenSourceCardService implements ICardService {
         errors.push(new Error("원격 응답에 카드가 없음"));
       } catch (err) {
         errors.push(err);
-        console.warn("[cardService] Riftcodex 로드 실패, 로컬 스냅샷으로 폴백:", err);
+        console.warn("[cardService] playriftbound 로드 실패, 로컬 스냅샷으로 폴백:", err);
       }
     }
 
@@ -575,64 +692,20 @@ export class OpenSourceCardService implements ICardService {
     );
   }
 
-  /** 지원 세트별로 페이지를 순회해 카드를 모은다 (constants.CARD_SETS 만). */
-  private async fetchAllRemote(endpoint: string): Promise<Card[]> {
-    const out: Card[] = [];
+  /** en-us + ko-kr 갤러리를 각 1회 받아 id 로 합친다 (playriftbound 는 SSR 로 전 카드가 한 페이지에 옴). */
+  private async fetchAllRemote(base: string): Promise<Card[]> {
     const ko = await loadKoTranslations();
+    const [en, koGallery] = await Promise.all([
+      fetchPbGallery(base, "en-us", this.config.revalidateSeconds),
+      fetchPbGallery(base, "ko-kr", this.config.revalidateSeconds),
+    ]);
 
-    for (const setCode of CARD_SET_CODES) {
-      let page = 1;
-      let totalPages = 1;
-      do {
-        const url = new URL(endpoint);
-        url.searchParams.set("set_id", setCode.toLowerCase());
-        url.searchParams.set("page", String(page));
-        url.searchParams.set("size", String(this.config.pageSize));
+    const koById = new Map(koGallery.cards.map((c) => [c.id, c]));
+    const mapped = en.cards.map((raw) =>
+      mapPlayriftboundCard(raw, koById.get(raw.id), en.setMax[String(raw.set?.value?.id ?? "").toUpperCase()], ko),
+    );
 
-        const body = await this.fetchPage(url);
-        out.push(...body.items.map((c) => mapRiftcodexCard(c, ko)));
-
-        totalPages = Number.isFinite(body.pages) && body.pages > 0 ? body.pages : page;
-        page += 1;
-      } while (page <= totalPages && page <= this.config.maxPages);
-    }
-
-    // set_id 필터를 못 거는 소스 대비 안전망 + 인쇄판 그룹핑
-    return groupCards(out.filter((c) => SUPPORTED_SETS.has(c.setCode)));
-  }
-
-  private async fetchPage(url: URL): Promise<RiftcodexPage> {
-    let res: Response;
-    try {
-      // Riftcodex 가 가끔 몇 분씩 응답을 안 주는 경우가 있어(관측됨: 100초+),
-      // 타임아웃 없이 기다리면 `next build` 정적 생성이 60초 제한에 걸려 페이지
-      // 전체가 실패한다. 빨리 포기하고 load() 의 로컬 스냅샷 폴백으로 넘긴다.
-      res = await fetch(url, {
-        headers: this.config.apiKey ? { Authorization: `Bearer ${this.config.apiKey}` } : {},
-        // ISR: 요청마다 때리지 않고 하루 단위 재검증. `cards` 태그로 on-demand 무효화 가능.
-        next: { revalidate: this.config.revalidateSeconds, tags: ["cards"] },
-        signal: AbortSignal.timeout(15_000),
-      });
-    } catch (err) {
-      throw new CardServiceError(`카드 API 네트워크 오류: ${url.href}`, err);
-    }
-
-    if (!res.ok) {
-      throw new CardServiceError(`카드 API ${res.status} ${res.statusText}: ${url.href}`);
-    }
-
-    try {
-      const json = (await res.json()) as Partial<RiftcodexPage>;
-      return {
-        items: json.items ?? [],
-        total: json.total ?? 0,
-        page: json.page ?? 1,
-        size: json.size ?? this.config.pageSize,
-        pages: json.pages ?? 1,
-      };
-    } catch (err) {
-      throw new CardServiceError("카드 API 응답 JSON 파싱 실패", err);
-    }
+    return groupCards(mapped.filter((c) => SUPPORTED_SETS.has(c.setCode)));
   }
 
   private async readLocal(filePath: string): Promise<Card[]> {
@@ -644,12 +717,14 @@ export class OpenSourceCardService implements ICardService {
     }
 
     try {
-      const snapshot = JSON.parse(text) as LocalSnapshot;
+      const snapshot = JSON.parse(text) as Partial<PbSnapshot>;
       const ko = await loadKoTranslations();
-      const mapped = itemsOf(snapshot)
-        .map((c) => mapRiftcodexCard(c, ko))
-        .filter((c) => SUPPORTED_SETS.has(c.setCode));
-      return groupCards(mapped);
+      const koById = new Map((snapshot.ko ?? []).map((c) => [c.id, c]));
+      const setMax = snapshot.setMax ?? {};
+      const mapped = (snapshot.en ?? []).map((raw) =>
+        mapPlayriftboundCard(raw, koById.get(raw.id), setMax[String(raw.set?.value?.id ?? "").toUpperCase()], ko),
+      );
+      return groupCards(mapped.filter((c) => SUPPORTED_SETS.has(c.setCode)));
     } catch (err) {
       throw new CardServiceError(`로컬 카드 스냅샷 파싱 실패: ${filePath}`, err);
     }
@@ -746,9 +821,8 @@ export function createCardService(source: CardDataSource = resolveDataSource()):
     case "opensource":
     default:
       return new OpenSourceCardService({
-        endpoint: process.env.OPENSOURCE_CARDS_ENDPOINT ?? "https://api.riftcodex.com/cards",
+        endpoint: process.env.OPENSOURCE_CARDS_ENDPOINT ?? "https://playriftbound.com",
         localFallbackPath: path.join(process.cwd(), "data", "cards.json"),
-        apiKey: process.env.OPENSOURCE_CARDS_API_KEY,
       });
   }
 }

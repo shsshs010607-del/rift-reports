@@ -1,7 +1,7 @@
 /**
  * 한국 스탠다드 금지(밴) 카드 목록.
  *
- * card_id (Card.id, 예: Riftcodex id "ogn-001") 를 추가하면:
+ * card_id (Card.id, playriftbound id 예: "ogn-001-298") 를 추가하면:
  *  - 카드 이미지에 "밴" 배지가 붙고
  *  - 태그 목록에 "밴" 이 추가되어 검색/필터로 잡힌다 (/cards?q=밴)
  *

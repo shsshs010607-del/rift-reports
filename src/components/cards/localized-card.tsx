@@ -15,10 +15,12 @@ const FRAME = {
 };
 
 /**
- * 고화질 영문 공식 이미지 위에 한글 번역(이름·룰텍스트)을 얹어 "한글 번역 카드"를 렌더.
- * - `locale="en"` 또는 번역 없음 또는 가로(landscape) 카드면 영문 이미지를 그대로.
- * - `printingId` 로 특정 변형 인쇄판의 이미지를 지정 (모달 비교용). 변형이면 한글 오버레이 없이 원본 아트.
- * - 컨테이너 폭에 맞춰 폰트가 스케일된다(container query). 부모가 크기를 정한다.
+ * 카드 아트를 렌더. `locale="ko"` + 대표(기본) 인쇄판이면 playriftbound 공식 한글 인쇄
+ * 이미지(`localization.ko.imageUrl`)를 그대로 쓴다 — 실제 한글판 카드라 오버레이가 필요 없다.
+ * 한글 이미지가 없는 카드(레거시 번역만 있는 경우)는 영문 이미지 위에 한글 이름·룰텍스트를
+ * 얹는 폴백 오버레이로 대체한다.
+ * - `printingId` 로 특정 변형 인쇄판의 이미지를 지정하면(모달 비교용) 항상 영문 원본 아트.
+ * - 컨테이너 폭에 맞춰 폰트가 스케일된다(container query, 폴백 오버레이에서만 씀). 부모가 크기를 정한다.
  */
 export function LocalizedCard({
   card,
@@ -40,11 +42,13 @@ export function LocalizedCard({
     : card.printings.find((p) => p.isBase) ?? card.printings[0];
   const isBasePrinting = printing?.isBase ?? true;
 
-  const img = printing?.imageUrl ?? card.localization.en.imageUrl ?? card.imageUrl;
   const ko = card.localization.ko;
-  // 한글 오버레이는 "기본 인쇄판 + 한글 로케일 + 번역 있음 + 세로" 일 때만
+  // 대표 인쇄판 + 한글 로케일이면 실제 한글 인쇄 이미지를 그대로. 없으면(레거시) 영문 아트로 폴백.
+  const koImage = isBasePrinting && locale === "ko" ? ko?.imageUrl : undefined;
+  const img = koImage ?? printing?.imageUrl ?? card.localization.en.imageUrl ?? card.imageUrl;
+  // 폴백 오버레이는 "한글 이미지가 없고 + 기본 인쇄판 + 한글 로케일 + 번역 있음 + 세로" 일 때만
   const showOverlay = Boolean(
-    isBasePrinting && locale === "ko" && ko && card.orientation === "portrait" && img,
+    !koImage && isBasePrinting && locale === "ko" && ko && card.orientation === "portrait" && img,
   );
 
   const banner =
@@ -78,8 +82,8 @@ export function LocalizedCard({
         </div>
       )}
 
-      {/* 가로(전장) 카드는 한글 인쇄 이미지가 없어 이름만 캡션으로 얹는다 (이미지 하단 가장자리) */}
-      {isLandscape && locale === "ko" && ko && img && (
+      {/* 가로(전장) 카드에 한글 인쇄 이미지가 없는 레거시 경우, 이름만 캡션으로 얹는다 (이미지 하단 가장자리) */}
+      {!koImage && isLandscape && locale === "ko" && ko && img && (
         <span
           className="absolute inset-x-[7%] bottom-[25.5%] truncate rounded bg-black/72 px-2 py-1 text-center font-extrabold text-white"
           style={{ fontSize: "clamp(7px, 3.4cqw, 15px)" }}

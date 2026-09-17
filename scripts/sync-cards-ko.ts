@@ -7,9 +7,11 @@
  * `/api/live/cards` 에서 카드별 { names:{ko,en}, koreanImage:{name,accessibilityText,imageUrl} } 제공.
  *
  * 결과 파일은 영문 카드명(소문자) → { n: 한글명, t: 한글 룰텍스트 } 매핑.
- * cardService 가 이 맵을 읽어 Riftcodex 카드에 localization.ko 를 채우고,
- * <LocalizedCard> 가 고화질 영문 이미지 위에 이 한글 텍스트를 얹어 렌더한다.
- * 번역이 없는 카드(ko === en)는 스킵 → 앱에서 영문 그대로 표시.
+ *
+ * playriftbound.com 이 OGN·OGS 공식 한글을 직접 주게 된 이후로는 이 파일 전체가 쓰이지
+ * 않고, cardService 의 `PRESERVE_RIFTNARU_KO` 목록(야스오·징크스 6종)에만 쓰인다 —
+ * 이미 검증된 기존 번역을 그대로 유지하기 위한 고정 오버라이드. 그 외 카드는 playriftbound
+ * 공식 한글을 그대로 쓴다. 번역이 없는 카드(ko === en)는 스킵 → 앱에서 영문 그대로 표시.
  */
 import { writeFileSync } from "node:fs";
 

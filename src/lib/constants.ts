@@ -305,13 +305,13 @@ export const CARD_TYPES = [
 ] as const;
 
 /**
- * 지원 확장팩(세트) — Riftcodex set_id 기준.
+ * 지원 확장팩(세트) — playriftbound.com 공식 갤러리 set id 기준.
  *
- * 지금은 한글판이 준비된 **OGN(오리진스) + OGS(프루빙 그라운드)** 만 취급한다.
+ * 지금은 공식 한글판이 나온 **OGN(오리진스) + OGS(프루빙 그라운드)** 만 취급한다.
  * 이 목록이 카드 DB 에 실제로 담기는 세트를 결정한다 — cardService 가 여기 없는
  * 세트의 카드를 걸러낸다. 새 세트 한글화가 끝나면 여기 추가 + `npm run sync:cards` 재실행.
  *
- * 대기 중(미지원): SFD 스피릿포지드 · UNL 언리쉬드 · VEN 벤데타 · OPP/PR/JDG 프로모
+ * 대기 중(미지원, 아직 공식 한글 없음): SFD 스피릿포지드 · UNL 언리쉬드 · VEN 벤데타 · OPP/PR/JDG 프로모
  */
 export const CARD_SETS = [
   { code: "OGN", label: "오리진스", name: "Origins" },

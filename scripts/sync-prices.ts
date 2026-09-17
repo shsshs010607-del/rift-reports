@@ -23,18 +23,21 @@ import {
 loadEnv();
 
 /**
- * data/cards.json (Riftcodex 고화질 스냅샷) → tcgplayer_id 기준 이미지 맵.
+ * data/cards.json (playriftbound 공식 스냅샷) → "세트코드-수집번호" 기준 이미지 맵.
  * JustTCG 는 이미지를 안 주므로, 우리가 가진 rgpub 원본 이미지로 교체한다.
+ * (playriftbound 는 TCGplayer id 를 안 줘서 기존처럼 정확한 인쇄판 매칭은 못 하고, 숫자 수집번호
+ *  기준으로만 매칭 — 얼터아트 등 접미사 붙은 변형은 기본 인쇄판 이미지로 대체될 수 있음.)
  */
-function localImageByTcgId(): Map<string, string> {
+function localImageByPrintKey(): Map<string, string> {
   const map = new Map<string, string>();
   try {
     const raw = JSON.parse(readFileSync(new URL("../data/cards.json", import.meta.url), "utf8"));
-    const arr: any[] = Array.isArray(raw) ? raw : raw.cards ?? raw.items ?? [];
+    const arr: any[] = Array.isArray(raw?.en) ? raw.en : [];
     for (const c of arr) {
-      const tid = c.tcgplayer_id ?? c.tcgplayerId;
-      const url = c.media?.image_url ?? c.image_url ?? c.imageUrl;
-      if (tid && url) map.set(String(tid), url);
+      const set = String(c.set?.value?.id ?? "").toUpperCase();
+      const num = c.collectorNumber;
+      const url = c.cardImage?.url;
+      if (set && num != null && url) map.set(`${set}-${num}`, url);
     }
   } catch (e) {
     console.warn("  · data/cards.json 로드 실패 — TCGplayer 이미지로 폴백", (e as Error).message);
@@ -95,12 +98,13 @@ async function main() {
   const db = supabaseAdmin();
 
   // 1. card_prints upsert (이미지는 우리 고화질 스냅샷으로 교체)
-  const localImg = localImageByTcgId();
+  const localImg = localImageByPrintKey();
   let swapped = 0;
   const printRows = cards.map((c) => {
     const row = toPrintRow(c);
-    const tid = c.tcgplayerId ? String(c.tcgplayerId) : row.tcgplayer_url?.match(/product\/(\d+)/)?.[1];
-    const ours = tid && localImg.get(tid);
+    const num = row.number?.match(/\d+/)?.[0];
+    const key = row.set_code && num ? `${row.set_code}-${num}` : null;
+    const ours = key && localImg.get(key);
     if (ours) {
       row.image_url = ours;
       swapped++;
