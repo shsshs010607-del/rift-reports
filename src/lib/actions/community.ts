@@ -4,8 +4,9 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
-import { COMMUNITY_CATEGORIES } from "@/lib/constants";
+import { COMMUNITY_CATEGORIES, SITE } from "@/lib/constants";
 import type { CommunityCategory } from "@/lib/types/database";
+import { notifyDiscordNews } from "@/lib/discord";
 
 const categorySlugs = COMMUNITY_CATEGORIES.map((c) => c.slug) as [string, ...string[]];
 
@@ -108,6 +109,15 @@ export async function createPost(_prev: ActionState, formData: FormData): Promis
     .single();
 
   if (error || !data) return { error: error?.message ?? "작성에 실패했습니다" };
+
+  // 매장 정보 게시판(공지 제외)은 디스코드로도 알림 — 매장 소식은 놓치면 안 되는 실시간성 정보라서.
+  if (data.category === "tournament" && !parsed.data.is_notice) {
+    await notifyDiscordNews({
+      title: parsed.data.title,
+      excerpt: body.replace(/[*_`#>[\]()-]/g, "").slice(0, 180),
+      url: `${SITE.url}/community/post/${data.id}`,
+    });
+  }
 
   revalidatePath("/community");
   revalidatePath(`/community/${data.category}`);
