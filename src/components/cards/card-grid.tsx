@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import type { Card } from "@/lib/types/card";
 import { resolveCardText, cardNumber } from "@/lib/types/card";
@@ -28,6 +28,14 @@ export function CardGrid({
 }) {
   const [index, setIndex] = useState<number | null>(null);
   const selected = index != null ? cards[index] : null;
+  const [collection, setCollection] = useState<Record<string, number>>({});
+
+  useEffect(() => {
+    fetch("/api/collection")
+      .then((r) => (r.ok ? r.json() : {}))
+      .then((m: Record<string, number>) => setCollection(m ?? {}))
+      .catch(() => {});
+  }, []);
 
   return (
     <>
@@ -45,6 +53,10 @@ export function CardGrid({
           onPrev={index > 0 ? () => setIndex(index - 1) : undefined}
           onNext={index < cards.length - 1 ? () => setIndex(index + 1) : undefined}
           position={`${index + 1} / ${cards.length}`}
+          ownedQty={collection[selected.id] ?? 0}
+          onOwnedChange={(cardId, qty) =>
+            setCollection((prev) => ({ ...prev, [cardId]: qty }))
+          }
         />
       )}
     </>

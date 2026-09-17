@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useTransition } from "react";
 import Link from "next/link";
-import { Tag, X, Printer, ChevronLeft, ChevronRight } from "lucide-react";
+import { Tag, X, Printer, ChevronLeft, ChevronRight, Layers, Plus, Minus } from "lucide-react";
 
 import type { Card } from "@/lib/types/card";
 import { resolveCardText, cardNumber } from "@/lib/types/card";
@@ -10,6 +10,7 @@ import { CARD_DOMAINS, CARD_SETS, CARD_TREATMENTS, CARD_TYPES } from "@/lib/cons
 import { domainGradient, domainWash, rarityStyle } from "@/lib/card-style";
 import { BAN_TAG } from "@/lib/cards/banned";
 import { renderProxyImage, proxyFileName } from "@/lib/cards/proxy-image";
+import { setCollectionQty } from "@/app/me/collection-actions";
 import { LocalizedCard } from "@/components/cards/localized-card";
 import { CardText } from "@/components/cards/card-text";
 import { cn } from "@/lib/utils";
@@ -28,18 +29,36 @@ export function CardModal({
   onPrev,
   onNext,
   position,
+  ownedQty = 0,
+  onOwnedChange,
 }: {
   card: Card;
   onClose: () => void;
   onPrev?: () => void;
   onNext?: () => void;
   position?: string;
+  /** 내 컬렉션 보유 수량 (로그인 안 했으면 항상 0). */
+  ownedQty?: number;
+  onOwnedChange?: (cardId: string, qty: number) => void;
 }) {
   const [printingId, setPrintingId] = useState(
     () => (card.printings.find((p) => p.isBase) ?? card.printings[0])?.id,
   );
   const [locale, setLocale] = useState<"ko" | "en">("ko");
   const [proxyBusy, setProxyBusy] = useState(false);
+  const [qty, setQty] = useState(ownedQty);
+  const [, startTransition] = useTransition();
+
+  useEffect(() => setQty(ownedQty), [ownedQty, card.id]);
+
+  function bumpQty(delta: number) {
+    const next = Math.max(0, Math.min(999, qty + delta));
+    setQty(next);
+    onOwnedChange?.(card.id, next);
+    startTransition(() => {
+      setCollectionQty(card.id, next);
+    });
+  }
 
   const hasKo = Boolean(card.localization.ko);
   const activePrinting = card.printings.find((p) => p.id === printingId) ?? card.printings[0];
@@ -286,6 +305,44 @@ export function CardModal({
           )}
 
           <div className="mt-auto border-t border-line/60 pt-3">
+            <div className="mb-3 flex items-center justify-between gap-3">
+              <span className="flex items-center gap-1.5 text-label-lg font-bold text-ink">
+                <Layers className="h-4 w-4 text-primary" />
+                내 컬렉션
+              </span>
+              {qty === 0 ? (
+                <button
+                  type="button"
+                  onClick={() => bumpQty(1)}
+                  className="inline-flex items-center gap-1 rounded-lg bg-primary px-3 py-1.5 text-label-md font-bold text-white transition hover:bg-primary-container"
+                >
+                  <Plus className="h-3.5 w-3.5" />
+                  담기
+                </button>
+              ) : (
+                <span className="inline-flex items-center gap-1.5 rounded-lg border border-line px-1 py-1">
+                  <button
+                    type="button"
+                    onClick={() => bumpQty(-1)}
+                    aria-label="한 장 빼기"
+                    className="grid h-7 w-7 place-items-center rounded text-ink-soft hover:bg-subcanvas hover:text-ink"
+                  >
+                    <Minus className="h-4 w-4" />
+                  </button>
+                  <span className="w-6 text-center text-label-lg font-bold tabular-nums text-ink">
+                    {qty}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => bumpQty(1)}
+                    aria-label="한 장 더"
+                    className="grid h-7 w-7 place-items-center rounded text-ink-soft hover:bg-subcanvas hover:text-ink"
+                  >
+                    <Plus className="h-4 w-4" />
+                  </button>
+                </span>
+              )}
+            </div>
             <button
               type="button"
               onClick={downloadProxy}

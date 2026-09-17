@@ -1,14 +1,18 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState, useTransition } from "react";
-import { Search, Plus, Minus, X, Layers, ChevronDown } from "lucide-react";
+import { Search, Plus, Minus, X, Layers, ChevronDown, CheckSquare, Square, Trash2 } from "lucide-react";
 
 import type { Card } from "@/lib/types/card";
 import { resolveCardText, cardNumber } from "@/lib/types/card";
+import { CARD_RARITIES } from "@/lib/constants";
+import { rarityStyle } from "@/lib/card-style";
 import { setCollectionQty } from "@/app/me/collection-actions";
 import { LocalizedCard } from "@/components/cards/localized-card";
 import { fmtWon } from "@/lib/money";
 import { cn } from "@/lib/utils";
+
+const RARITY_LABEL = new Map<string, string>(CARD_RARITIES.map((r) => [r.slug, r.label]));
 
 type Initial = { card_id: string; quantity: number }[];
 
@@ -66,17 +70,6 @@ export function CollectionEditor({
         .sort((a, b) => (a.card?.name ?? a.id).localeCompare(b.card?.name ?? b.id, "ko")),
     [qty, byId],
   );
-  // 세트별로 묶어서 — 컬렉션이 커질수록 "이 세트에서 뭐 있더라" 찾기가 훨씬 편해진다.
-  const ownedBySet = useMemo(() => {
-    const groups = new Map<string, typeof owned>();
-    for (const o of owned) {
-      const key = o.card?.setCode ?? "기타";
-      const arr = groups.get(key);
-      if (arr) arr.push(o);
-      else groups.set(key, [o]);
-    }
-    return [...groups.entries()].sort(([a], [b]) => a.localeCompare(b, "ko"));
-  }, [owned]);
   const totalCards = owned.reduce((s, o) => s + o.n, 0);
   const distinct = owned.length;
   const pricedCount = owned.filter((o) => priceFor(o.card) != null).length;
@@ -84,6 +77,87 @@ export function CollectionEditor({
     const p = priceFor(o.card);
     return p != null ? s + p * o.n : s;
   }, 0);
+
+  // 필터 — 보유 카드 안에 실제로 존재하는 값만 칩으로 노출.
+  const [rarityFilter, setRarityFilter] = useState<Set<string>>(new Set());
+  const [costFilter, setCostFilter] = useState<Set<number>>(new Set());
+  const [setFilter, setSetFilter] = useState<Set<string>>(new Set());
+
+  const rarityOptions = useMemo(() => {
+    const seen = new Set(owned.map((o) => o.card?.rarity).filter((v): v is string => Boolean(v)));
+    return [...seen].sort(
+      (a, b) =>
+        CARD_RARITIES.findIndex((r) => r.slug === a) - CARD_RARITIES.findIndex((r) => r.slug === b),
+    );
+  }, [owned]);
+  const costOptions = useMemo(() => {
+    const seen = new Set(
+      owned.map((o) => o.card?.cost).filter((v): v is number => typeof v === "number"),
+    );
+    return [...seen].sort((a, b) => a - b);
+  }, [owned]);
+  const setOptions = useMemo(() => {
+    const seen = new Set(owned.map((o) => o.card?.setCode).filter((v): v is string => Boolean(v)));
+    return [...seen].sort((a, b) => a.localeCompare(b, "ko"));
+  }, [owned]);
+
+  function toggleInSet<T>(set: Set<T>, setter: (next: Set<T>) => void, value: T) {
+    const next = new Set(set);
+    if (next.has(value)) next.delete(value);
+    else next.add(value);
+    setter(next);
+  }
+
+  const filtered = useMemo(
+    () =>
+      owned.filter((o) => {
+        if (rarityFilter.size && !(o.card && rarityFilter.has(o.card.rarity))) return false;
+        if (costFilter.size && !(o.card && o.card.cost != null && costFilter.has(o.card.cost)))
+          return false;
+        if (setFilter.size && !(o.card && setFilter.has(o.card.setCode))) return false;
+        return true;
+      }),
+    [owned, rarityFilter, costFilter, setFilter],
+  );
+  const filterActive = rarityFilter.size > 0 || costFilter.size > 0 || setFilter.size > 0;
+
+  // 세트별로 묶어서 — 컬렉션이 커질수록 "이 세트에서 뭐 있더라" 찾기가 훨씬 편해진다.
+  const ownedBySet = useMemo(() => {
+    const groups = new Map<string, typeof owned>();
+    for (const o of filtered) {
+      const key = o.card?.setCode ?? "기타";
+      const arr = groups.get(key);
+      if (arr) arr.push(o);
+      else groups.set(key, [o]);
+    }
+    return [...groups.entries()].sort(([a], [b]) => a.localeCompare(b, "ko"));
+  }, [filtered]);
+
+  // 선택 — 전체/일부 선택 후 일괄 삭제하거나 선택분 시세 합계를 본다.
+  const [selected, setSelected] = useState<Set<string>>(new Set());
+  const allFilteredSelected = filtered.length > 0 && filtered.every((o) => selected.has(o.id));
+
+  function toggleSelectAll() {
+    if (allFilteredSelected) {
+      setSelected(new Set());
+    } else {
+      setSelected(new Set(filtered.map((o) => o.id)));
+    }
+  }
+  function toggleSelect(id: string) {
+    toggleInSet(selected, setSelected, id);
+  }
+  const selectedRows = owned.filter((o) => selected.has(o.id));
+  const selectedTotal = selectedRows.reduce((s, o) => {
+    const p = priceFor(o.card);
+    return p != null ? s + p * o.n : s;
+  }, 0);
+  function deleteSelected() {
+    if (selectedRows.length === 0) return;
+    if (!confirm(`선택한 ${selectedRows.length}종을 컬렉션에서 삭제할까요?`)) return;
+    for (const o of selectedRows) save(o.id, 0);
+    setSelected(new Set());
+  }
 
   const searchRef = useRef<HTMLInputElement>(null);
   const [activeId, setActiveId] = useState<string | null>(null);
@@ -206,10 +280,115 @@ export function CollectionEditor({
 
         {/* 보유 목록 */}
         <div className="mt-4 border-t border-line/60 pt-3">
-          <p className="mb-2 text-label-sm font-bold text-ink-soft">보유 카드</p>
+          <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
+            <p className="text-label-sm font-bold text-ink-soft">
+              보유 카드
+              {filterActive && (
+                <span className="ml-1 font-normal text-ink-soft/70">
+                  ({filtered.length}/{distinct}종 표시 중)
+                </span>
+              )}
+            </p>
+            {filtered.length > 0 && (
+              <button
+                type="button"
+                onClick={toggleSelectAll}
+                className="inline-flex items-center gap-1.5 text-label-sm font-bold text-ink-soft hover:text-primary-strong"
+              >
+                {allFilteredSelected ? (
+                  <CheckSquare className="h-4 w-4" />
+                ) : (
+                  <Square className="h-4 w-4" />
+                )}
+                전체 선택
+              </button>
+            )}
+          </div>
+
+          {owned.length > 0 && (
+            <div className="mb-3 flex flex-col gap-2">
+              {rarityOptions.length > 1 && (
+                <FilterRow label="레어도">
+                  {rarityOptions.map((slug) => {
+                    const style = rarityStyle(slug);
+                    return (
+                      <FilterChip
+                        key={slug}
+                        active={rarityFilter.has(slug)}
+                        onClick={() => toggleInSet(rarityFilter, setRarityFilter, slug)}
+                      >
+                        {RARITY_LABEL.get(slug) ?? style.label}
+                      </FilterChip>
+                    );
+                  })}
+                </FilterRow>
+              )}
+              {costOptions.length > 1 && (
+                <FilterRow label="코스트">
+                  {costOptions.map((c) => (
+                    <FilterChip
+                      key={c}
+                      active={costFilter.has(c)}
+                      onClick={() => toggleInSet(costFilter, setCostFilter, c)}
+                    >
+                      {c}
+                    </FilterChip>
+                  ))}
+                </FilterRow>
+              )}
+              {setOptions.length > 1 && (
+                <FilterRow label="세트">
+                  {setOptions.map((s) => (
+                    <FilterChip
+                      key={s}
+                      active={setFilter.has(s)}
+                      onClick={() => toggleInSet(setFilter, setSetFilter, s)}
+                    >
+                      {s}
+                    </FilterChip>
+                  ))}
+                </FilterRow>
+              )}
+            </div>
+          )}
+
+          {selected.size > 0 && (
+            <div className="mb-3 flex flex-wrap items-center justify-between gap-2 rounded-xl border border-primary/30 bg-primary/5 px-3 py-2">
+              <span className="text-body-sm text-ink">
+                {selected.size}종 선택됨
+                {selectedTotal > 0 && (
+                  <span className="ml-1.5 font-bold text-primary-strong">
+                    · 시세 합계 {fmtWon(selectedTotal)}
+                  </span>
+                )}
+              </span>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => setSelected(new Set())}
+                  className="text-label-sm font-bold text-ink-soft hover:text-ink"
+                >
+                  선택 해제
+                </button>
+                <button
+                  type="button"
+                  onClick={deleteSelected}
+                  className="inline-flex items-center gap-1 rounded-lg border border-error/40 px-2.5 py-1 text-label-sm font-bold text-error transition hover:bg-error/10"
+                >
+                  <Trash2 className="h-3.5 w-3.5" />
+                  선택 삭제
+                </button>
+              </div>
+            </div>
+          )}
+
           {owned.length === 0 ? (
             <p className="py-4 text-center text-body-sm text-ink-soft">
               아직 담은 카드가 없습니다. 위에서 검색해 수량을 넣어보세요.
+            </p>
+          ) : filtered.length === 0 ? (
+            <p className="py-4 text-center text-body-sm text-ink-soft">
+              필터 조건에 맞는 카드가 없습니다.
             </p>
           ) : (
             <div className="max-h-[65vh] overflow-y-auto pr-1">
@@ -237,29 +416,47 @@ export function CollectionEditor({
                         {/* 카드 이미지 그리드 — 한눈에 훑어보기용. 클릭하면 아래 상세에서 수량 조절. */}
                         <div className="grid grid-cols-5 gap-2 sm:grid-cols-6 md:grid-cols-8">
                           {cards.map((o) => (
-                            <button
-                              key={o.id}
-                              type="button"
-                              onClick={() => setActiveId((v) => (v === o.id ? null : o.id))}
-                              title={o.card ? resolveCardText(o.card, "ko").name : o.id}
-                              className={cn(
-                                "relative rounded-[4.5%] transition",
-                                activeId === o.id &&
-                                  "ring-2 ring-primary ring-offset-1 ring-offset-card",
-                              )}
-                            >
-                              {o.card ? (
-                                <LocalizedCard
-                                  card={o.card}
-                                  sizes="(max-width:640px) 18vw, 100px"
-                                />
-                              ) : (
-                                <span className="block aspect-[744/1039] rounded-[4.5%] bg-subcanvas" />
-                              )}
-                              <span className="absolute right-1 top-1 rounded-full bg-primary px-1.5 py-0.5 text-[10px] font-black leading-none text-white shadow">
-                                ×{o.n}
-                              </span>
-                            </button>
+                            <div key={o.id} className="relative">
+                              <button
+                                type="button"
+                                onClick={() => setActiveId((v) => (v === o.id ? null : o.id))}
+                                title={o.card ? resolveCardText(o.card, "ko").name : o.id}
+                                className={cn(
+                                  "relative block w-full rounded-[4.5%] transition",
+                                  activeId === o.id &&
+                                    "ring-2 ring-primary ring-offset-1 ring-offset-card",
+                                )}
+                              >
+                                {o.card ? (
+                                  <LocalizedCard
+                                    card={o.card}
+                                    sizes="(max-width:640px) 18vw, 100px"
+                                  />
+                                ) : (
+                                  <span className="block aspect-[744/1039] rounded-[4.5%] bg-subcanvas" />
+                                )}
+                                <span className="absolute right-1 top-1 rounded-full bg-primary px-1.5 py-0.5 text-[10px] font-black leading-none text-white shadow">
+                                  ×{o.n}
+                                </span>
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => toggleSelect(o.id)}
+                                aria-label={selected.has(o.id) ? "선택 해제" : "선택"}
+                                className={cn(
+                                  "absolute left-1 top-1 grid h-5 w-5 place-items-center rounded shadow",
+                                  selected.has(o.id)
+                                    ? "bg-primary text-white"
+                                    : "bg-scrim/50 text-white/80 hover:bg-scrim/70",
+                                )}
+                              >
+                                {selected.has(o.id) ? (
+                                  <CheckSquare className="h-3.5 w-3.5" />
+                                ) : (
+                                  <Square className="h-3.5 w-3.5" />
+                                )}
+                              </button>
+                            </div>
                           ))}
                         </div>
 
@@ -319,6 +516,40 @@ export function CollectionEditor({
         </p>
       </div>
     </section>
+  );
+}
+
+function FilterRow({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <div className="flex flex-wrap items-center gap-1.5">
+      <span className="mr-0.5 text-label-sm text-ink-soft/70">{label}</span>
+      {children}
+    </div>
+  );
+}
+
+function FilterChip({
+  active,
+  onClick,
+  children,
+}: {
+  active: boolean;
+  onClick: () => void;
+  children: React.ReactNode;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={cn(
+        "rounded-full border px-2.5 py-1 text-label-sm font-semibold transition",
+        active
+          ? "border-primary bg-primary/10 text-primary-strong"
+          : "border-line text-ink-soft hover:border-primary/40",
+      )}
+    >
+      {children}
+    </button>
   );
 }
 
