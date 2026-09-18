@@ -3,7 +3,7 @@ import type { ResolvedEntry } from "@/lib/types/deck";
 import { DECK_RULES } from "@/lib/constants";
 
 /**
- * 오프닝 핸드 드로우 & 멀리건 시뮬레이션.
+ * 오프닝 핸드 뽑기 & 멀리건 시뮬레이션.
  * 리프트바운드: 주 덱을 섞어 4장을 뽑는다. 멀리건은 1회 —
  * 최대 2장을 덱 맨 아래로 내리고 같은 수만큼 다시 뽑는다.
  */
@@ -37,7 +37,7 @@ export function openingDraw(mainEntries: ResolvedEntry[], rng: () => number = Ma
   return { hand: shuffled.slice(0, size), library: shuffled.slice(size), mulliganed: false };
 }
 
-/** 덱 맨 위에서 한 장 드로우 (턴 진행 시뮬레이션 — 횟수 제한 없음). */
+/** 덱 맨 위에서 한 장 뽑기 (턴 진행 시뮬레이션 — 횟수 제한 없음). */
 export function drawOne(state: DrawState): DrawState {
   if (state.library.length === 0) return state;
   return {
