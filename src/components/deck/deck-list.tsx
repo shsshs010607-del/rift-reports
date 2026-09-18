@@ -42,7 +42,7 @@ function CardPeek({ card }: { card: Card | null }) {
 }
 
 /**
- * 섹션별 덱 목록: 레전드 → 챔피언 → 메인덱 → 전장 → 룬.
+ * 섹션별 덱 목록: 전설 → 챔피언 → 주 덱 → 전장 → 룬.
  */
 export function DeckList({
   rd,
@@ -69,25 +69,25 @@ export function DeckList({
     >
       <CardPeek card={peek} />
 
-      {/* 레전드 */}
-      <Section title="레전드" n={c.legend} target="1" ok={c.legend === 1}>
+      {/* 전설 */}
+      <Section title="전설" n={c.legend} target="1" ok={c.legend === 1}>
         {rd.legend ? (
           <SlotRow card={rd.legend} onRemove={onClearLegend} onPeek={setPeek} />
         ) : (
-          <EmptySlot label="레전드 선택" onClick={() => onFocusPool("legend")} />
+          <EmptySlot label="전설 선택" onClick={() => onFocusPool("legend")} />
         )}
       </Section>
 
       {/* 챔피언 */}
-      <Section title="리더 챔피언" n={c.champion} target="1" ok={c.champion === 1}>
+      <Section title="선발 챔피언" n={c.champion} target="1" ok={c.champion === 1}>
         {rd.champion ? (
           <SlotRow card={rd.champion} onRemove={onClearChampion} onPeek={setPeek} />
         ) : (
-          <EmptySlot label="리더 챔피언 선택" onClick={() => onFocusPool("champion")} />
+          <EmptySlot label="선발 챔피언 선택" onClick={() => onFocusPool("champion")} />
         )}
       </Section>
 
-      {/* 메인덱 */}
+      {/* 주 덱 */}
       <EntrySection
         title={ZONE_META.main.label}
         subtitle="유닛 · 도구 · 주문"

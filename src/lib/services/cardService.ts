@@ -223,7 +223,7 @@ function normalizeRarity(rarity: string | undefined): CardRarity {
   return CARD_RARITY_SLUGS.find((slug) => s === slug) ?? (s || "common");
 }
 
-/** "Fury" / "red" / "R" / "fury" 등 다양한 표기를 도메인 슬러그로. "Colorless" 는 매칭 안 됨(무색). */
+/** "Fury" / "red" / "R" / "fury" 등 다양한 표기를 영역 슬러그로. "Colorless" 는 매칭 안 됨(무색). */
 const DOMAIN_LOOKUP: Map<string, CardDomain> = (() => {
   const m = new Map<string, CardDomain>();
   for (const d of CARD_DOMAINS) {

@@ -17,9 +17,9 @@ export type PoolTab =
 
 const TABS: { key: PoolTab; label: string; apiType?: CardType }[] = [
   { key: "all", label: "전체" },
-  { key: "legend", label: "레전드", apiType: "legend" },
-  { key: "champion", label: "리더 챔피언", apiType: "champion" },
-  { key: "main", label: "메인덱" },
+  { key: "legend", label: "전설", apiType: "legend" },
+  { key: "champion", label: "선발 챔피언", apiType: "champion" },
+  { key: "main", label: "주 덱" },
   { key: "battlefield", label: "전장", apiType: "battlefield" },
   { key: "rune", label: "룬", apiType: "rune" },
 ];
@@ -29,7 +29,7 @@ const LIMIT = 90;
 
 /**
  * 덱 빌더 좌측 — 존 탭 + 검색(/api/cards) + 카드 그리드.
- * 카드를 누르면 planAdd 규칙에 따라 레전드/챔피언 슬롯 또는 해당 존으로 들어간다.
+ * 카드를 누르면 planAdd 규칙에 따라 전설/챔피언 슬롯 또는 해당 존으로 들어간다.
  */
 export function CardPool({
   tab,
@@ -87,7 +87,7 @@ export function CardPool({
       setLoading(true);
       setError(null);
       try {
-        // 타입 필터가 없는 탭(전체·메인덱)은 전량을 받아 클라에서 색 정체성으로 거른다.
+        // 타입 필터가 없는 탭(전체·주 덱)은 전량을 받아 클라에서 색 정체성으로 거른다.
         // (limit 90 이면 수집번호 앞쪽 카드만 와서 색 하나가 통째로 빠지는 버그)
         const sp = new URLSearchParams({ limit: apiType ? String(LIMIT) : "500" });
         if (q.trim()) sp.set("q", q.trim());
@@ -117,7 +117,7 @@ export function CardPool({
       ctrl.abort();
       clearTimeout(t);
     };
-    // rd.legend/champion 변경 시 메인덱 색 필터 갱신
+    // rd.legend/champion 변경 시 주 덱 색 필터 갱신
   }, [q, domain, setCode, apiType, tab, rd.legend?.id, rd.champion?.id]);
 
   const idColors = rd.legend?.domains ?? rd.champion?.domains ?? [];
@@ -155,7 +155,7 @@ export function CardPool({
         />
       </div>
 
-      {/* 도메인 · 확장팩 */}
+      {/* 영역 · 확장팩 */}
       <div className="flex flex-wrap gap-1">
         {CARD_DOMAINS.map((d) => (
           <PoolChip
@@ -217,14 +217,14 @@ export function CardPool({
         )}
       </div>
 
-      {/* 결과 — 모든 카드가 동일한 -/+ 조작 (레전드·리더 챔피언은 1장 제한). */}
+      {/* 결과 — 모든 카드가 동일한 -/+ 조작 (전설·선발 챔피언은 1장 제한). */}
       <ul className="grid max-h-[62vh] grid-cols-2 gap-2 overflow-y-auto pr-1 sm:grid-cols-3">
         {cards
           .filter((card) => {
             if (ownedOnly && !((collection[card.id] ?? 0) > 0)) return false;
             if (tab === "all") return true;
-            // "리더 챔피언" 탭은 레전드와 이름이 같은 챔피언만 (지정 슬롯 전용).
-            // 다른 챔피언은 "메인덱" 탭에 나온다.
+            // "선발 챔피언" 탭은 전설과 이름이 같은 챔피언만 (지정 슬롯 전용).
+            // 다른 챔피언은 "주 덱" 탭에 나온다.
             if (tab === "champion") return matchesLegendChampion(rd, card);
             if (tab === "rune") return matchesIdentity(rd, card); // 색 맞는 룬 (가득 차도 표시)
             if (planAdd(deck, rd, card).kind !== "blocked") return true;
@@ -236,15 +236,15 @@ export function CardPool({
             const owned = collection[card.id] ?? 0;
             const plan = planAdd(deck, rd, card);
             const blocked = plan.kind === "blocked";
-            // 레전드·챔피언 슬롯은 1장뿐 — 이미 선택돼 있으면 +는 막는다(자기 자신 중복 방지).
+            // 전설·챔피언 슬롯은 1장뿐 — 이미 선택돼 있으면 +는 막는다(자기 자신 중복 방지).
             const isSlot = plan.kind === "legend" || plan.kind === "champion";
             const plusDisabled = blocked || (isSlot && inDeck > 0);
             const plusTitle = blocked
               ? plan.reason
               : plan.kind === "legend"
-                ? "레전드로 선택"
+                ? "전설로 선택"
                 : plan.kind === "champion"
-                  ? "리더 챔피언으로 선택"
+                  ? "선발 챔피언으로 선택"
                   : "한 장 추가";
             return (
               <li key={card.id}>

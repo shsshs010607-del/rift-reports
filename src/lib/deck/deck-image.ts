@@ -95,14 +95,14 @@ export async function renderDeckImage(
 
   let y = PAD + 64 + 20;
 
-  // ── 레전드 · 챔피언 ──
+  // ── 전설 · 챔피언 ──
   if (heroH) {
     ctx.fillStyle = "#181445";
     ctx.font = `800 20px ${FONT}`;
-    ctx.fillText("레전드 · 리더 챔피언", PAD, y);
+    ctx.fillText("전설 · 선발 챔피언", PAD, y);
     y += 30;
     const heroes: { card: Card; label: string }[] = [];
-    if (rd.legend) heroes.push({ card: rd.legend, label: "레전드" });
+    if (rd.legend) heroes.push({ card: rd.legend, label: "전설" });
     if (rd.champion) heroes.push({ card: rd.champion, label: "챔피언" });
     const hw = CW * 1.7;
     for (let i = 0; i < heroes.length; i++) {
@@ -146,10 +146,10 @@ export async function renderDeckImage(
     y += CH + 78;
   }
 
-  // ── 메인덱 ──
+  // ── 주 덱 ──
   ctx.fillStyle = "#181445";
   ctx.font = `800 20px ${FONT}`;
-  ctx.fillText(`메인덱 ${counts.main}`, PAD, y);
+  ctx.fillText(`주 덱 ${counts.main}`, PAD, y);
   y += 34;
   await drawGrid(ctx, main, PAD, y, CW, CH, COLS, GAP);
   y += mainRows * (CH + 22) + 10;

@@ -4,7 +4,7 @@ import { DECK_RULES } from "@/lib/constants";
 
 /**
  * 오프닝 핸드 드로우 & 멀리건 시뮬레이션.
- * 리프트바운드: 메인덱을 섞어 4장을 뽑는다. 멀리건은 1회 —
+ * 리프트바운드: 주 덱을 섞어 4장을 뽑는다. 멀리건은 1회 —
  * 최대 2장을 덱 맨 아래로 내리고 같은 수만큼 다시 뽑는다.
  */
 
@@ -24,7 +24,7 @@ export function shuffle<T>(arr: T[], rng: () => number = Math.random): T[] {
   return a;
 }
 
-/** 메인덱 entries 를 장수만큼 펼친 실물 카드 배열. */
+/** 주 덱 entries 를 장수만큼 펼친 실물 카드 배열. */
 export function buildLibrary(mainEntries: ResolvedEntry[]): Card[] {
   const out: Card[] = [];
   for (const e of mainEntries) for (let i = 0; i < e.qty; i++) out.push(e.card);

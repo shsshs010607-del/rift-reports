@@ -92,7 +92,7 @@ export function totalCards(rd: ResolvedDeck): number {
 
 // ── 색 정체성 ───────────────────────────────────────────────────
 
-/** 레전드(없으면 챔피언)의 도메인 = 덱 색 정체성. */
+/** 전설(없으면 챔피언)의 영역 = 덱 색 정체성. */
 export function identityDomains(rd: ResolvedDeck): string[] {
   return rd.legend?.domains ?? rd.champion?.domains ?? [];
 }
@@ -111,23 +111,23 @@ export function championName(name: string): string {
 }
 
 /**
- * 지정 챔피언은 레전드와 같은 챔피언 이름이어야 한다.
- * (레전드 "Jinx - Loose Cannon" → 챔피언은 "Jinx - …" 만)
+ * 선발 챔피언은 전설과 같은 챔피언 이름이어야 한다.
+ * (전설 "Jinx - Loose Cannon" → 챔피언은 "Jinx - …" 만)
  */
 export function matchesLegendChampion(rd: ResolvedDeck, card: Card): boolean {
   if (card.type !== "champion") return true;
-  if (!rd.legend) return true; // 레전드 미정이면 제한 없음
+  if (!rd.legend) return true; // 전설 미정이면 제한 없음
   return championName(card.localization.en.name) === championName(rd.legend.localization.en.name);
 }
 
-/** 시그니처 카드는 레전드와 같은 챔피언 태그를 가져야 한다. 시그니처가 아니면 항상 통과. */
+/** 시그니처 카드는 전설과 같은 챔피언 태그를 가져야 한다. 시그니처가 아니면 항상 통과. */
 export function matchesSignatureLegend(rd: ResolvedDeck, card: Card): boolean {
   if (card.supertype !== "signature") return true;
-  if (!rd.legend) return true; // 레전드 미정이면 제한 없음
+  if (!rd.legend) return true; // 전설 미정이면 제한 없음
   return card.subtypes.some((t) => rd.legend!.subtypes.includes(t));
 }
 
-/** 메인덱의 시그니처 카드 총 장수(이름 무관 합산) — 최대 {@link DECK_RULES.maxCopies}장. */
+/** 주 덱의 시그니처 카드 총 장수(이름 무관 합산) — 최대 {@link DECK_RULES.maxCopies}장. */
 export function signatureCount(rd: ResolvedDeck): number {
   return rd.sections.main
     .filter((e) => e.card.supertype === "signature")
@@ -145,12 +145,12 @@ export function validateDeck(rd: ResolvedDeck): DeckIssue[] {
   const issues: DeckIssue[] = [];
   const c = zoneCounts(rd);
 
-  if (!rd.legend) issues.push({ level: "warn", message: "레전드를 선택하세요." });
-  if (!rd.champion) issues.push({ level: "warn", message: "지정 챔피언을 선택하세요." });
+  if (!rd.legend) issues.push({ level: "warn", message: "전설을 선택하세요." });
+  if (!rd.champion) issues.push({ level: "warn", message: "선발 챔피언을 선택하세요." });
   if (c.main !== DECK_RULES.mainMin)
     issues.push({
       level: c.main === 0 ? "warn" : "error",
-      message: `메인덱은 정확히 ${DECK_RULES.mainMin}장이어야 합니다 (현재 ${c.main}장).`,
+      message: `주 덱은 정확히 ${DECK_RULES.mainMin}장이어야 합니다 (현재 ${c.main}장).`,
     });
   if (c.rune !== DECK_RULES.runeCount)
     issues.push({
@@ -163,7 +163,7 @@ export function validateDeck(rd: ResolvedDeck): DeckIssue[] {
       message: `전장은 ${DECK_RULES.battlefieldCount}장이어야 합니다 (현재 ${c.battlefield}장).`,
     });
 
-  // 이름당 최대 3장 — 부제가 다르면 다른 카드. 리더 챔피언 슬롯도 카운트.
+  // 이름당 최대 3장 — 부제가 다르면 다른 카드. 선발 챔피언 슬롯도 카운트.
   const mainByName = new Map<string, number>();
   for (const e of rd.sections.main)
     mainByName.set(e.card.name, (mainByName.get(e.card.name) ?? 0) + e.qty);
@@ -176,7 +176,7 @@ export function validateDeck(rd: ResolvedDeck): DeckIssue[] {
       });
   }
 
-  // 시그니처 — 이름 무관 총 3장, 레전드와 챔피언 태그가 달라도 금지.
+  // 시그니처 — 이름 무관 총 3장, 전설과 챔피언 태그가 달라도 금지.
   const sigTotal = signatureCount(rd);
   if (sigTotal > DECK_RULES.maxCopies)
     issues.push({
@@ -187,7 +187,7 @@ export function validateDeck(rd: ResolvedDeck): DeckIssue[] {
     if (!matchesSignatureLegend(rd, e.card))
       issues.push({
         level: "error",
-        message: `"${e.card.name}" 은(는) 레전드(${rd.legend?.name ?? "미정"})의 챔피언 태그와 다른 시그니처입니다.`,
+        message: `"${e.card.name}" 은(는) 전설(${rd.legend?.name ?? "미정"})의 챔피언 태그와 다른 시그니처입니다.`,
       });
 
   // 토큰 — 카드 효과로만 생기는 카드라 덱 구성에 넣을 수 없다.
@@ -211,17 +211,17 @@ export function validateDeck(rd: ResolvedDeck): DeckIssue[] {
   if (rd.champion && rd.legend && !matchesLegendChampion(rd, rd.champion))
     issues.push({
       level: "error",
-      message: `지정 챔피언은 레전드(${rd.legend.name})와 같은 챔피언이어야 합니다.`,
+      message: `선발 챔피언은 전설(${rd.legend.name})와 같은 챔피언이어야 합니다.`,
     });
-  // 메인덱의 다른 챔피언 유닛은 색만 맞으면 허용 (위 색 검증에서 이미 처리됨).
+  // 주 덱의 다른 챔피언 유닛은 색만 맞으면 허용 (위 색 검증에서 이미 처리됨).
 
   return issues;
 }
 
 /**
  * 풀에서 카드를 눌렀을 때의 동작 결정.
- *  - legend  → 레전드 슬롯 교체
- *  - champion → 챔피언 슬롯이 비었고 색이 맞으면 슬롯, 아니면 메인덱 +1
+ *  - legend  → 전설 슬롯 교체
+ *  - champion → 챔피언 슬롯이 비었고 색이 맞으면 슬롯, 아니면 주 덱 +1
  *  - 그 외   → 해당 존 entries +1
  */
 export type AddAction =
@@ -238,11 +238,11 @@ export function planAdd(deck: Deck, rd: ResolvedDeck, card: Card): AddAction {
   if (!matchesIdentity(rd, card)) return { kind: "blocked", reason: "덱 색과 다릅니다" };
 
   if (!matchesSignatureLegend(rd, card))
-    return { kind: "blocked", reason: "레전드의 챔피언 태그와 다른 시그니처입니다" };
+    return { kind: "blocked", reason: "전설의 챔피언 태그와 다른 시그니처입니다" };
 
   if (card.type === "champion") {
-    // 레전드와 같은 이름의 챔피언 + 지정 슬롯이 비었으면 슬롯으로.
-    // 그 외 챔피언(다른 이름 / 슬롯 참)은 색만 맞으면 메인덱 카드로 넣는다.
+    // 전설과 같은 이름의 챔피언 + 선발 슬롯이 비었으면 슬롯으로.
+    // 그 외 챔피언(다른 이름 / 슬롯 참)은 색만 맞으면 주 덱 카드로 넣는다.
     if (matchesLegendChampion(rd, card) && !rd.champion) return { kind: "champion", id: card.id };
   }
 
@@ -252,7 +252,7 @@ export function planAdd(deck: Deck, rd: ResolvedDeck, card: Card): AddAction {
     return { kind: "blocked", reason: `시그니처는 이름과 무관하게 총 ${DECK_RULES.maxCopies}장까지` };
 
   // 이름당 최대 3장 (룬 제외). "이름" = 전체 이름(부제 포함) → 부제가 다르면 다른 카드.
-  // 리더 챔피언 슬롯의 카드도 같은 이름이면 1장으로 카운트한다.
+  // 선발 챔피언 슬롯의 카드도 같은 이름이면 1장으로 카운트한다.
   const sameNameInZone = rd.sections[zone]
     .filter((e) => e.card.name === card.name)
     .reduce((s, e) => s + e.qty, 0);
@@ -263,9 +263,9 @@ export function planAdd(deck: Deck, rd: ResolvedDeck, card: Card): AddAction {
       reason: `이름당 최대 ${DECK_RULES.maxCopies}장${leaderSameName ? " (리더 포함)" : ""}`,
     };
   if (zone === "main" && zoneCounts(rd).main >= DECK_RULES.mainMax)
-    return { kind: "blocked", reason: `메인덱은 ${DECK_RULES.mainMax}장까지` };
+    return { kind: "blocked", reason: `주 덱은 ${DECK_RULES.mainMax}장까지` };
   if (zone === "rune" && zoneCounts(rd).rune >= DECK_RULES.runeCount)
-    return { kind: "blocked", reason: `룬은 ${DECK_RULES.runeCount}장 (레전드 색 자동)` };
+    return { kind: "blocked", reason: `룬은 ${DECK_RULES.runeCount}장 (전설 색 자동)` };
   if (
     zone === "battlefield" &&
     zoneCounts(rd).battlefield >= DECK_RULES.battlefieldCount &&

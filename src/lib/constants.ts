@@ -284,12 +284,12 @@ export const TOURNAMENT_STATUS = [
   { slug: "finished", label: "종료" },
 ] as const;
 
-// 리프트바운드 6개 도메인 (Core Rules 133 기준)
+// 리프트바운드 6개 영역 (Core Rules 134 기준)
 export const CARD_DOMAINS = [
   { slug: "fury", label: "분노", en: "Fury", short: "R", color: "#e4483d" },
-  { slug: "calm", label: "침착", en: "Calm", short: "G", color: "#3fa34d" },
-  { slug: "mind", label: "지혜", en: "Mind", short: "B", color: "#3b82f6" },
-  { slug: "body", label: "육체", en: "Body", short: "O", color: "#e8863d" },
+  { slug: "calm", label: "평정", en: "Calm", short: "G", color: "#3fa34d" },
+  { slug: "mind", label: "정신", en: "Mind", short: "B", color: "#3b82f6" },
+  { slug: "body", label: "신체", en: "Body", short: "O", color: "#e8863d" },
   { slug: "chaos", label: "혼돈", en: "Chaos", short: "P", color: "#a855f7" },
   { slug: "order", label: "질서", en: "Order", short: "Y", color: "#eab308" },
 ] as const;
@@ -320,7 +320,7 @@ export const CARD_SETS = [
 
 /**
  * 리프트바운드 덱 구성 규칙.
- *  - 레전드 1 · 지정 챔피언 1 · 메인덱 39장(카드 이름당 최대 3장) · 룬덱 12 · 전장 3
+ *  - 전설 1 · 선발 챔피언 1 · 주 덱 39장(카드 이름당 최대 3장) · 룬 덱 12 · 전장 3
  *  - 오프닝 핸드 4장, 멀리건 1회(최대 2장 덱 아래로).
  */
 export const DECK_RULES = {

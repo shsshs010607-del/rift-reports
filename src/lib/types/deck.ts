@@ -2,8 +2,8 @@ import type { Card, CardType } from "@/lib/types/card";
 
 /**
  * 덱 모델.
- * - 레전드 / 지정 챔피언은 각 1장 슬롯(id).
- * - 나머지(메인덱·룬·전장)는 entries 에 id+장수로. 존은 카드 타입에서 파생.
+ * - 전설 / 선발 챔피언은 각 1장 슬롯(id).
+ * - 나머지(주 덱·룬·전장)는 entries 에 id+장수로. 존은 카드 타입에서 파생.
  * 저장은 id 만 — 카드 상세는 카드 서비스에서 다시 해석한다.
  */
 export interface DeckEntry {
@@ -42,7 +42,7 @@ export const ZONE_META: Record<DeckZone, ZoneMeta> = {
   champion: { label: "챔피언", target: 1, targetLabel: "1", exact: true },
   battlefield: { label: "전장", target: 3, targetLabel: "3", exact: true },
   rune: { label: "룬", target: 12, targetLabel: "12", exact: true },
-  main: { label: "메인덱", target: 39, targetLabel: "39", exact: true },
+  main: { label: "주 덱", target: 39, targetLabel: "39", exact: true },
 };
 
 /** entries 카드 타입 → 존 (레전드/챔피언 슬롯은 별도라 여기선 안 나온다). */

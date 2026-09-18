@@ -20,7 +20,7 @@ export const metadata: Metadata = { title: "덱 시뮬레이터", alternates: { 
 // 카드 서비스를 다시 호출하게 되므로 넣지 않는다.)
 
 /**
- * 덱 시뮬레이터 = 덱 빌더 + 오프닝 핸드 4장 드로우/멀리건.
+ * 덱 시뮬레이터 = 덱 빌더 + 오프닝 핸드 4장 뽑기/멀리건.
  * 덱 공유: ?d=<짧은 코드> (신규) 또는 ?deck=<base64> (구버전). 카드 소스는 어댑터.
  */
 export default async function DeckSimulatorPage(

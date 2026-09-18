@@ -86,7 +86,7 @@ function CardTile({
       style={{ ["--accent" as string]: accent, ["--ring" as string]: rarity.ring }}
       className="group relative flex h-full w-full flex-col overflow-hidden rounded-2xl border border-line bg-card text-left shadow-xs transition duration-200 hover:-translate-y-1 hover:shadow-[0_18px_36px_-14px_rgba(30,27,75,0.28)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50"
     >
-      {/* 도메인 색 상단 스트립 */}
+      {/* 영역 색 상단 스트립 */}
       <span
         aria-hidden
         className="h-1 w-full shrink-0"

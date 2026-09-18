@@ -15,7 +15,7 @@ const LABELS: Record<string, Record<string, string>> = {
   rarity: Object.fromEntries(CARD_RARITIES.map((r) => [r.slug, r.label])),
 };
 const KEY_LABEL: Record<string, string> = {
-  domain: "도메인",
+  domain: "영역",
   type: "유형",
   setCode: "확장팩",
   rarity: "레어도",
@@ -24,7 +24,7 @@ const KEY_LABEL: Record<string, string> = {
 const COSTS = ["0", "1", "2", "3", "4", "5", "6", "7"];
 
 /**
- * 카드 검색 필터 — 도메인 색스와치 / 코스트 곡선 그래프 / 유형·확장팩·레어도.
+ * 카드 검색 필터 — 영역 색스와치 / 코스트 곡선 그래프 / 유형·확장팩·레어도.
  * `facets` 로 각 옵션의 매칭 카드 수·코스트 분포를 시각화해 탐색 생산성을 높인다.
  * 선택 → URL 쿼리스트링 갱신(page 리셋). 서버 컴포넌트가 읽어 필터링.
  */
@@ -133,10 +133,10 @@ export function CardFilterBar({ facets }: { facets?: CardFacets | null }) {
       )}
 
       <div className={cn("mt-4 flex-col gap-4 xl:flex", openMobile ? "flex" : "hidden")}>
-          {/* 도메인 — 색 스와치 + 개수 */}
+          {/* 영역 — 색 스와치 + 개수 */}
           <section>
             <p className="mb-2 text-label-sm font-bold uppercase tracking-wide text-ink-soft">
-              도메인
+              영역
             </p>
             <div className="flex flex-wrap gap-2">
               {CARD_DOMAINS.map((d) => {
@@ -181,7 +181,7 @@ export function CardFilterBar({ facets }: { facets?: CardFacets | null }) {
                   </button>
                 );
               })}
-              {/* 무색(중립) — 도메인 없는 카드만 */}
+              {/* 무색(중립) — 영역 없는 카드만 */}
               {(() => {
                 const on = active("domain", "neutral");
                 const n = facets?.domain.neutral;

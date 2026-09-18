@@ -240,7 +240,7 @@ export function ProxyBuilder() {
           ))}
         </div>
 
-        {/* 도메인 · 코스트 · 확장팩 — 항상 노출 */}
+        {/* 영역 · 코스트 · 확장팩 — 항상 노출 */}
         <div className="mt-3 flex flex-col gap-2">
           <div className="flex flex-wrap gap-1.5">
             {CARD_DOMAINS.map((d) => (
@@ -293,7 +293,7 @@ export function ProxyBuilder() {
               {importMsg && <span className="text-label-sm text-ink-soft">{importMsg}</span>}
             </div>
             <p className="text-[12px] text-ink-soft/70">
-              덱의 레전드·챔피언·메인덱·전장·룬을 전부 담습니다. 필요 없는 카드는 아래 목록에서 빼면 돼요.
+              덱의 전설·챔피언·주 덱·전장·룬을 전부 담습니다. 필요 없는 카드는 아래 목록에서 빼면 돼요.
             </p>
           </div>
         )}

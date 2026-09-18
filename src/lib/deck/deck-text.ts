@@ -3,22 +3,23 @@ import type { ResolvedDeck } from "@/lib/types/deck";
 /**
  * 덱 ↔ 사람이 읽는 텍스트 디코드/인코드 (커뮤니티에 붙여넣기 / 다른 툴과 공유용).
  *
- * 레전드: 이름
+ * 전설: 이름
  * 챔피언: 이름
  * 전장:
  * 1 이름
  * 룬:
  * 6 이름
- * 메인덱:
+ * 주 덱:
  * 3 이름
  */
 
+// 예전 표기(레전드/메인덱 등)도 그대로 인식 — 기존에 공유된 덱 코드 호환용.
 const HEAD = {
-  legend: ["레전드", "legend"],
+  legend: ["전설", "레전드", "legend"],
   champion: ["챔피언", "champion"],
   battlefield: ["전장", "battlefield", "battlefields"],
   rune: ["룬", "rune", "runes"],
-  main: ["메인덱", "메인 덱", "deck", "main deck", "maindeck"],
+  main: ["주 덱", "주덱", "메인덱", "메인 덱", "deck", "main deck", "maindeck"],
 };
 
 export type TextSection = "battlefield" | "rune" | "main";
@@ -33,12 +34,12 @@ export interface ParsedDecklist {
 export function formatDecklist(rd: ResolvedDeck): string {
   const lines: string[] = [];
   if (rd.name) lines.push(`# ${rd.name}`, "");
-  if (rd.legend) lines.push(`레전드: ${rd.legend.name}`);
+  if (rd.legend) lines.push(`전설: ${rd.legend.name}`);
   if (rd.champion) lines.push(`챔피언: ${rd.champion.name}`);
   for (const [key, label] of [
     ["battlefield", "전장"],
     ["rune", "룬"],
-    ["main", "메인덱"],
+    ["main", "주 덱"],
   ] as const) {
     const sec = rd.sections[key];
     if (sec.length === 0) continue;
@@ -67,11 +68,11 @@ export function parseDecklist(text: string): ParsedDecklist {
       continue;
     }
 
-    // "레전드: 이름" / "챔피언: 이름"
-    const inline = line.match(/^(레전드|챔피언|legend|champion)\s*[:：]\s*(.+)$/i);
+    // "전설: 이름" / "챔피언: 이름" (예전 "레전드:" 표기도 인식)
+    const inline = line.match(/^(전설|레전드|챔피언|legend|champion)\s*[:：]\s*(.+)$/i);
     if (inline) {
       const name = inline[2].trim();
-      if (/레전드|legend/i.test(inline[1])) out.legendName = name;
+      if (/전설|레전드|legend/i.test(inline[1])) out.legendName = name;
       else out.championName = name;
       continue;
     }

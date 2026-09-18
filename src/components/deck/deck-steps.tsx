@@ -18,24 +18,24 @@ type Step = {
 const STEPS: Step[] = [
   {
     tab: "legend",
-    label: "레전드",
+    label: "전설",
     done: (c) => c.legend === 1,
     progress: (c) => `${c.legend}/1`,
-    hint: "레전드를 골라 덱의 색(도메인)을 정하세요.",
+    hint: "전설을 골라 덱의 색(영역)을 정하세요.",
   },
   {
     tab: "champion",
-    label: "리더 챔피언",
+    label: "선발 챔피언",
     done: (c) => c.champion === 1,
     progress: (c) => `${c.champion}/1`,
-    hint: "레전드와 같은 이름의 챔피언을 리더 챔피언으로 넣으세요.",
+    hint: "전설과 같은 이름의 챔피언을 선발 챔피언으로 넣으세요.",
   },
   {
     tab: "main",
-    label: "메인덱",
+    label: "주 덱",
     done: (c) => c.main === 39,
     progress: (c) => `${c.main}/39`,
-    hint: "유닛·주문·도구로 메인덱을 39장 채우세요 (같은 카드 최대 3장).",
+    hint: "유닛·주문·도구로 주 덱을 39장 채우세요 (같은 카드 최대 3장).",
   },
   {
     tab: "battlefield",
@@ -49,7 +49,7 @@ const STEPS: Step[] = [
     label: "룬",
     done: (c) => c.rune === 12,
     progress: (c) => `${c.rune}/12`,
-    hint: "룬은 레전드 색에 맞춰 12장 자동으로 채워집니다.",
+    hint: "룬은 전설 색에 맞춰 12장 자동으로 채워집니다.",
   },
 ];
 

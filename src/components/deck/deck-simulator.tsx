@@ -34,7 +34,7 @@ import { ImportDialog } from "@/components/deck/import-dialog";
 import { cn } from "@/lib/utils";
 
 /**
- * 레전드의 도메인에 맞춰 룬을 자동으로 채운다.
+ * 전설의 영역에 맞춰 룬을 자동으로 채운다.
  * 2색 → 6+6, 1색 → 12. 기존 룬 엔트리는 먼저 비운다.
  */
 function fillRunes(
@@ -72,7 +72,7 @@ export function DeckSimulator({
   const router = useRouter();
 
   const [deck, setDeck] = useState<Deck>(initialDeck);
-  // 새 덱이면 레전드 칸부터 시작 (가이드 흐름)
+  // 새 덱이면 전설 칸부터 시작 (가이드 흐름)
   const [poolTab, setPoolTab] = useState<PoolTab>(initialDeck.legendId ? "main" : "legend");
   const [rightTab, setRightTab] = useState<"deck" | "hand">("deck");
   const [copied, setCopied] = useState(false);
@@ -88,7 +88,7 @@ export function DeckSimulator({
     for (const c of cards) cacheRef.current.set(c.id, c);
   }, []);
 
-  // 도메인별 기본 룬 카드 (레전드 선택 시 6+6 자동 채우기용)
+  // 영역별 기본 룬 카드 (전설 선택 시 6+6 자동 채우기용)
   const runesByDomain = useRef<Map<string, Card>>(new Map());
   useEffect(() => {
     (async () => {
@@ -102,8 +102,8 @@ export function DeckSimulator({
             cacheRef.current.set(c.id, c);
           }
         }
-        // 이미 레전드가 있고 그 카드가 캐시에 있으면 룬을 (재)정렬한다.
-        // 레전드 카드를 아직 모르면 기존 룬을 건드리지 않는다 (복원된 덱 훼손 방지).
+        // 이미 전설이 있고 그 카드가 캐시에 있으면 룬을 (재)정렬한다.
+        // 전설 카드를 아직 모르면 기존 룬을 건드리지 않는다 (복원된 덱 훼손 방지).
         setDeck((d) => {
           if (!d.legendId) return d;
           const legendCard = cacheRef.current.get(d.legendId);
@@ -157,7 +157,7 @@ export function DeckSimulator({
     counts.main >= 39 &&
     counts.main <= 59;
 
-  // 풀에서 카드 클릭 — 슬롯/존 배치 + 가이드 흐름(레전드→챔피언→메인덱까지만 자동 이동)
+  // 풀에서 카드 클릭 — 슬롯/존 배치 + 가이드 흐름(전설→챔피언→주 덱까지만 자동 이동)
   const handlePick = useCallback(
     (card: Card) => {
       cacheRef.current.set(card.id, card);
@@ -170,7 +170,7 @@ export function DeckSimulator({
           break;
         case "champion":
           setDeck((d) => setChampion(d, plan.id));
-          flashMsg("리더 챔피언 완료 → 다음: 메인덱 39장");
+          flashMsg("선발 챔피언 완료 → 다음: 주 덱 39장");
           advance("main");
           break;
         case "entry":
@@ -187,7 +187,7 @@ export function DeckSimulator({
     setDeck((d) => addEntry(d, id, delta));
   }, []);
 
-  // 카드 풀의 "-" — 레전드/리더 챔피언 카드면 슬롯을 비우고, 그 외는 일반 엔트리 -1.
+  // 카드 풀의 "-" — 전설/선발 챔피언 카드면 슬롯을 비우고, 그 외는 일반 엔트리 -1.
   const handlePoolRemove = useCallback(
     (card: Card) => {
       if (rd.legend?.id === card.id) {

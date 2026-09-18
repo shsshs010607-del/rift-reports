@@ -160,7 +160,7 @@ export function ImportDialog({
           value={text}
           onChange={(e) => setText(e.target.value)}
           rows={10}
-          placeholder={"레전드: Jinx - Loose Cannon\n챔피언: Jinx - Demolitionist\n룬:\n6 Fury Rune\n6 Chaos Rune\n메인덱:\n3 ...\n\n또는 https://.../deck-simulator?deck=..."}
+          placeholder={"전설: Jinx - Loose Cannon\n챔피언: Jinx - Demolitionist\n룬:\n6 Fury Rune\n6 Chaos Rune\n주 덱:\n3 ...\n\n또는 https://.../deck-simulator?deck=..."}
           className="w-full resize-none rounded-xl border border-line bg-subcanvas/50 p-3 font-mono text-body-sm text-ink focus:border-primary focus:outline-none"
         />
 

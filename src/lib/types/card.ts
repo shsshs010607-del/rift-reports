@@ -1,7 +1,7 @@
 import { CARD_DOMAINS, CARD_TYPES, CARD_RARITIES, CARD_SETS } from "@/lib/constants";
 
 /**
- * 카드 도메인 모델 (뷰/검색 계층 표준형).
+ * 카드 영역 모델 (뷰/검색 계층 표준형).
  *
  * ─ 위치: 이 타입은 "앱이 카드를 이해하는 방식"을 정의한다.
  *   데이터 출처(오픈소스 JSON, 커뮤니티 REST API, 추후 Riot 공식 API)가 무엇이든
@@ -13,7 +13,7 @@ import { CARD_DOMAINS, CARD_TYPES, CARD_RARITIES, CARD_SETS } from "@/lib/consta
 
 // ── 열거형: constants.ts 의 단일 정의에서 파생 (중복 방지) ──────────────
 
-/** 카드 색(도메인). 다색 카드는 복수. */
+/** 카드 색(영역). 다색 카드는 복수. */
 export type CardDomain = (typeof CARD_DOMAINS)[number]["slug"];
 
 /** 카드 종류. */
@@ -121,7 +121,7 @@ export interface Card {
   orientation: "portrait" | "landscape";
   /** 세부 태그(지역, 종족, 키워드 등). */
   subtypes: string[];
-  /** 카드가 속한 도메인(색). 다색 가능, 무색은 빈 배열. */
+  /** 카드가 속한 영역(색). 다색 가능, 무색은 빈 배열. */
   domains: CardDomain[];
   rarity: CardRarity;
 
@@ -150,16 +150,16 @@ export interface Card {
  * `/cards` 페이지 및 `/api/cards` 라우트의 URL searchParams 계약과 1:1 대응한다.
  * 모든 필드는 선택 — 아무것도 없으면 "전체"로 해석한다.
  */
-/** 도메인 필터 값 — 6색 슬러그 + "무색만" 을 뜻하는 특수값. */
+/** 영역 필터 값 — 6색 슬러그 + "무색만" 을 뜻하는 특수값. */
 export const NEUTRAL_DOMAIN = "neutral";
 export type CardDomainFilter = CardDomain | typeof NEUTRAL_DOMAIN;
 
 export interface CardSearchQuery {
   /** 자유 텍스트. 카드명 + 룰 텍스트를 대상으로 한/영 부분일치 검색. */
   q?: string;
-  /** 6색 중 하나, 또는 "neutral"(도메인 없는 무색 카드만). */
+  /** 6색 중 하나, 또는 "neutral"(영역 없는 무색 카드만). */
   domain?: CardDomainFilter;
-  /** true 면 도메인 필터가 걸려도 무색(중립) 카드는 통과시킨다 — 덱 빌더용. */
+  /** true 면 영역 필터가 걸려도 무색(중립) 카드는 통과시킨다 — 덱 빌더용. */
   colorlessOk?: boolean;
   type?: CardType;
   rarity?: CardRarity;

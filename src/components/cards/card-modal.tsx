@@ -253,7 +253,7 @@ export function CardModal({
             </Row>
             <Row label="코스트">{card.cost ?? "—"}</Row>
             {card.power != null && <Row label="위력">{card.power}</Row>}
-            <Row label="도메인">
+            <Row label="영역">
               <span className="flex flex-wrap gap-1.5">
                 {card.domains.length === 0 && "무색"}
                 {card.domains.map((slug) => {

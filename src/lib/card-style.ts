@@ -4,7 +4,7 @@ const DOMAIN_COLOR = new Map<string, string>(CARD_DOMAINS.map((d) => [d.slug, d.
 
 const NEUTRAL = "#8b8fa3";
 
-/** 카드 도메인 색 배열 (무색이면 중립 회색 1개). */
+/** 카드 영역 색 배열 (무색이면 중립 회색 1개). */
 export function domainColors(slugs: readonly string[]): string[] {
   const cs = slugs.map((s) => DOMAIN_COLOR.get(s)).filter(Boolean) as string[];
   return cs.length ? cs : [NEUTRAL];

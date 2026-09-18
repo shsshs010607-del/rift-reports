@@ -18,17 +18,17 @@ import { TurnPhases } from "./turn-phases";
 
 const KEYWORDS = GLOSSARY.filter((t) => t.category === "키워드");
 
-/** 6개 도메인의 플레이 성향 (색 파이 기준 요약) */
+/** 6개 영역의 플레이 성향 (색 파이 기준 요약) */
 const DOMAIN_TRAITS: Record<string, string> = {
   fury: "공격적·즉발. 빠른 유닛, 직접 피해, 위력 폭발. 짧게 끝내는 어그로.",
   calm: "성장·자원. 에너지 가속, 큰 유닛, 회복. 판을 키우는 장기전.",
   mind: "정보·카드 이득. 드로우, 통찰/예측, 반응. 상대를 읽는 컨트롤.",
-  body: "전투·거점. 이동, 점령, 방패. 전장을 몸으로 밀어붙이는 압박.",
+  body: "전투·거점. 이동, 정복, 방패. 전장을 몸으로 밀어붙이는 압박.",
   chaos: "변칙·확률. 무작위 효과, 자기 희생, 판을 흔드는 고위험 고수익.",
   order: "규율·군단. 토큰 소환, 광역 버프, 진형. 수로 밀어붙이는 물량.",
 };
 
-/** 도메인 문양 — 공식 룬 아이콘 대신 성향을 나타내는 대체 아이콘. */
+/** 영역 문양 — 공식 룬 아이콘 대신 성향을 나타내는 대체 아이콘. */
 const DOMAIN_ICONS: Record<string, typeof Flame> = {
   fury: Flame,
   calm: Droplet,
@@ -41,34 +41,34 @@ const DOMAIN_ICONS: Record<string, typeof Flame> = {
 /** 판 위(The Board) 구역 */
 const BOARD_ZONES: { name: string; desc: string }[] = [
   {
-    name: "베이스 (Base)",
-    desc: "내 유닛·도구를 소환해 대기시키는 안전 구역. 전투가 없고, 상대는 여기 아무것도 둘 수 없다. 충전한 룬(룬 풀)도 여기 모인다.",
+    name: "기지 (Base)",
+    desc: "내 유닛·도구를 소환해 대기시키는 안전 구역. 전투가 없고, 상대는 여기 아무것도 둘 수 없다. 전개한 룬(룬 구성)도 여기 모인다.",
   },
   {
     name: "전장 존 (Battlefield Zone)",
-    desc: "양쪽 플레이어가 공유하는 중앙. 여기 놓인 전장을 점령·유지해 점수를 얻는다. 1v1은 전장 2개(각자 덱의 전장 3장 중 1장씩 제공).",
+    desc: "양쪽 플레이어가 공유하는 중앙. 여기 놓인 전장을 정복·점거해 점수를 얻는다. 1v1은 전장 2개(각자 덱의 전장 3장 중 1장씩 제공).",
   },
   {
     name: "전장 (Battlefield)",
-    desc: "각각이 하나의 '위치'. 유닛을 베이스↔전장으로 이동시켜 지배권을 다툰다.",
+    desc: "각각이 하나의 '위치'. 유닛을 기지↔전장으로 이동시켜 통제를 다툰다.",
   },
   {
-    name: "페이스다운 존",
-    desc: "각 전장에 딸린 숨김 칸. 그 전장을 지배하는 쪽만 카드 1장을 뒷면으로 숨길 수 있고, 지배권을 잃으면 사라진다.",
+    name: "뒷면 표시 구역",
+    desc: "각 전장에 딸린 숨김 칸. 그 전장을 통제하는 쪽만 카드 1장을 뒷면으로 숨길 수 있고, 통제를 잃으면 사라진다.",
   },
   {
-    name: "레전드 존",
-    desc: "챔피언 레전드를 놓는 자리. 게임 내내 고정 — 이동·제거되지 않는다.",
+    name: "전설 구역",
+    desc: "챔피언 전설를 놓는 자리. 게임 내내 고정 — 이동·제거되지 않는다.",
   },
 ];
 
 /** 판 밖(Non-Board) 구역 */
 const OFF_BOARD_ZONES: { name: string; desc: string }[] = [
-  { name: "챔피언 존", desc: "지정 챔피언이 시작하는 자리. 여기서 일반 카드처럼 플레이한다." },
-  { name: "메인 덱 / 룬 덱", desc: "따로 셔플해 각자 자리에 뒷면으로 놓는다. 카드는 메인 덱, 자원(룬)은 룬 덱에서." },
+  { name: "챔피언 구역", desc: "선발 챔피언이 시작하는 자리. 여기서 일반 카드처럼 플레이한다." },
+  { name: "주 덱 / 룬 덱", desc: "따로 셔플해 각자 자리에 뒷면으로 놓는다. 카드는 주 덱, 자원(룬)은 룬 덱에서." },
   { name: "손패 (Hand)", desc: "드로우한 카드가 들어오는 곳. 나만 본다(비공개)." },
-  { name: "트래시", desc: "처치·버림·사용된 카드가 가는 곳. 플레이어별로 따로 둔다." },
-  { name: "추방 (Banishment)", desc: "추방 효과로 게임에서 빠진 카드. 트래시보다 되돌리기 어렵다." },
+  { name: "폐기장", desc: "처치·버림·사용된 카드가 가는 곳. 플레이어별로 따로 둔다." },
+  { name: "추방지 (Banishment)", desc: "추방 효과로 게임에서 빠진 카드. 폐기장보다 되돌리기 어렵다." },
   { name: "체인 (Chain)", desc: "플레이한 카드·능력이 해결을 기다리며 쌓이는 곳. 나중 것부터 해결." },
 ];
 
@@ -119,7 +119,7 @@ function BoardDiagram() {
         {/* 상대 진영 */}
         <div className="rounded-lg border border-dashed border-line/70 bg-subcanvas/40 px-3 py-2 text-center text-label-sm text-ink-soft">
           상대 진영
-          <span className={sub}>상대 레전드 존 · 챔피언 존 · 베이스 · 메인/룬 덱 · 트래시</span>
+          <span className={sub}>상대 전설 구역 · 챔피언 구역 · 기지 · 주/룬 덱 · 폐기장</span>
         </div>
 
         {/* 전장 존 (공유) */}
@@ -134,30 +134,30 @@ function BoardDiagram() {
                 className="rounded-lg border border-primary/30 bg-card px-2 py-3 text-center"
               >
                 <span className="text-label-sm font-bold text-ink">{b}</span>
-                <span className={sub}>점령·전투 · 페이스다운 칸 1</span>
+                <span className={sub}>정복·전투 · 뒷면 표시 칸 1</span>
               </div>
             ))}
           </div>
         </div>
 
-        {/* 내 베이스 */}
+        {/* 내 기지 */}
         <div className="rounded-xl border-2 border-emerald/40 bg-emerald/[0.06] px-3 py-2.5 text-center">
-          <span className="text-label-sm font-bold text-emerald">🟢 내 베이스 (Base)</span>
+          <span className="text-label-sm font-bold text-emerald">🟢 내 기지 (Base)</span>
           <span className={sub}>
-            유닛·도구 소환·대기 (안전, 전투 없음) · 룬 풀 — 충전한 룬 에너지·파워가 여기 모임
+            유닛·도구 소환·대기 (안전, 전투 없음) · 룬 구성 — 전개한 룬 에너지·힘이 여기 모임
           </span>
         </div>
 
         {/* 내 판 밖 구역 */}
         <div className="grid grid-cols-3 gap-2 pt-1">
           <div className={slot}>
-            레전드 존<span className={sub}>레전드 고정</span>
+            전설 구역<span className={sub}>전설 고정</span>
           </div>
           <div className={slot}>
-            챔피언 존<span className={sub}>지정 챔피언 시작</span>
+            챔피언 구역<span className={sub}>선발 챔피언 시작</span>
           </div>
           <div className={slot}>
-            덱 · 트래시<span className={sub}>메인/룬 덱 · 추방 · 손패</span>
+            덱 · 폐기장<span className={sub}>주/룬 덱 · 추방지 · 손패</span>
           </div>
         </div>
       </div>
@@ -220,8 +220,8 @@ function ResourceGuide({ card }: { card: Card | null }) {
       </div>
 
       <p className="mt-4 rounded-xl bg-subcanvas/60 px-3.5 py-2.5 text-body-sm text-ink-soft">
-        카드 <b className="text-ink">왼쪽 위 숫자</b> = 에너지 비용, 그 <b className="text-ink">아래 색 기호</b> = 파워
-        비용, <b className="text-ink">오른쪽 아래</b> = 도메인.
+        카드 <b className="text-ink">왼쪽 위 숫자</b> = 에너지 비용, 그 <b className="text-ink">아래 색 기호</b> = 힘
+        비용, <b className="text-ink">오른쪽 아래</b> = 영역.
       </p>
     </div>
   );
@@ -269,7 +269,7 @@ export function BeginnerGuide({ exampleCard = null }: { exampleCard?: Card | nul
         </ul>
       </Block>
 
-      <Block id="domains" title="6개 도메인">
+      <Block id="domains" title="6개 영역">
         <div className="grid gap-3 sm:grid-cols-2">
           {CARD_DOMAINS.map((d) => {
             const DomainIcon = DOMAIN_ICONS[d.slug] ?? Flame;
@@ -375,7 +375,7 @@ export function BeginnerGuide({ exampleCard = null }: { exampleCard?: Card | nul
 export const GUIDE_TOC = [
   { id: "goal", label: "게임 목표" },
   { id: "components", label: "준비물" },
-  { id: "domains", label: "6개 도메인" },
+  { id: "domains", label: "6개 영역" },
   { id: "zones", label: "게임판 구역" },
   { id: "setup", label: "게임 준비" },
   { id: "turn", label: "턴 순서" },

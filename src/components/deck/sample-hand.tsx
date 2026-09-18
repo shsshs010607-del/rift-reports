@@ -13,7 +13,7 @@ const DOMAIN_COLOR = new Map(CARD_DOMAINS.map((d) => [d.slug, d.color]));
 const TYPE_LABEL = new Map(CARD_TYPES.map((t) => [t.slug, t.label]));
 
 /**
- * 샘플 핸드 패널 — 메인덱을 섞어 4장을 뽑고 멀리건 1회.
+ * 샘플 핸드 패널 — 주 덱을 섞어 4장을 뽑고 멀리건 1회.
  */
 export function SampleHand({
   mainEntries,
@@ -56,7 +56,7 @@ export function SampleHand({
   if (libSize === 0) {
     return (
       <p className="rounded-xl border-2 border-dashed border-line bg-subcanvas/40 p-8 text-center text-body-sm text-ink-soft">
-        메인덱에 카드를 넣으면 오프닝 핸드를 뽑을 수 있습니다.
+        주 덱에 카드를 넣으면 오프닝 핸드를 뽑을 수 있습니다.
       </p>
     );
   }
@@ -67,7 +67,7 @@ export function SampleHand({
         <div>
           <p className="text-label-lg font-bold text-ink">오프닝 핸드 · {DECK_RULES.openingHand}장</p>
           <p className="text-label-sm text-ink-soft">
-            {deckName} · 메인덱 {libSize}장
+            {deckName} · 주 덱 {libSize}장
             {libSize < DECK_RULES.openingHand && ` (${DECK_RULES.openingHand}장 미만)`}
           </p>
         </div>

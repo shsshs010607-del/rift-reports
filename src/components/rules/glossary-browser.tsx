@@ -47,7 +47,7 @@ export function GlossaryBrowser() {
             type="search"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="용어 검색 — 한글·영문 모두 (예: 파워 / Power / Showdown)"
+            placeholder="용어 검색 — 한글·영문 모두 (예: 힘 / Power / Showdown)"
             className="field pl-10"
           />
         </div>
