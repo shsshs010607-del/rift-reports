@@ -474,7 +474,7 @@ const RUNE_WORDS: Record<"ko" | "en", Record<string, string>> = {
   en: { fury: "Fury", calm: "Calm", mind: "Mind", body: "Body", chaos: "Chaos", order: "Order", rainbow: "Any" },
 };
 const SYMBOL_WORDS: Record<"ko" | "en", Record<string, string>> = {
-  ko: { rb_exhaust: "[휴식]", rb_might: "위력", rb_power: "파워", rb_recycle: "[재활용]" },
+  ko: { rb_exhaust: "[탈진]", rb_might: "위력", rb_power: "힘", rb_recycle: "[재활용]" },
   en: { rb_exhaust: "[Exhaust]", rb_might: "Might", rb_power: "Power", rb_recycle: "[Recycle]" },
 };
 function humanizeSymbols(text: string, locale: "ko" | "en" = "ko"): string {

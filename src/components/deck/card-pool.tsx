@@ -378,7 +378,17 @@ export function CardPool({
         )}
       </div>
 
-      {/* 상세 필터 — 코스트 곡선 · 유형 · 레어도 · 확장팩 · 정렬 */}
+      {/* 정렬 — 자주 써서 상세 필터 밖에 항상 노출 */}
+      <div className="flex flex-wrap items-center gap-1">
+        <span className="mr-0.5 text-label-sm font-bold text-ink-soft">정렬</span>
+        {SORTS.map((s) => (
+          <PoolChip key={s.key} on={sort === s.key} onClick={() => setSort(s.key)}>
+            {s.label}
+          </PoolChip>
+        ))}
+      </div>
+
+      {/* 상세 필터 — 코스트 곡선 · 유형 · 레어도 · 확장팩 */}
       <div className="rounded-xl bg-subcanvas/50 px-2.5 py-2">
         <button
           type="button"
@@ -464,7 +474,7 @@ export function CardPool({
             )}
 
             {showPower && (
-              <PoolSection title="파워">
+              <PoolSection title="위력">
                 <div className="flex flex-wrap gap-1">
                   {POWERS.map((p) => {
                     const on = filters.powers.includes(p);
@@ -557,16 +567,6 @@ export function CardPool({
                 ))}
               </div>
             </PoolSection>
-
-            <PoolSection title="정렬">
-              <div className="flex flex-wrap gap-1">
-                {SORTS.map((s) => (
-                  <PoolChip key={s.key} on={sort === s.key} onClick={() => setSort(s.key)}>
-                    {s.label}
-                  </PoolChip>
-                ))}
-              </div>
-            </PoolSection>
           </div>
         )}
       </div>
@@ -587,7 +587,7 @@ export function CardPool({
             <ActiveTag key={`r-${r}`} label={`레어도 · ${RARITY_LABEL[r] ?? r}`} onClear={() => toggleIn("rarities", r)} />
           ))}
           {filters.powers.map((p) => (
-            <ActiveTag key={`p-${p}`} label={`파워 · ${p === "7" ? "7+" : p}`} onClear={() => toggleIn("powers", p)} />
+            <ActiveTag key={`p-${p}`} label={`위력 · ${p === "7" ? "7+" : p}`} onClear={() => toggleIn("powers", p)} />
           ))}
           {filters.keywords.map((k) => (
             <ActiveTag key={`k-${k}`} label={`키워드 · ${k}`} onClear={() => toggleIn("keywords", k)} />
