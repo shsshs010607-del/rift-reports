@@ -81,6 +81,26 @@ export function getReport(slug: string) {
   }, null);
 }
 
+const KST_OFFSET_MS = 9 * 3600 * 1000;
+const DEFAULT_DURATION_MS = 6 * 3600 * 1000;
+
+/**
+ * DB 의 status 컬럼은 등록 시점 값(upcoming)으로 굳어 있어서 아무도 갱신하지 않는다 —
+ * 지난 대회도 "다가오는 대회"로 남던 원인. 표시용 상태는 날짜로 계산한다.
+ * (운영진이 수동으로 finished 로 바꾼 건 그대로 존중.)
+ * 종료 시각이 없으면 시작+6시간, 시작이 KST 00:00(시간 미정)이면 그날 하루 종일로 본다.
+ */
+function withLiveStatus(t: Tournament, now = Date.now()): Tournament {
+  if (t.status === "finished") return t;
+  const start = new Date(t.starts_at).getTime();
+  const kstMidnight = (start + KST_OFFSET_MS) % (24 * 3600 * 1000) === 0;
+  const end = t.ends_at
+    ? new Date(t.ends_at).getTime()
+    : start + (kstMidnight ? 24 * 3600 * 1000 : DEFAULT_DURATION_MS);
+  const status = now >= end ? "finished" : now >= start ? "ongoing" : "upcoming";
+  return status === t.status ? t : { ...t, status };
+}
+
 export function getTournaments() {
   return safe<Tournament[]>(async () => {
     const supabase = createPublicClient();
@@ -89,7 +109,7 @@ export function getTournaments() {
       .select("*")
       .order("starts_at", { ascending: false });
     if (error) throw error;
-    return data ?? [];
+    return (data ?? []).map((t) => withLiveStatus(t));
   }, []);
 }
 
@@ -102,7 +122,7 @@ export function getTournament(slug: string) {
       .eq("slug", slug)
       .maybeSingle();
     if (error) throw error;
-    return data ?? null;
+    return data ? withLiveStatus(data) : null;
   }, null);
 }
 
@@ -142,9 +162,14 @@ export function getUpcomingTournaments(limit = 3) {
       .from("tournaments")
       .select("*")
       .in("status", ["upcoming", "ongoing"])
+      // 저장된 status 는 낡았을 수 있어 하루 전부터 넉넉히 가져온 뒤 날짜 기준으로 다시 거른다
+      .gte("starts_at", new Date(Date.now() - 24 * 3600 * 1000).toISOString())
       .order("starts_at", { ascending: true })
-      .limit(limit);
+      .limit(limit + 40);
     if (error) throw error;
-    return data ?? [];
+    return (data ?? [])
+      .map((t) => withLiveStatus(t))
+      .filter((t) => t.status !== "finished")
+      .slice(0, limit);
   }, []);
 }
