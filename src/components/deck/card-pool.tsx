@@ -81,7 +81,7 @@ function keywordsOf(c: Card): string[] {
 }
 
 /** skip 그룹만 빼고 나머지 필터를 적용 — 각 칩의 "선택하면 몇 장" 개수를 세기 위한 패싯 계산용. */
-function passes(c: Card, f: Filters, skip?: keyof Filters): boolean {
+function passes(c: Card, f: Filters, skip?: keyof Filters, kwAll = false): boolean {
   if (skip !== "domains" && f.domains.length > 0) {
     // 무색 카드(전장 등)는 색 필터와 무관하게 항상 남긴다 (예전 API colorlessOk 동작과 동일).
     if (c.domains.length > 0 && !c.domains.some((d) => f.domains.includes(d))) return false;
@@ -96,7 +96,11 @@ function passes(c: Card, f: Filters, skip?: keyof Filters): boolean {
     const k = powerKey(c);
     if (k == null || !f.powers.includes(k)) return false;
   }
-  if (skip !== "keywords" && f.keywords.length > 0 && !keywordsOf(c).some((k) => f.keywords.includes(k))) return false;
+  if (skip !== "keywords" && f.keywords.length > 0) {
+    const have = keywordsOf(c);
+    const ok = kwAll ? f.keywords.every((k) => have.includes(k)) : have.some((k) => f.keywords.includes(k));
+    if (!ok) return false;
+  }
   if (skip !== "tags" && f.tags.length > 0 && !c.subtypes.some((t) => f.tags.includes(t))) return false;
   return true;
 }
@@ -126,6 +130,7 @@ export function CardPool({
   const [filters, setFilters] = useState<Filters>(EMPTY_FILTERS);
   const [sort, setSort] = useState<SortKey>("default");
   const [showAdv, setShowAdv] = useState(false);
+  const [kwAll, setKwAll] = useState(false); // 키워드: false=하나라도 / true=모두 가진 카드
   const [setCode, setSetCode] = useState("");
   const [cards, setCards] = useState<Card[]>([]);
   const [loading, setLoading] = useState(false);
@@ -228,7 +233,7 @@ export function CardPool({
     tab === "all" ? (CARD_TYPES.map((t) => t.slug) as CardType[]) : tab === "main" || tab === "side" ? MAIN_TYPES : [];
 
   const visibleCards = useMemo(() => {
-    const list = baseCards.filter((c) => passes(c, filters));
+    const list = baseCards.filter((c) => passes(c, filters, undefined, kwAll));
     if (sort === "default") return list;
     const byCost = (a: Card, b: Card) => (a.cost ?? 99) - (b.cost ?? 99);
     const sorted = [...list];
@@ -236,14 +241,14 @@ export function CardPool({
     else if (sort === "costDesc") sorted.sort((a, b) => -byCost(a, b) || a.name.localeCompare(b.name, "ko"));
     else sorted.sort((a, b) => a.name.localeCompare(b.name, "ko"));
     return sorted;
-  }, [baseCards, filters, sort]);
+  }, [baseCards, filters, sort, kwAll]);
 
   // 패싯: 다른 필터를 적용한 상태에서 각 칩을 켜면 남는 장수.
   const facets = useMemo(() => {
     const count = (skip: keyof Filters, keyOf: (c: Card) => string | null) => {
       const m: Record<string, number> = {};
       for (const c of baseCards) {
-        if (!passes(c, filters, skip)) continue;
+        if (!passes(c, filters, skip, kwAll)) continue;
         const k = keyOf(c);
         if (k != null) m[k] = (m[k] ?? 0) + 1;
       }
@@ -251,13 +256,13 @@ export function CardPool({
     };
     const domainCount: Record<string, number> = {};
     for (const c of baseCards) {
-      if (!passes(c, filters, "domains")) continue;
+      if (!passes(c, filters, "domains", kwAll)) continue;
       for (const d of c.domains) domainCount[d] = (domainCount[d] ?? 0) + 1;
     }
     const countMany = (skip: keyof Filters, keysOf: (c: Card) => string[]) => {
       const m: Record<string, number> = {};
       for (const c of baseCards) {
-        if (!passes(c, filters, skip)) continue;
+        if (!passes(c, filters, skip, kwAll)) continue;
         for (const k of keysOf(c)) m[k] = (m[k] ?? 0) + 1;
       }
       return m;
@@ -271,7 +276,7 @@ export function CardPool({
       keywords: countMany("keywords", keywordsOf),
       tags: countMany("tags", (c) => c.subtypes),
     };
-  }, [baseCards, filters]);
+  }, [baseCards, filters, kwAll]);
 
   // 키워드·지역/종족 칩 후보 — 다른 필터와 무관하게 이 탭 카드 전체에서 뽑아 칩이 깜빡이지 않게 한다.
   const keywordOptions = useMemo(() => topOptions(baseCards, keywordsOf, 1), [baseCards]);
@@ -477,6 +482,10 @@ export function CardPool({
 
             {keywordOptions.length > 0 && (
               <PoolSection title="키워드">
+                <div className="mb-1 flex gap-1">
+                  <PoolChip on={!kwAll} onClick={() => setKwAll(false)}>하나라도</PoolChip>
+                  <PoolChip on={kwAll} onClick={() => setKwAll(true)}>모두 포함</PoolChip>
+                </div>
                 <div className="flex flex-wrap gap-1">
                   {keywordOptions.map((k) => {
                     const on = filters.keywords.includes(k);
