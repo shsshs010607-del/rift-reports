@@ -45,10 +45,40 @@ type Filters = {
   costs: string[];
   types: string[];
   rarities: string[];
+  powers: string[];
+  keywords: string[];
+  tags: string[];
 };
-const EMPTY_FILTERS: Filters = { domains: [], costs: [], types: [], rarities: [] };
+const EMPTY_FILTERS: Filters = {
+  domains: [],
+  costs: [],
+  types: [],
+  rarities: [],
+  powers: [],
+  keywords: [],
+  tags: [],
+};
+const POWERS = ["1", "2", "3", "4", "5", "6", "7"]; // "7" = 7 이상
 
 const costKey = (c: Card) => (typeof c.cost === "number" ? String(Math.min(c.cost, 7)) : null);
+const powerKey = (c: Card) => (typeof c.power === "number" && c.power > 0 ? String(Math.min(c.power, 7)) : null);
+
+// 룰 텍스트의 [키워드] 표기에서 키워드만 뽑는다. 룬 아이콘([분노 룬] 등)과 비용 기호([휴식])는 제외하고 "맹공 2" → "맹공".
+const KEYWORD_SKIP = new Set(["휴식"]);
+const kwCache = new WeakMap<Card, string[]>();
+function keywordsOf(c: Card): string[] {
+  const hit = kwCache.get(c);
+  if (hit) return hit;
+  const set = new Set<string>();
+  for (const m of c.text.matchAll(/\[([^\]]{1,12})\]/g)) {
+    const k = m[1].replace(/\s*\d+$/, "").trim();
+    if (!k || k.endsWith("룬") || KEYWORD_SKIP.has(k)) continue;
+    set.add(k);
+  }
+  const arr = [...set];
+  kwCache.set(c, arr);
+  return arr;
+}
 
 /** skip 그룹만 빼고 나머지 필터를 적용 — 각 칩의 "선택하면 몇 장" 개수를 세기 위한 패싯 계산용. */
 function passes(c: Card, f: Filters, skip?: keyof Filters): boolean {
@@ -62,6 +92,12 @@ function passes(c: Card, f: Filters, skip?: keyof Filters): boolean {
   }
   if (skip !== "types" && f.types.length > 0 && !f.types.includes(c.type)) return false;
   if (skip !== "rarities" && f.rarities.length > 0 && !f.rarities.includes(c.rarity)) return false;
+  if (skip !== "powers" && f.powers.length > 0) {
+    const k = powerKey(c);
+    if (k == null || !f.powers.includes(k)) return false;
+  }
+  if (skip !== "keywords" && f.keywords.length > 0 && !keywordsOf(c).some((k) => f.keywords.includes(k))) return false;
+  if (skip !== "tags" && f.tags.length > 0 && !c.subtypes.some((t) => f.tags.includes(t))) return false;
   return true;
 }
 
@@ -218,19 +254,42 @@ export function CardPool({
       if (!passes(c, filters, "domains")) continue;
       for (const d of c.domains) domainCount[d] = (domainCount[d] ?? 0) + 1;
     }
+    const countMany = (skip: keyof Filters, keysOf: (c: Card) => string[]) => {
+      const m: Record<string, number> = {};
+      for (const c of baseCards) {
+        if (!passes(c, filters, skip)) continue;
+        for (const k of keysOf(c)) m[k] = (m[k] ?? 0) + 1;
+      }
+      return m;
+    };
     return {
       domains: domainCount,
       costs: count("costs", costKey),
       types: count("types", (c) => c.type),
       rarities: count("rarities", (c) => c.rarity),
+      powers: count("powers", powerKey),
+      keywords: countMany("keywords", keywordsOf),
+      tags: countMany("tags", (c) => c.subtypes),
     };
   }, [baseCards, filters]);
 
+  // 키워드·지역/종족 칩 후보 — 다른 필터와 무관하게 이 탭 카드 전체에서 뽑아 칩이 깜빡이지 않게 한다.
+  const keywordOptions = useMemo(() => topOptions(baseCards, keywordsOf, 1), [baseCards]);
+  const tagOptions = useMemo(() => topOptions(baseCards, (c) => c.subtypes, 2), [baseCards]);
+  const [showAllTags, setShowAllTags] = useState(false);
+  const showPower = showCost && baseCards.some((c) => powerKey(c) != null);
+
   const toggleIn = (key: keyof Filters, v: string) =>
     setFilters((f) => ({ ...f, [key]: f[key].includes(v) ? f[key].filter((x) => x !== v) : [...f[key], v] }));
-  const activeCount =
-    filters.domains.length + filters.costs.length + filters.types.length + filters.rarities.length + (setCode ? 1 : 0);
-  const advCount = filters.costs.length + filters.types.length + filters.rarities.length + (setCode ? 1 : 0);
+  const advCount =
+    filters.costs.length +
+    filters.types.length +
+    filters.rarities.length +
+    filters.powers.length +
+    filters.keywords.length +
+    filters.tags.length +
+    (setCode ? 1 : 0);
+  const activeCount = filters.domains.length + advCount;
   const resetFilters = () => {
     setFilters(EMPTY_FILTERS);
     setSetCode("");
@@ -399,6 +458,66 @@ export function CardPool({
               </PoolSection>
             )}
 
+            {showPower && (
+              <PoolSection title="파워">
+                <div className="flex flex-wrap gap-1">
+                  {POWERS.map((p) => {
+                    const on = filters.powers.includes(p);
+                    const n = facets.powers[p] ?? 0;
+                    return (
+                      <PoolChip key={p} on={on} disabled={!on && n === 0} onClick={() => toggleIn("powers", p)}>
+                        {p === "7" ? "7+" : p}
+                        <span className="tabular-nums text-ink-soft/60">{n}</span>
+                      </PoolChip>
+                    );
+                  })}
+                </div>
+              </PoolSection>
+            )}
+
+            {keywordOptions.length > 0 && (
+              <PoolSection title="키워드">
+                <div className="flex flex-wrap gap-1">
+                  {keywordOptions.map((k) => {
+                    const on = filters.keywords.includes(k);
+                    const n = facets.keywords[k] ?? 0;
+                    return (
+                      <PoolChip key={k} on={on} disabled={!on && n === 0} onClick={() => toggleIn("keywords", k)}>
+                        {k}
+                        <span className="tabular-nums text-ink-soft/60">{n}</span>
+                      </PoolChip>
+                    );
+                  })}
+                </div>
+              </PoolSection>
+            )}
+
+            {tagOptions.length > 0 && (
+              <PoolSection title="지역 · 종족">
+                <div className="flex flex-wrap gap-1">
+                  {(showAllTags ? tagOptions : tagOptions.slice(0, 10)).map((t) => {
+                    const on = filters.tags.includes(t);
+                    const n = facets.tags[t] ?? 0;
+                    return (
+                      <PoolChip key={t} on={on} disabled={!on && n === 0} onClick={() => toggleIn("tags", t)}>
+                        {t}
+                        <span className="tabular-nums text-ink-soft/60">{n}</span>
+                      </PoolChip>
+                    );
+                  })}
+                  {tagOptions.length > 10 && (
+                    <button
+                      type="button"
+                      onClick={() => setShowAllTags((v) => !v)}
+                      className="px-1.5 text-label-sm font-bold text-primary-strong"
+                    >
+                      {showAllTags ? "접기" : `+${tagOptions.length - 10}개 더보기`}
+                    </button>
+                  )}
+                </div>
+              </PoolSection>
+            )}
+
             <PoolSection title="레어도">
               <div className="flex flex-wrap gap-1">
                 {CARD_RARITIES.map((r) => {
@@ -457,6 +576,15 @@ export function CardPool({
           ))}
           {filters.rarities.map((r) => (
             <ActiveTag key={`r-${r}`} label={`레어도 · ${RARITY_LABEL[r] ?? r}`} onClear={() => toggleIn("rarities", r)} />
+          ))}
+          {filters.powers.map((p) => (
+            <ActiveTag key={`p-${p}`} label={`파워 · ${p === "7" ? "7+" : p}`} onClear={() => toggleIn("powers", p)} />
+          ))}
+          {filters.keywords.map((k) => (
+            <ActiveTag key={`k-${k}`} label={`키워드 · ${k}`} onClear={() => toggleIn("keywords", k)} />
+          ))}
+          {filters.tags.map((t) => (
+            <ActiveTag key={`g-${t}`} label={`태그 · ${t}`} onClear={() => toggleIn("tags", t)} />
           ))}
           {setCode && <ActiveTag label={`확장팩 · ${setCode}`} onClear={() => setSetCode("")} />}
           <button
@@ -586,6 +714,16 @@ export function CardPool({
       </ul>
     </div>
   );
+}
+
+/** 카드들에서 값(키워드·태그)을 모아 빈도순으로. minCount 미만은 잡음이라 뺀다. */
+function topOptions(cards: Card[], valuesOf: (c: Card) => string[], minCount: number): string[] {
+  const m = new Map<string, number>();
+  for (const c of cards) for (const v of valuesOf(c)) m.set(v, (m.get(v) ?? 0) + 1);
+  return [...m.entries()]
+    .filter(([, n]) => n >= minCount)
+    .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0], "ko"))
+    .map(([v]) => v);
 }
 
 function PoolSection({ title, children }: { title: string; children: React.ReactNode }) {
