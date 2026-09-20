@@ -464,7 +464,7 @@ function loadKoTranslations(): Promise<Map<string, KoEntry>> {
 
 /** 룰 텍스트의 심볼 코드(:rb_xxx:)를 읽기 쉬운 형태로. 로케일별 어휘. */
 const RUNE_WORDS: Record<"ko" | "en", Record<string, string>> = {
-  ko: { fury: "분노", calm: "침착", mind: "지혜", body: "육체", chaos: "혼돈", order: "질서", rainbow: "무지개" },
+  ko: { fury: "분노", calm: "평정", mind: "정신", body: "신체", chaos: "혼돈", order: "질서", rainbow: "무지개" },
   en: { fury: "Fury", calm: "Calm", mind: "Mind", body: "Body", chaos: "Chaos", order: "Order", rainbow: "Any" },
 };
 const SYMBOL_WORDS: Record<"ko" | "en", Record<string, string>> = {
