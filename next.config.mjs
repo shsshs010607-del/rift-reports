@@ -34,6 +34,12 @@ const nextConfig = {
         headers: [
           { key: "X-Content-Type-Options", value: "nosniff" },
           { key: "X-Frame-Options", value: "SAMEORIGIN" },
+          // 전체 CSP 는 광고·폰트·OAuth 조합을 깨뜨릴 수 있어, 스크립트/이미지 출처는 건드리지 않고
+          // 안전한 지시어만 건다: 플러그인 차단 · <base> 하이재킹 차단 · 프레이밍 제한(클릭재킹).
+          {
+            key: "Content-Security-Policy",
+            value: "object-src 'none'; base-uri 'self'; frame-ancestors 'self'",
+          },
           { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
           {
             key: "Permissions-Policy",

@@ -23,10 +23,7 @@ import { HomeReports } from "@/components/home/home-reports";
 import { HomePriceMini } from "@/components/home/home-price-mini";
 import { HomeExtras } from "@/components/home/home-extras";
 
-// HomeCommunity/HomeReports/HomePriceMini/HomeExtras 가 쓰는 community.ts/prices.ts/
-// queries.ts 의 safe() 래퍼가 cookies() 의 Next 내부 신호까지 try/catch 로 삼켜버려서,
-// force-dynamic 없이는 빌드가 "/" 정적 생성을 시도하다 타임아웃/실패한다 — 지우지 말 것.
-export const dynamic = "force-dynamic";
+export const revalidate = 60;
 
 // canonical 은 원래 layout.tsx 루트에 "/" 로 박혀 있었는데, 하위 페이지가 각자
 // canonical 을 안 정하면 그대로 상속돼서 사이트 전체 페이지가 죄다 홈을 표준
