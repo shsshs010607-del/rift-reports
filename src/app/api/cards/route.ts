@@ -28,18 +28,24 @@ import {
 // request.url(쿼리스트링)을 읽으므로 이미 요청 시 처리된다.
 // (force-dynamic 을 두면 카드 서비스의 fetch 캐시까지 꺼지므로 넣지 않는다.)
 
+/** "a,b" 형태의 쉼표 목록 → 허용값만 담긴 배열 (값이 하나여도 그대로 동작). */
+const list = (allowed: readonly string[], upper = false) =>
+  z
+    .string()
+    .transform((s) => s.split(",").map((v) => (upper ? v.trim().toUpperCase() : v.trim())).filter(Boolean))
+    .pipe(z.array(z.enum(allowed as unknown as [string, ...string[]])).min(1));
+
 const QuerySchema = z.object({
   q: z.string().trim().min(1).optional(),
-  domain: z.enum(CARD_DOMAIN_FILTER_SLUGS as unknown as [string, ...string[]]).optional(),
-  type: z.enum(CARD_TYPE_SLUGS as unknown as [string, ...string[]]).optional(),
-  rarity: z.enum(CARD_RARITY_SLUGS as unknown as [string, ...string[]]).optional(),
-  cost: z.coerce.number().int().min(0).max(30).optional(),
-  setCode: z
+  domain: list(CARD_DOMAIN_FILTER_SLUGS).optional(),
+  type: list(CARD_TYPE_SLUGS).optional(),
+  rarity: list(CARD_RARITY_SLUGS).optional(),
+  cost: z
     .string()
-    .trim()
-    .toUpperCase()
-    .pipe(z.enum(CARD_SET_CODES as unknown as [string, ...string[]]))
+    .transform((s) => s.split(",").map((v) => Number(v.trim())))
+    .pipe(z.array(z.number().int().min(0).max(30)).min(1))
     .optional(),
+  setCode: list(CARD_SET_CODES, true).optional(),
   limit: z.coerce.number().int().min(1).max(2000).optional(),
   offset: z.coerce.number().int().min(0).optional(),
 });

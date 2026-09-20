@@ -95,24 +95,30 @@ function matchesText(card: Card, q: string): boolean {
  * 메모리 상의 카드 배열에 질의를 적용한다.
  * OpenSourceCardService(로컬 필터) / OfficialRiotCardService(API 필터 불가 시 폴백) 공용.
  */
+const toArray = <T,>(v: T | T[] | undefined): T[] =>
+  v === undefined ? [] : Array.isArray(v) ? v : [v];
+
 export function applyCardQuery(cards: Card[], query: CardSearchQuery): Card[] {
   const q = query.q?.trim();
+  const domains = toArray(query.domain);
+  const types = toArray(query.type);
+  const rarities = toArray(query.rarity);
+  const costs = toArray(query.cost);
+  const sets = toArray(query.setCode).map((s) => s.toLowerCase());
 
   let result = cards.filter((card) => {
     if (q && !matchesText(card, q)) return false;
-    if (query.domain === "neutral") {
-      if (card.domains.length > 0) return false;
-    } else if (
-      query.domain &&
-      !card.domains.includes(query.domain) &&
-      !(query.colorlessOk && card.domains.length === 0)
-    ) {
-      return false;
+    if (domains.length > 0) {
+      const colorless = card.domains.length === 0;
+      const ok =
+        (colorless && (domains.includes("neutral") || query.colorlessOk)) ||
+        card.domains.some((d) => domains.includes(d));
+      if (!ok) return false;
     }
-    if (query.type && card.type !== query.type) return false;
-    if (query.rarity && card.rarity !== query.rarity) return false;
-    if (typeof query.cost === "number" && card.cost !== query.cost) return false;
-    if (query.setCode && card.setCode.toLowerCase() !== query.setCode.toLowerCase()) return false;
+    if (types.length > 0 && !types.includes(card.type)) return false;
+    if (rarities.length > 0 && !rarities.includes(card.rarity)) return false;
+    if (costs.length > 0 && (card.cost == null || !costs.includes(card.cost))) return false;
+    if (sets.length > 0 && !sets.includes(card.setCode.toLowerCase())) return false;
     return true;
   });
 

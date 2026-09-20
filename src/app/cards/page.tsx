@@ -37,27 +37,40 @@ export const metadata: Metadata = { title: "카드 정보", alternates: { canoni
  */
 type RawSearchParams = Record<string, string | string[] | undefined>;
 
-function pick<T extends readonly string[]>(
+/** "a,b" 또는 ?k=a&k=b 형태의 값을 허용 목록으로 걸러 배열로. 비었으면 undefined. */
+function pickMany<T extends readonly string[]>(
   value: string | string[] | undefined,
   allowed: T,
-): T[number] | undefined {
-  const v = Array.isArray(value) ? value[0] : value;
-  return v && (allowed as readonly string[]).includes(v) ? (v as T[number]) : undefined;
+  normalize: (v: string) => string = (v) => v,
+): T[number][] | undefined {
+  const raw = (Array.isArray(value) ? value : [value]).flatMap((v) => (v ?? "").split(","));
+  const out = [
+    ...new Set(
+      raw.map((v) => normalize(v.trim())).filter((v) => (allowed as readonly string[]).includes(v)),
+    ),
+  ];
+  return out.length > 0 ? (out as T[number][]) : undefined;
 }
 
 function buildQuery(sp: RawSearchParams): CardSearchQuery {
   const q = (Array.isArray(sp.q) ? sp.q[0] : sp.q)?.trim() || undefined;
-  const costRaw = Array.isArray(sp.cost) ? sp.cost[0] : sp.cost;
-  const cost = costRaw != null && Number.isFinite(Number(costRaw)) ? Number(costRaw) : undefined;
-  const setRaw = (Array.isArray(sp.setCode) ? sp.setCode[0] : sp.setCode)?.trim().toUpperCase();
+  const costRaw = (Array.isArray(sp.cost) ? sp.cost : [sp.cost]).flatMap((v) => (v ?? "").split(","));
+  const cost = [
+    ...new Set(
+      costRaw
+        .map((v) => v.trim())
+        .filter((v) => v !== "" && Number.isFinite(Number(v)))
+        .map(Number),
+    ),
+  ];
 
   return {
     q,
-    domain: pick(sp.domain, CARD_DOMAIN_FILTER_SLUGS),
-    type: pick(sp.type, CARD_TYPE_SLUGS),
-    rarity: pick(sp.rarity, CARD_RARITY_SLUGS),
-    cost,
-    setCode: setRaw && (CARD_SET_CODES as readonly string[]).includes(setRaw) ? setRaw : undefined,
+    domain: pickMany(sp.domain, CARD_DOMAIN_FILTER_SLUGS),
+    type: pickMany(sp.type, CARD_TYPE_SLUGS),
+    rarity: pickMany(sp.rarity, CARD_RARITY_SLUGS),
+    cost: cost.length > 0 ? cost : undefined,
+    setCode: pickMany(sp.setCode, CARD_SET_CODES, (v) => v.toUpperCase()),
   };
 }
 
@@ -84,11 +97,10 @@ export default async function CardsPage(props: { searchParams: Promise<RawSearch
   const hrefForPage = (next: number) => {
     const sp = new URLSearchParams();
     if (query.q) sp.set("q", query.q);
-    if (query.domain) sp.set("domain", query.domain);
-    if (query.type) sp.set("type", query.type);
-    if (query.rarity) sp.set("rarity", String(query.rarity));
-    if (typeof query.cost === "number") sp.set("cost", String(query.cost));
-    if (query.setCode) sp.set("setCode", query.setCode);
+    for (const k of ["domain", "type", "rarity", "cost", "setCode"] as const) {
+      const v = query[k];
+      if (Array.isArray(v) && v.length > 0) sp.set(k, v.join(","));
+    }
     if (sort !== "cost") sp.set("sort", sort);
     if (dir !== "asc") sp.set("dir", dir);
     if (next > 1) sp.set("page", String(next));

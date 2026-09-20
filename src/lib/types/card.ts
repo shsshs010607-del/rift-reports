@@ -157,16 +157,17 @@ export type CardDomainFilter = CardDomain | typeof NEUTRAL_DOMAIN;
 export interface CardSearchQuery {
   /** 자유 텍스트. 카드명 + 룰 텍스트를 대상으로 한/영 부분일치 검색. */
   q?: string;
-  /** 6색 중 하나, 또는 "neutral"(영역 없는 무색 카드만). */
-  domain?: CardDomainFilter;
+  /** 6색 및/또는 "neutral"(영역 없는 무색 카드만). 여러 개면 하나라도 맞으면 통과(OR). */
+  domain?: CardDomainFilter | CardDomainFilter[];
   /** true 면 영역 필터가 걸려도 무색(중립) 카드는 통과시킨다 — 덱 빌더용. */
   colorlessOk?: boolean;
-  type?: CardType;
-  rarity?: CardRarity;
+  /** 각 필터는 값 여러 개를 줄 수 있고, 같은 필터 안에서는 OR, 필터끼리는 AND. */
+  type?: CardType | CardType[];
+  rarity?: CardRarity | CardRarity[];
   /** 정확히 일치하는 코스트. */
-  cost?: number;
+  cost?: number | number[];
   /** 세트 코드로 한정. */
-  setCode?: string;
+  setCode?: string | string[];
   /** 페이지네이션(기본: 전체). */
   limit?: number;
   offset?: number;

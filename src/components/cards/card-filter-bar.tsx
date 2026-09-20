@@ -44,16 +44,15 @@ export function CardFilterBar({ facets }: { facets?: CardFacets | null }) {
     });
   };
 
+  // 같은 필터 안에서는 여러 값을 동시에 선택 (a,b → OR), 필터끼리는 AND.
+  const valuesOf = (key: string) => (params.get(key) ?? "").split(",").filter(Boolean);
+
   const toggle = (key: string, value: string) => {
     const next = new URLSearchParams(params.toString());
-    if (next.get(key) === value) next.delete(key);
-    else next.set(key, value);
-    push(next);
-  };
-
-  const clearOne = (key: string) => {
-    const next = new URLSearchParams(params.toString());
-    next.delete(key);
+    const cur = valuesOf(key);
+    const list = cur.includes(value) ? cur.filter((v) => v !== value) : [...cur, value];
+    if (list.length > 0) next.set(key, list.join(","));
+    else next.delete(key);
     push(next);
   };
 
@@ -64,8 +63,10 @@ export function CardFilterBar({ facets }: { facets?: CardFacets | null }) {
     push(next);
   };
 
-  const active = (key: string, value: string) => params.get(key) === value;
-  const activeKeys = ["domain", "cost", "type", "setCode", "rarity"].filter((k) => params.get(k));
+  const active = (key: string, value: string) => valuesOf(key).includes(value);
+  const activeChips = ["domain", "cost", "type", "setCode", "rarity"].flatMap((k) =>
+    valuesOf(k).map((v) => ({ key: k, value: v })),
+  );
 
   const costCounts = facets?.cost ?? {};
   const costMax = Math.max(1, ...COSTS.map((c) => costCounts[c] ?? 0));
@@ -84,9 +85,9 @@ export function CardFilterBar({ facets }: { facets?: CardFacets | null }) {
         >
           <SlidersHorizontal className="h-4 w-4 text-primary" />
           필터
-          {activeKeys.length > 0 && (
+          {activeChips.length > 0 && (
             <span className="grid h-5 min-w-5 place-items-center rounded-full bg-primary px-1 text-[11px] font-black text-white">
-              {activeKeys.length}
+              {activeChips.length}
             </span>
           )}
           <ChevronDown
@@ -99,7 +100,7 @@ export function CardFilterBar({ facets }: { facets?: CardFacets | null }) {
               <span className="text-primary-strong">{facets.total.toLocaleString()}</span>장 일치
             </span>
           )}
-          {activeKeys.length > 0 && (
+          {activeChips.length > 0 && (
             <button
               type="button"
               onClick={clearAll}
@@ -112,16 +113,15 @@ export function CardFilterBar({ facets }: { facets?: CardFacets | null }) {
       </div>
 
       {/* 활성 필터 요약 */}
-      {activeKeys.length > 0 && (
+      {activeChips.length > 0 && (
         <div className="mt-3 flex flex-wrap gap-1.5">
-          {activeKeys.map((k) => {
-            const v = params.get(k)!;
+          {activeChips.map(({ key: k, value: v }) => {
             const label = k === "cost" ? v : (LABELS[k]?.[v] ?? v);
             return (
               <button
-                key={k}
+                key={`${k}:${v}`}
                 type="button"
-                onClick={() => clearOne(k)}
+                onClick={() => toggle(k, v)}
                 className="inline-flex items-center gap-1 rounded-full bg-primary/12 px-2.5 py-1.5 text-label-sm font-bold text-primary-strong transition hover:bg-primary/20"
               >
                 {KEY_LABEL[k] ?? k} · {label}
