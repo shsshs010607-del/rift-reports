@@ -1,5 +1,5 @@
 import "server-only";
-import { createClient } from "@/lib/supabase/server";
+import { createPublicClient } from "@/lib/supabase/public";
 import { hasSupabaseEnv } from "@/lib/supabase/env";
 import { rethrowIfNextControlFlow } from "@/lib/next-dynamic-error";
 import type { Shop } from "@/lib/types/database";
@@ -7,7 +7,7 @@ import type { Shop } from "@/lib/types/database";
 export async function getShops(): Promise<Shop[]> {
   if (!hasSupabaseEnv) return [];
   try {
-    const supabase = await createClient();
+    const supabase = createPublicClient();
     const { data, error } = await supabase
       .from("shops")
       .select("*")

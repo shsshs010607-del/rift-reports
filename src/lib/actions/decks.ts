@@ -33,7 +33,7 @@ export async function saveDeck(input: {
   if (input.id) {
     const { data, error } = await supabase
       .from("saved_decks")
-      .update({ name, code, legend_name: input.legendName ?? null, updated_at: new Date().toISOString() })
+      .update({ name, code, legend_name: input.legendName?.slice(0, 80) ?? null, updated_at: new Date().toISOString() })
       .eq("id", input.id)
       .eq("user_id", userId)
       .select("*")
@@ -53,7 +53,7 @@ export async function saveDeck(input: {
 
   const { data, error } = await supabase
     .from("saved_decks")
-    .insert({ user_id: userId, name, code, legend_name: input.legendName ?? null })
+    .insert({ user_id: userId, name, code, legend_name: input.legendName?.slice(0, 80) ?? null })
     .select("*")
     .single();
   if (error) return { error: error.message };

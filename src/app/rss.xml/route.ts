@@ -66,6 +66,10 @@ ${itemsXml}
 `;
 
   return new Response(xml, {
-    headers: { "content-type": "application/rss+xml; charset=utf-8" },
+    headers: {
+      "content-type": "application/rss+xml; charset=utf-8",
+      // 크롤러가 몰려도 DB 를 매번 치지 않도록 CDN 에서 10분 캐시
+      "cache-control": "public, s-maxage=600, stale-while-revalidate=3600",
+    },
   });
 }

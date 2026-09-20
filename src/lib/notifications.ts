@@ -10,6 +10,10 @@ export type NotificationFeed = {
   signedIn: boolean;
 };
 
+/** 알림 링크는 사이트 내부 경로만 — 다른 유저가 심은 외부/피싱 URL 이 알림벨에 노출되지 않게 한다. */
+const internalHref = (href: string | null) =>
+  href && href.startsWith("/") && !href.startsWith("//") && !href.includes("\\") ? href : null;
+
 const EMPTY: NotificationFeed = { items: [], unread: 0, signedIn: false };
 
 /**
@@ -29,7 +33,7 @@ export async function getNotificationFeed(limit = 30): Promise<NotificationFeed>
       .select("*")
       .order("created_at", { ascending: false })
       .limit(limit);
-    let list = (rows as Notification[]) ?? [];
+    let list = ((rows as Notification[]) ?? []).map((n) => ({ ...n, href: internalHref(n.href) }));
 
     if (!user) return { items: list.slice(0, 15), unread: 0, signedIn: false };
 

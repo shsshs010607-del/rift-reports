@@ -203,6 +203,10 @@ export function PostBody({ text }: { text: string }) {
   return <div className="text-ink">{blocks}</div>;
 }
 
+/** 링크는 http(s)·mailto·사이트 내부 경로만, 이미지는 https·업로드 경로만 허용 — javascript:/data: 등 차단. */
+const safeLink = (u: string) => (/^(https?:\/\/|mailto:|\/(?!\/)|#)/i.test(u.trim()) ? u.trim() : null);
+const safeImage = (u: string) => (/^(https:\/\/|\/(?!\/))/i.test(u.trim()) ? u.trim() : null);
+
 /** **굵게** · [텍스트](url) · ![대체텍스트](url) · [[카드명]] 인라인 처리 */
 function inline(s: string): React.ReactNode {
   const parts = s.split(
@@ -220,11 +224,15 @@ function inline(s: string): React.ReactNode {
     }
     const image = part.match(/^!\[([^\]]*)\]\(([^)]+)\)$/);
     if (image) {
+      const src = safeImage(image[2]);
+      if (!src) return <Fragment key={i}>{part}</Fragment>;
       return (
         // eslint-disable-next-line @next/next/no-img-element -- 외부/업로드 이미지 URL, 도메인 사전 등록 불필요
         <img
           key={i}
-          src={image[2]}
+          src={src}
+          loading="lazy"
+          referrerPolicy="no-referrer"
           alt={image[1]}
           className="my-2 block max-w-full rounded-xl border border-line shadow-xs"
         />
@@ -232,13 +240,14 @@ function inline(s: string): React.ReactNode {
     }
     const link = part.match(/^\[([^\]]+)\]\(([^)]+)\)$/);
     if (link) {
-      const href = link[2];
-      const external = /^https?:\/\//.test(href);
+      const href = safeLink(link[2]);
+      if (!href) return <Fragment key={i}>{link[1]}</Fragment>;
+      const external = /^https?:\/\//i.test(href);
       return (
         <a
           key={i}
           href={href}
-          {...(external ? { target: "_blank", rel: "noopener noreferrer" } : {})}
+          {...(external ? { target: "_blank", rel: "noopener noreferrer nofollow ugc" } : {})}
           className="text-primary-strong underline"
         >
           {link[1]}

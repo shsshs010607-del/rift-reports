@@ -1,5 +1,5 @@
 import "server-only";
-import { createClient } from "@/lib/supabase/server";
+import { createPublicClient } from "@/lib/supabase/public";
 import { hasSupabaseEnv } from "@/lib/supabase/env";
 import { normLegend } from "@/lib/legend-name";
 import { rethrowIfNextControlFlow } from "@/lib/next-dynamic-error";
@@ -28,7 +28,7 @@ export function deckSetsFromCode(code: string | null | undefined): string[] {
 export async function getMetaDecks(): Promise<MetaDeckView[]> {
   if (!hasSupabaseEnv) return [];
   try {
-    const supabase = await createClient();
+    const supabase = createPublicClient();
     const { data, error } = await supabase
       .from("meta_decks")
       .select("*")

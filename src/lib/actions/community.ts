@@ -62,6 +62,23 @@ async function canWriteTournament(supabase: Awaited<ReturnType<typeof createClie
   return data?.role === "editor" || data?.role === "admin" || data?.role === "store";
 }
 
+/** 단시간 도배 방지 — 최근 windowSec 초 안에 본인이 쓴 글/댓글이 max 개 이상이면 true. */
+async function tooFrequent(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  table: "posts" | "comments",
+  userId: string,
+  windowSec: number,
+  max: number,
+) {
+  const since = new Date(Date.now() - windowSec * 1000).toISOString();
+  const { count } = await supabase
+    .from(table)
+    .select("id", { count: "exact", head: true })
+    .eq("author_id", userId)
+    .gte("created_at", since);
+  return (count ?? 0) >= max;
+}
+
 const MAX_IMAGE_BYTES = 5 * 1024 * 1024;
 const ALLOWED_IMAGE_TYPES = new Set(["image/png", "image/jpeg", "image/webp", "image/gif"]);
 
@@ -78,6 +95,14 @@ export async function uploadPostImage(formData: FormData): Promise<{ url?: strin
   const path = `${userId}/${Date.now()}-${crypto.randomUUID()}.${ext}`;
 
   const admin = createAdminClient();
+  // 스토리지 도배 방지 — 1시간에 20장까지
+  const { data: recent } = await admin.storage
+    .from("post-images")
+    .list(userId, { limit: 100, sortBy: { column: "created_at", order: "desc" } });
+  const hourAgo = Date.now() - 60 * 60 * 1000;
+  if ((recent ?? []).filter((f) => f.created_at && new Date(f.created_at).getTime() > hourAgo).length >= 20) {
+    return { error: "이미지를 너무 많이 올렸어요. 잠시 후 다시 시도해 주세요" };
+  }
   const { error } = await admin.storage.from("post-images").upload(path, file, { contentType: file.type });
   if (error) return { error: "업로드에 실패했어요" };
 
@@ -110,6 +135,10 @@ export async function createPost(_prev: ActionState, formData: FormData): Promis
   }
   if (parsed.data.category === "tournament" && !(await canWriteTournament(supabase, userId))) {
     return { error: "매장 정보 게시판은 스태프 또는 매장 계정만 작성할 수 있습니다" };
+  }
+
+  if (await tooFrequent(supabase, "posts", userId, 300, 5)) {
+    return { error: "글을 너무 빠르게 올리고 있어요. 잠시 후 다시 시도해 주세요" };
   }
 
   // 덱공략 + 덱 코드 → 본문 상단에 ```deck 블록 삽입 (이미 있으면 생략)
@@ -295,6 +324,18 @@ export async function createComment(_prev: ActionState, formData: FormData): Pro
     body: formData.get("body"),
   });
   if (!parsed.success) return { error: parsed.error.issues[0]?.message ?? "입력 오류" };
+
+  if (await tooFrequent(supabase, "comments", userId, 60, 10)) {
+    return { error: "댓글을 너무 빠르게 달고 있어요. 잠시 후 다시 시도해 주세요" };
+  }
+  if (parsed.data.parent_id) {
+    const { data: parent } = await supabase
+      .from("comments")
+      .select("post_id")
+      .eq("id", parsed.data.parent_id)
+      .maybeSingle();
+    if (!parent || parent.post_id !== parsed.data.post_id) return { error: "원댓글을 찾을 수 없어요" };
+  }
 
   const { error } = await supabase.from("comments").insert({
     post_id: parsed.data.post_id,

@@ -164,7 +164,7 @@ export async function createNotification(
   const d = parsed.data;
 
   // href 는 사이트 내부 경로(/...)만 허용
-  const href = d.href && d.href.startsWith("/") ? d.href : null;
+  const href = d.href && d.href.startsWith("/") && !d.href.startsWith("//") ? d.href : null;
 
   const { error } = await supabase.from("notifications").insert({
     title: d.title,

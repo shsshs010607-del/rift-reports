@@ -1,7 +1,10 @@
 import type { MetadataRoute } from "next";
 import { SITE, COMMUNITY_CATEGORIES } from "@/lib/constants";
-import { createClient } from "@/lib/supabase/server";
+import { createPublicClient } from "@/lib/supabase/public";
 import { hasSupabaseEnv } from "@/lib/supabase/env";
+
+// 공개 데이터라 1시간 캐시 — 로봇이 올 때마다 DB 를 훑지 않게
+export const revalidate = 3600;
 
 const STATIC_PATHS = [
   "",
@@ -23,9 +26,9 @@ const STATIC_PATHS = [
 async function dynamicEntries(base: string): Promise<MetadataRoute.Sitemap> {
   if (!hasSupabaseEnv) return [];
   try {
-    const supabase = await createClient();
+    const supabase = createPublicClient();
     const [{ data: posts }, { data: tournaments }, { data: reports }] = await Promise.all([
-      supabase.from("posts").select("id, updated_at"),
+      supabase.from("posts").select("id, updated_at").order("created_at", { ascending: false }).limit(5000), // 기본 1000행 제한 회피
       supabase.from("tournaments").select("slug, starts_at"),
       supabase.from("reports").select("slug, updated_at").eq("status", "published"),
     ]);

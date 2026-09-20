@@ -11,7 +11,8 @@ create or replace function can_write_tournament()
 returns boolean language sql stable security definer set search_path = public as $$
   select exists (
     select 1 from public.profiles
-    where id = auth.uid() and (role in ('editor', 'admin') or role = 'store')
+    -- role::text — 같은 트랜잭션에서 방금 추가한 enum 값('store')을 직접 쓰면 "unsafe use of new value" 오류가 난다
+    where id = auth.uid() and role::text in ('editor', 'admin', 'store')
   );
 $$;
 
