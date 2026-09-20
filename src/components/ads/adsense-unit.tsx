@@ -23,8 +23,20 @@ export function AdSenseUnit({ slot, className }: { slot?: string; className?: st
   const insRef = useRef<HTMLModElement>(null);
   const pushedRef = useRef(false);
   const [allowed, setAllowed] = useState(false);
+  const [unfilled, setUnfilled] = useState(false);
 
   useEffect(() => setAllowed(adsAllowedHere()), []);
+
+  // 구글이 채울 광고가 없으면 <ins data-ad-status="unfilled"> 로 표시한다 — 빈 칸과 "광고" 라벨만 남지 않게 접는다.
+  useEffect(() => {
+    const el = insRef.current;
+    if (!allowed || !el) return;
+    const sync = () => setUnfilled(el.getAttribute("data-ad-status") === "unfilled");
+    sync();
+    const mo = new MutationObserver(sync);
+    mo.observe(el, { attributes: true, attributeFilter: ["data-ad-status"] });
+    return () => mo.disconnect();
+  }, [allowed, pathname]);
 
   useEffect(() => {
     pushedRef.current = false;
@@ -68,7 +80,7 @@ export function AdSenseUnit({ slot, className }: { slot?: string; className?: st
   if (!allowed || !client || !adSlot) return null;
 
   return (
-    <aside className={className} aria-label="광고">
+    <aside className={unfilled ? "hidden" : className} aria-label="광고">
       <p className="mb-1 text-center text-label-sm text-on-surface-variant/70">광고</p>
       <ins
         key={pathname}
