@@ -13,7 +13,7 @@ import { cn } from "@/lib/utils";
 type ApiResponse = { count: number; cards: Card[] };
 
 export type PoolTab =
-  "all" | "legend" | "champion" | "main" | "battlefield" | "rune";
+  "all" | "legend" | "champion" | "main" | "battlefield" | "rune" | "side";
 
 const TABS: { key: PoolTab; label: string; apiType?: CardType }[] = [
   { key: "all", label: "전체" },
@@ -22,6 +22,7 @@ const TABS: { key: PoolTab; label: string; apiType?: CardType }[] = [
   { key: "main", label: "주 덱" },
   { key: "battlefield", label: "전장", apiType: "battlefield" },
   { key: "rune", label: "룬", apiType: "rune" },
+  { key: "side", label: "사이드덱" },
 ];
 
 const MAIN_TYPES: CardType[] = ["champion", "unit", "spell", "gear"];
@@ -68,13 +69,21 @@ export function CardPool({
 
   const apiType = TABS.find((t) => t.key === tab)?.apiType;
 
+  const isSide = tab === "side";
+  const target = isSide ? "side" : "main";
+
+  // 사이드덱 탭에선 사이드덱 장수를, 그 외엔 주 덱(+전설·챔피언 슬롯) 장수를 보여준다.
   const qtyById = useMemo(() => {
     const m = new Map<string, number>();
+    if (isSide) {
+      for (const e of deck.side ?? []) m.set(e.id, e.qty);
+      return m;
+    }
     for (const e of deck.entries) m.set(e.id, e.qty);
     if (rd.legend) m.set(rd.legend.id, (m.get(rd.legend.id) ?? 0) + 1);
     if (rd.champion) m.set(rd.champion.id, (m.get(rd.champion.id) ?? 0) + 1);
     return m;
-  }, [deck.entries, rd.legend, rd.champion]);
+  }, [isSide, deck.entries, deck.side, rd.legend, rd.champion]);
 
   const onResultsRef = useRef(onResults);
   onResultsRef.current = onResults;
@@ -97,14 +106,14 @@ export function CardPool({
         const res = await fetch(`/api/cards?${sp}`, { signal: ctrl.signal });
         if (!res.ok) throw new Error(String(res.status));
         const data = (await res.json()) as ApiResponse;
-        const filtered =
-          tab === "main"
-            ? data.cards.filter(
-                (c) => MAIN_TYPES.includes(c.type) && matchesIdentity(rdRef.current, c),
-              )
-            : data.cards;
+        const mainLike = tab === "main" || tab === "side";
+        const filtered = mainLike
+          ? data.cards.filter(
+              (c) => MAIN_TYPES.includes(c.type) && matchesIdentity(rdRef.current, c),
+            )
+          : data.cards;
         setCards(filtered);
-        setCount(tab === "main" ? filtered.length : data.count);
+        setCount(mainLike ? filtered.length : data.count);
         onResultsRef.current(data.cards);
       } catch (err) {
         if ((err as Error).name !== "AbortError")
@@ -227,14 +236,14 @@ export function CardPool({
             // 다른 챔피언은 "주 덱" 탭에 나온다.
             if (tab === "champion") return matchesLegendChampion(rd, card);
             if (tab === "rune") return matchesIdentity(rd, card); // 색 맞는 룬 (가득 차도 표시)
-            if (planAdd(deck, rd, card).kind !== "blocked") return true;
+            if (planAdd(deck, rd, card, target).kind !== "blocked") return true;
             // 못 넣는 카드라도 이미 덱에 있으면(=최대 도달) 남겨서 -버튼을 받는다
             return (qtyById.get(card.id) ?? 0) > 0;
           })
           .map((card) => {
             const inDeck = qtyById.get(card.id) ?? 0;
             const owned = collection[card.id] ?? 0;
-            const plan = planAdd(deck, rd, card);
+            const plan = planAdd(deck, rd, card, target);
             const blocked = plan.kind === "blocked";
             // 전설·챔피언 슬롯은 1장뿐 — 이미 선택돼 있으면 +는 막는다(자기 자신 중복 방지).
             const isSlot = plan.kind === "legend" || plan.kind === "champion";
@@ -245,7 +254,9 @@ export function CardPool({
                 ? "전설로 선택"
                 : plan.kind === "champion"
                   ? "선발 챔피언으로 선택"
-                  : "한 장 추가";
+                  : plan.kind === "side"
+                    ? "사이드덱에 한 장 추가"
+                    : "한 장 추가";
             return (
               <li key={card.id}>
                 <div

@@ -20,9 +20,10 @@ const HEAD = {
   battlefield: ["전장", "battlefield", "battlefields"],
   rune: ["룬", "rune", "runes"],
   main: ["주 덱", "주덱", "메인덱", "메인 덱", "deck", "main deck", "maindeck"],
+  side: ["사이드덱", "사이드 덱", "사이드", "sideboard", "side"],
 };
 
-export type TextSection = "battlefield" | "rune" | "main";
+export type TextSection = "battlefield" | "rune" | "main" | "side";
 
 export interface ParsedDecklist {
   name: string | null;
@@ -45,6 +46,10 @@ export function formatDecklist(rd: ResolvedDeck): string {
     if (sec.length === 0) continue;
     lines.push("", `${label}:`);
     for (const e of sec) lines.push(`${e.qty} ${e.card.name}`);
+  }
+  if (rd.side.length > 0) {
+    lines.push("", "사이드덱:");
+    for (const e of rd.side) lines.push(`${e.qty} ${e.card.name}`);
   }
   return lines.join("\n");
 }

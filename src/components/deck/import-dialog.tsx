@@ -8,6 +8,7 @@ import { type Deck, EMPTY_DECK, entryZoneOf } from "@/lib/types/deck";
 import { decodeDeck, decodeDeckCode, buildDeckRefMaps } from "@/lib/deck/deck-code";
 import { deckCardIds } from "@/lib/deck/deck-code";
 import { parseDecklist, type TextSection } from "@/lib/deck/deck-text";
+import { DECK_RULES } from "@/lib/constants";
 
 /**
  * 덱 가져오기: 공유 URL / 덱 코드 / 텍스트 디코드 붙여넣기.
@@ -60,7 +61,13 @@ export function ImportDialog({
         const data = (await res.json()) as { cards: Card[] };
         const { idByRef } = buildDeckRefMaps(data.cards);
         const decoded = decodeDeckCode(shortMatch, idByRef);
-        if (decoded && (decoded.legendId || decoded.championId || decoded.entries.length > 0)) {
+        if (
+          decoded &&
+          (decoded.legendId ||
+            decoded.championId ||
+            decoded.entries.length > 0 ||
+            (decoded.side ?? []).length > 0)
+        ) {
           const wanted = new Set(deckCardIds(decoded));
           onCache(data.cards.filter((c) => wanted.has(c.id)));
           onApply({ ...decoded, name: current.name });
@@ -108,6 +115,7 @@ export function ImportDialog({
     if (champion) deck.championId = champion.id;
 
     const byId = new Map<string, number>();
+    const sideById = new Map<string, number>();
     const wrongSection: string[] = [];
     for (const l of parsed.lines) {
       const card = found.get(l.name.toLowerCase());
@@ -116,14 +124,19 @@ export function ImportDialog({
         deck.legendId = card.id;
         continue;
       }
+      if (l.section === "side") {
+        sideById.set(card.id, (sideById.get(card.id) ?? 0) + l.qty);
+        continue;
+      }
       const actual: TextSection = entryZoneOf(card.type);
       if (l.section !== actual && !(l.section === "main" && actual === "main"))
         wrongSection.push(`${card.name}(→${actual})`);
       byId.set(card.id, (byId.get(card.id) ?? 0) + l.qty);
     }
     deck.entries = [...byId].map(([id, qty]) => ({ id, qty: Math.min(qty, 12) }));
+    deck.side = [...sideById].map(([id, qty]) => ({ id, qty: Math.min(qty, DECK_RULES.maxCopies) }));
 
-    if (deck.entries.length === 0 && !deck.legendId && !deck.championId) {
+    if (deck.entries.length === 0 && deck.side.length === 0 && !deck.legendId && !deck.championId) {
       setReport("덱을 해석하지 못했습니다. 형식을 확인하세요.");
       setBusy(false);
       return;

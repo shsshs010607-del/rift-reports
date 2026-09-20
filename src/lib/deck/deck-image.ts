@@ -51,10 +51,15 @@ export async function renderDeckImage(
   const bf = rd.sections.battlefield;
   const rune = rd.sections.rune;
 
+  const side = [...rd.side].sort(
+    (a, b) => (a.card.cost ?? 99) - (b.card.cost ?? 99) || a.card.name.localeCompare(b.card.name, "ko"),
+  );
+
   const mainRows = Math.max(1, Math.ceil(main.length / COLS));
+  const sideRows = Math.ceil(side.length / COLS);
   const headerH = 108;
   const heroH = rd.legend || rd.champion ? CH + 78 : 0;
-  const mainH = 44 + mainRows * (CH + 22) + 8;
+  const mainH = 44 + mainRows * (CH + 22) + 8 + (side.length ? 44 + sideRows * (CH + 22) + 8 : 0);
   const extraH = bf.length || rune.length ? 44 + Math.round(CW * 0.72) + 40 : 0;
   const footerH = 64;
   const H = headerH + heroH + mainH + extraH + footerH + PAD;
@@ -75,6 +80,7 @@ export async function renderDeckImage(
     main: main.reduce((s, e) => s + e.qty, 0),
     rune: rune.reduce((s, e) => s + e.qty, 0),
     bf: bf.reduce((s, e) => s + e.qty, 0),
+    side: side.reduce((s, e) => s + e.qty, 0),
   };
 
   // ── 헤더 ──
@@ -87,7 +93,7 @@ export async function renderDeckImage(
   ctx.font = `700 18px ${FONT}`;
   ctx.textAlign = "right";
   ctx.fillText(
-    `메인 ${counts.main} · 룬 ${counts.rune} · 전장 ${counts.bf}`,
+    `메인 ${counts.main} · 룬 ${counts.rune} · 전장 ${counts.bf}${counts.side ? ` · 사이드 ${counts.side}` : ""}`,
     W - PAD - 22,
     PAD + 22,
   );
@@ -153,6 +159,16 @@ export async function renderDeckImage(
   y += 34;
   await drawGrid(ctx, main, PAD, y, CW, CH, COLS, GAP);
   y += mainRows * (CH + 22) + 10;
+
+  // ── 사이드덱 ──
+  if (side.length) {
+    ctx.fillStyle = "#181445";
+    ctx.font = `800 20px ${FONT}`;
+    ctx.fillText(`사이드덱 ${counts.side}`, PAD, y);
+    y += 34;
+    await drawGrid(ctx, side, PAD, y, CW, CH, COLS, GAP);
+    y += sideRows * (CH + 22) + 10;
+  }
 
   // ── 전장 · 룬 ──
   if (extraH) {

@@ -5,6 +5,7 @@ import {
   type DeckZone,
   type ResolvedDeck,
   type ResolvedEntry,
+  SIDE_TYPES,
   ZONE_META,
   entryZoneOf,
 } from "@/lib/types/deck";
@@ -41,12 +42,27 @@ export function removeEntry(deck: Deck, id: string): Deck {
   return { ...deck, entries: deck.entries.filter((e) => e.id !== id) };
 }
 
+/** 사이드덱 장수 증감 (0 이하가 되면 제거). */
+export function addSide(deck: Deck, id: string, delta = 1): Deck {
+  const side = [...(deck.side ?? [])];
+  const i = side.findIndex((e) => e.id === id);
+  if (i === -1) {
+    if (delta <= 0) return deck;
+    side.push({ id, qty: delta });
+  } else {
+    const qty = side[i].qty + delta;
+    if (qty <= 0) side.splice(i, 1);
+    else side[i] = { ...side[i], qty };
+  }
+  return { ...deck, side };
+}
+
 export function renameDeck(deck: Deck, name: string): Deck {
   return { ...deck, name: name.slice(0, 60) };
 }
 
 export function clearDeck(deck: Deck): Deck {
-  return { ...deck, legendId: null, championId: null, entries: [] };
+  return { ...deck, legendId: null, championId: null, entries: [], side: [] };
 }
 
 // ── 해석 ───────────────────────────────────────────────────────
@@ -58,6 +74,11 @@ export function resolveDeck(deck: Deck, pool: Map<string, Card>): ResolvedDeck {
     if (!card) continue;
     sections[entryZoneOf(card.type)].push({ card, qty: e.qty });
   }
+  const side: ResolvedEntry[] = [];
+  for (const e of deck.side ?? []) {
+    const card = pool.get(e.id);
+    if (card) side.push({ card, qty: e.qty });
+  }
   const byCurve = (a: ResolvedEntry, b: ResolvedEntry) =>
     (a.card.cost ?? 99) - (b.card.cost ?? 99) ||
     (b.card.power ?? -1) - (a.card.power ?? -1) ||
@@ -65,13 +86,27 @@ export function resolveDeck(deck: Deck, pool: Map<string, Card>): ResolvedDeck {
   sections.battlefield.sort(byCurve);
   sections.rune.sort(byCurve);
   sections.main.sort(byCurve);
+  side.sort(byCurve);
 
   return {
     name: deck.name,
     legend: (deck.legendId && pool.get(deck.legendId)) || null,
     champion: (deck.championId && pool.get(deck.championId)) || null,
     sections,
+    side,
   };
+}
+
+/** 사이드덱 총 장수. (`totalCards`/`zoneCounts` 에는 포함하지 않는다.) */
+export function sideCount(rd: ResolvedDeck): number {
+  return rd.side.reduce((s, e) => s + e.qty, 0);
+}
+
+/** 이름(부제 포함)이 같은 카드의 주 덱 + 사이드덱 합계. 이름당 최대 3장은 둘을 합산한다. */
+function nameTotal(rd: ResolvedDeck, name: string): number {
+  const main = rd.sections.main.filter((e) => e.card.name === name).reduce((s, e) => s + e.qty, 0);
+  const side = rd.side.filter((e) => e.card.name === name).reduce((s, e) => s + e.qty, 0);
+  return main + side;
 }
 
 /** 존별 현재 장수. */
@@ -127,9 +162,9 @@ export function matchesSignatureLegend(rd: ResolvedDeck, card: Card): boolean {
   return card.subtypes.some((t) => rd.legend!.subtypes.includes(t));
 }
 
-/** 주 덱의 시그니처 카드 총 장수(이름 무관 합산) — 최대 {@link DECK_RULES.maxCopies}장. */
+/** 주 덱 + 사이드덱의 시그니처 카드 총 장수(이름 무관 합산) — 최대 {@link DECK_RULES.maxCopies}장. */
 export function signatureCount(rd: ResolvedDeck): number {
-  return rd.sections.main
+  return [...rd.sections.main, ...rd.side]
     .filter((e) => e.card.supertype === "signature")
     .reduce((s, e) => s + e.qty, 0);
 }
@@ -163,9 +198,23 @@ export function validateDeck(rd: ResolvedDeck): DeckIssue[] {
       message: `전장은 ${DECK_RULES.battlefieldCount}장이어야 합니다 (현재 ${c.battlefield}장).`,
     });
 
-  // 이름당 최대 3장 — 부제가 다르면 다른 카드. 선발 챔피언 슬롯도 카운트.
+  // 사이드덱 — 0장 또는 정확히 10장, 주 덱과 같은 종류의 카드만.
+  const sideN = sideCount(rd);
+  if (sideN !== 0 && sideN !== DECK_RULES.sideCount)
+    issues.push({
+      level: "error",
+      message: `사이드덱은 0장 또는 정확히 ${DECK_RULES.sideCount}장이어야 합니다 (현재 ${sideN}장).`,
+    });
+  for (const e of rd.side)
+    if (!SIDE_TYPES.includes(e.card.type) || e.card.supertype === "token")
+      issues.push({
+        level: "error",
+        message: `"${e.card.name}" 은(는) 사이드덱에 넣을 수 없는 카드입니다.`,
+      });
+
+  // 이름당 최대 3장 — 부제가 다르면 다른 카드. 선발 챔피언 슬롯·사이드덱도 합산.
   const mainByName = new Map<string, number>();
-  for (const e of rd.sections.main)
+  for (const e of [...rd.sections.main, ...rd.side])
     mainByName.set(e.card.name, (mainByName.get(e.card.name) ?? 0) + e.qty);
   if (rd.champion) mainByName.set(rd.champion.name, (mainByName.get(rd.champion.name) ?? 0) + 1);
   for (const [name, total] of mainByName) {
@@ -183,7 +232,7 @@ export function validateDeck(rd: ResolvedDeck): DeckIssue[] {
       level: "error",
       message: `시그니처 카드는 이름과 무관하게 총 ${DECK_RULES.maxCopies}장까지 (현재 ${sigTotal}장).`,
     });
-  for (const e of rd.sections.main)
+  for (const e of [...rd.sections.main, ...rd.side])
     if (!matchesSignatureLegend(rd, e.card))
       issues.push({
         level: "error",
@@ -202,6 +251,7 @@ export function validateDeck(rd: ResolvedDeck): DeckIssue[] {
       ...rd.sections.battlefield.map((e) => e.card),
       ...rd.sections.rune.map((e) => e.card),
       ...rd.sections.main.map((e) => e.card),
+      ...rd.side.map((e) => e.card),
     ];
     for (const card of all)
       if (!matchesIdentity(rd, card))
@@ -228,9 +278,18 @@ export type AddAction =
   | { kind: "legend"; id: string }
   | { kind: "champion"; id: string }
   | { kind: "entry"; id: string }
+  | { kind: "side"; id: string }
   | { kind: "blocked"; reason: string };
 
-export function planAdd(deck: Deck, rd: ResolvedDeck, card: Card): AddAction {
+/** `target: "side"` 면 사이드덱에 넣는 규칙(전설·슬롯 없음, 10장 상한)으로 판정. */
+export function planAdd(
+  deck: Deck,
+  rd: ResolvedDeck,
+  card: Card,
+  target: "main" | "side" = "main",
+): AddAction {
+  if (target === "side") return planAddSide(rd, card);
+
   if (card.type === "legend") return { kind: "legend", id: card.id };
 
   if (card.supertype === "token") return { kind: "blocked", reason: "토큰 카드는 덱에 넣을 수 없습니다" };
@@ -253,9 +312,13 @@ export function planAdd(deck: Deck, rd: ResolvedDeck, card: Card): AddAction {
 
   // 이름당 최대 3장 (룬 제외). "이름" = 전체 이름(부제 포함) → 부제가 다르면 다른 카드.
   // 선발 챔피언 슬롯의 카드도 같은 이름이면 1장으로 카운트한다.
-  const sameNameInZone = rd.sections[zone]
-    .filter((e) => e.card.name === card.name)
-    .reduce((s, e) => s + e.qty, 0);
+  // 주 덱 카드는 사이드덱에 있는 같은 이름 카드도 합산한다.
+  const sameNameInZone =
+    zone === "main"
+      ? nameTotal(rd, card.name)
+      : rd.sections[zone]
+          .filter((e) => e.card.name === card.name)
+          .reduce((s, e) => s + e.qty, 0);
   const leaderSameName = rd.champion && rd.champion.name === card.name ? 1 : 0;
   if (zone !== "rune" && sameNameInZone + leaderSameName >= DECK_RULES.maxCopies)
     return {
@@ -274,6 +337,27 @@ export function planAdd(deck: Deck, rd: ResolvedDeck, card: Card): AddAction {
     return { kind: "blocked", reason: `전장은 ${DECK_RULES.battlefieldCount}장까지` };
 
   return { kind: "entry", id: card.id };
+}
+
+function planAddSide(rd: ResolvedDeck, card: Card): AddAction {
+  if (!SIDE_TYPES.includes(card.type))
+    return { kind: "blocked", reason: "사이드덱은 유닛·주문·도구·챔피언만 넣을 수 있습니다" };
+  if (card.supertype === "token") return { kind: "blocked", reason: "토큰 카드는 덱에 넣을 수 없습니다" };
+  if (!matchesIdentity(rd, card)) return { kind: "blocked", reason: "덱 색과 다릅니다" };
+  if (!matchesSignatureLegend(rd, card))
+    return { kind: "blocked", reason: "전설의 챔피언 태그와 다른 시그니처입니다" };
+  if (card.supertype === "signature" && signatureCount(rd) >= DECK_RULES.maxCopies)
+    return { kind: "blocked", reason: `시그니처는 이름과 무관하게 총 ${DECK_RULES.maxCopies}장까지` };
+
+  const leaderSameName = rd.champion && rd.champion.name === card.name ? 1 : 0;
+  if (nameTotal(rd, card.name) + leaderSameName >= DECK_RULES.maxCopies)
+    return {
+      kind: "blocked",
+      reason: `이름당 최대 ${DECK_RULES.maxCopies}장 (주 덱 합산${leaderSameName ? ", 리더 포함" : ""})`,
+    };
+  if (sideCount(rd) >= DECK_RULES.sideCount)
+    return { kind: "blocked", reason: `사이드덱은 ${DECK_RULES.sideCount}장까지` };
+  return { kind: "side", id: card.id };
 }
 
 export { ZONE_META };

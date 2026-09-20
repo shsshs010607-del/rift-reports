@@ -143,6 +143,7 @@ export function ProxyBuilder() {
     inc(deck.legendId);
     inc(deck.championId);
     for (const e of deck.entries) inc(e.id, e.qty);
+    for (const e of deck.side ?? []) inc(e.id, e.qty);
 
     const resolved = Object.entries(add).filter(([id]) => byId.has(id));
     if (resolved.length === 0) return setImportMsg("이 덱의 카드를 찾지 못했습니다.");

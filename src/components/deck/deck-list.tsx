@@ -8,8 +8,8 @@ import type { Card } from "@/lib/types/card";
 import { resolveCardText } from "@/lib/types/card";
 import type { ResolvedDeck, ResolvedEntry } from "@/lib/types/deck";
 import { ZONE_META } from "@/lib/types/deck";
-import { type DeckIssue, zoneCounts } from "@/lib/deck/deck-model";
-import { CARD_DOMAINS } from "@/lib/constants";
+import { type DeckIssue, sideCount, zoneCounts } from "@/lib/deck/deck-model";
+import { CARD_DOMAINS, DECK_RULES } from "@/lib/constants";
 import { LocalizedCard } from "@/components/cards/localized-card";
 import { CardText } from "@/components/cards/card-text";
 import type { PoolTab } from "@/components/deck/card-pool";
@@ -48,6 +48,7 @@ export function DeckList({
   rd,
   issues,
   onChangeEntry,
+  onChangeSide,
   onClearLegend,
   onClearChampion,
   onFocusPool,
@@ -55,11 +56,13 @@ export function DeckList({
   rd: ResolvedDeck;
   issues: DeckIssue[];
   onChangeEntry: (id: string, delta: number) => void;
+  onChangeSide: (id: string, delta: number) => void;
   onClearLegend: () => void;
   onClearChampion: () => void;
   onFocusPool: (tab: PoolTab) => void;
 }) {
   const c = zoneCounts(rd);
+  const sideN = sideCount(rd);
   const [peek, setPeek] = useState<Card | null>(null);
 
   return (
@@ -124,6 +127,20 @@ export function DeckList({
         emptyLabel="룬 추가"
         onEmpty={() => onFocusPool("rune")}
         onChange={onChangeEntry}
+        onPeek={setPeek}
+      />
+
+      {/* 사이드덱 — 0장 또는 10장 */}
+      <EntrySection
+        title="사이드덱"
+        subtitle="0장 또는 10장"
+        n={sideN}
+        target={String(DECK_RULES.sideCount)}
+        ok={sideN === 0 || sideN === DECK_RULES.sideCount}
+        entries={rd.side}
+        emptyLabel="사이드덱 추가 (선택)"
+        onEmpty={() => onFocusPool("side")}
+        onChange={onChangeSide}
         onPeek={setPeek}
       />
 

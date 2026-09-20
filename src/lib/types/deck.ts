@@ -4,6 +4,7 @@ import type { Card, CardType } from "@/lib/types/card";
  * 덱 모델.
  * - 전설 / 선발 챔피언은 각 1장 슬롯(id).
  * - 나머지(주 덱·룬·전장)는 entries 에 id+장수로. 존은 카드 타입에서 파생.
+ * - 사이드덱은 `side` 에 따로 (0장 또는 10장). 이전에 저장된 덱엔 없을 수 있어 optional.
  * 저장은 id 만 — 카드 상세는 카드 서비스에서 다시 해석한다.
  */
 export interface DeckEntry {
@@ -16,9 +17,10 @@ export interface Deck {
   legendId: string | null;
   championId: string | null;
   entries: DeckEntry[];
+  side?: DeckEntry[];
 }
 
-export const EMPTY_DECK: Deck = { name: "새 덱", legendId: null, championId: null, entries: [] };
+export const EMPTY_DECK: Deck = { name: "새 덱", legendId: null, championId: null, entries: [], side: [] };
 
 // ── 존 ──────────────────────────────────────────────────────────
 
@@ -52,6 +54,9 @@ export function entryZoneOf(type: CardType): Exclude<DeckZone, "legend" | "champ
   return "main"; // unit · spell · gear · champion(추가 사본)
 }
 
+/** 사이드덱에 넣을 수 있는 카드 타입 (주 덱과 같은 종류). */
+export const SIDE_TYPES: readonly CardType[] = ["champion", "unit", "spell", "gear"];
+
 // ── 해석 결과 ───────────────────────────────────────────────────
 
 export interface ResolvedEntry {
@@ -65,4 +70,6 @@ export interface ResolvedDeck {
   champion: Card | null;
   /** 존별 entries (legend/champion 존은 여기 안 들어감 — 위 legend/champion 필드 사용). */
   sections: Record<Exclude<DeckZone, "legend" | "champion">, ResolvedEntry[]>;
+  /** 사이드덱 (0장 또는 10장). */
+  side: ResolvedEntry[];
 }

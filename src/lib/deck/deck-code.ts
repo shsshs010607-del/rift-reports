@@ -13,6 +13,22 @@ interface Packed {
   l: string | null;
   c: string | null;
   e: [string, number][];
+  /** 사이드덱 (없으면 생략 — 예전 코드 호환). */
+  s?: [string, number][];
+}
+
+function unpackEntries(list: unknown): DeckEntry[] {
+  const seen = new Set<string>();
+  const out: DeckEntry[] = [];
+  if (!Array.isArray(list)) return out;
+  for (const pair of list) {
+    if (!Array.isArray(pair)) continue;
+    const [id, qty] = pair;
+    if (typeof id !== "string" || !id || seen.has(id)) continue;
+    seen.add(id);
+    out.push({ id, qty: Math.max(1, Math.min(99, Math.floor(Number(qty) || 0))) });
+  }
+  return out;
 }
 
 function toBase64Url(s: string): string {
@@ -28,16 +44,20 @@ function fromBase64Url(s: string): string {
 }
 
 export function isDeckEmpty(deck: Deck): boolean {
-  return !deck.legendId && !deck.championId && deck.entries.length === 0;
+  return (
+    !deck.legendId && !deck.championId && deck.entries.length === 0 && (deck.side ?? []).length === 0
+  );
 }
 
 export function encodeDeck(deck: Deck): string {
   if (isDeckEmpty(deck) && deck.name === EMPTY_DECK.name) return "";
+  const side = (deck.side ?? []).filter((x) => x.qty > 0).map((x): [string, number] => [x.id, x.qty]);
   const packed: Packed = {
     n: deck.name.slice(0, 60),
     l: deck.legendId,
     c: deck.championId,
     e: deck.entries.filter((x) => x.qty > 0).map((x) => [x.id, x.qty]),
+    ...(side.length ? { s: side } : {}),
   };
   return toBase64Url(JSON.stringify(packed));
 }
@@ -47,20 +67,12 @@ export function decodeDeck(param: string | null | undefined): Deck | null {
   try {
     const p = JSON.parse(fromBase64Url(param)) as Partial<Packed>;
     if (!Array.isArray(p.e)) return null;
-    const seen = new Set<string>();
-    const entries: DeckEntry[] = [];
-    for (const pair of p.e) {
-      if (!Array.isArray(pair)) continue;
-      const [id, qty] = pair;
-      if (typeof id !== "string" || !id || seen.has(id)) continue;
-      seen.add(id);
-      entries.push({ id, qty: Math.max(1, Math.min(99, Math.floor(Number(qty) || 0))) });
-    }
     return {
       name: typeof p.n === "string" && p.n.trim() ? p.n.slice(0, 60) : EMPTY_DECK.name,
       legendId: typeof p.l === "string" && p.l ? p.l : null,
       championId: typeof p.c === "string" && p.c ? p.c : null,
-      entries,
+      entries: unpackEntries(p.e),
+      side: unpackEntries(p.s),
     };
   } catch {
     return null;
@@ -107,14 +119,23 @@ export function encodeDeckCode(deck: Deck, refById: Map<string, string>): string
   const c = refOf(deck.championId);
   if (l === null || c === null) return null;
 
-  const parts: string[] = [];
-  for (const e of deck.entries) {
-    if (e.qty <= 0) continue;
-    const r = refById.get(e.id);
-    if (!r) return null;
-    parts.push(`${r}q${e.qty}`);
-  }
-  return [CODE_PREFIX, l, c, parts.join("-")].join(".");
+  const pack = (list: DeckEntry[]): string[] | null => {
+    const parts: string[] = [];
+    for (const e of list) {
+      if (e.qty <= 0) continue;
+      const r = refById.get(e.id);
+      if (!r) return null;
+      parts.push(`${r}q${e.qty}`);
+    }
+    return parts;
+  };
+  const main = pack(deck.entries);
+  const side = pack(deck.side ?? []);
+  if (main === null || side === null) return null;
+  // 사이드덱은 선택적 5번째 구간 — 없으면 예전 형식 그대로.
+  const segs = [CODE_PREFIX, l, c, main.join("-")];
+  if (side.length) segs.push(side.join("-"));
+  return segs.join(".");
 }
 
 export function isDeckCode(s: string | null | undefined): boolean {
@@ -126,27 +147,37 @@ export function decodeDeckCode(
   idByRef: Map<string, string>,
 ): Deck | null {
   if (!isDeckCode(code)) return null;
-  const [, l, c, list = ""] = code!.trim().split(".");
+  const [, l, c, list = "", sideList = ""] = code!.trim().split(".");
   const idOf = (ref?: string) => (!ref || ref === "_" ? null : idByRef.get(ref) ?? null);
 
-  const seen = new Set<string>();
-  const entries: DeckEntry[] = [];
-  for (const tok of list.split("-").filter(Boolean)) {
-    const m = tok.match(/^([A-Z]\d+)q(\d+)$/);
-    if (!m) continue;
-    const id = idByRef.get(m[1]);
-    if (!id || seen.has(id)) continue;
-    seen.add(id);
-    entries.push({ id, qty: Math.max(1, Math.min(99, Math.floor(Number(m[2])) || 1)) });
-  }
-  return { name: EMPTY_DECK.name, legendId: idOf(l), championId: idOf(c), entries };
+  const unpack = (s: string): DeckEntry[] => {
+    const seen = new Set<string>();
+    const out: DeckEntry[] = [];
+    for (const tok of s.split("-").filter(Boolean)) {
+      const m = tok.match(/^([A-Z]\d+)q(\d+)$/);
+      if (!m) continue;
+      const id = idByRef.get(m[1]);
+      if (!id || seen.has(id)) continue;
+      seen.add(id);
+      out.push({ id, qty: Math.max(1, Math.min(99, Math.floor(Number(m[2])) || 1)) });
+    }
+    return out;
+  };
+  return {
+    name: EMPTY_DECK.name,
+    legendId: idOf(l),
+    championId: idOf(c),
+    entries: unpack(list),
+    side: unpack(sideList),
+  };
 }
 
-/** 덱의 모든 카드 id (레전드·챔피언·entries) — 서버에서 한 번에 해석할 때. */
+/** 덱의 모든 카드 id (레전드·챔피언·entries·사이드덱) — 서버에서 한 번에 해석할 때. */
 export function deckCardIds(deck: Deck): string[] {
   const ids = new Set<string>();
   if (deck.legendId) ids.add(deck.legendId);
   if (deck.championId) ids.add(deck.championId);
   for (const e of deck.entries) ids.add(e.id);
+  for (const e of deck.side ?? []) ids.add(e.id);
   return [...ids];
 }

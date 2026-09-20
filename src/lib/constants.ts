@@ -321,11 +321,13 @@ export const CARD_SETS = [
 /**
  * 리프트바운드 덱 구성 규칙.
  *  - 전설 1 · 선발 챔피언 1 · 주 덱 39장(카드 이름당 최대 3장) · 룬 덱 12 · 전장 3
+ *  - 사이드덱은 0장 또는 정확히 10장 (이름당 3장 제한은 주 덱과 합산).
  *  - 오프닝 핸드 4장, 멀리건 1회(최대 2장 덱 아래로).
  */
 export const DECK_RULES = {
   mainMin: 39,
   mainMax: 39,
+  sideCount: 10,
   maxCopies: 3,
   runeCount: 12,
   battlefieldCount: 3,

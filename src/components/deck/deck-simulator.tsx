@@ -15,12 +15,14 @@ import {
 import { SaveDeckControls } from "@/components/deck/save-deck-controls";
 import {
   addEntry,
+  addSide,
   clearDeck,
   planAdd,
   renameDeck,
   resolveDeck,
   setChampion,
   setLegend,
+  sideCount,
   validateDeck,
   zoneCounts,
   totalCards,
@@ -148,6 +150,7 @@ export function DeckSimulator({
   const issues = useMemo(() => validateDeck(rd), [rd]);
   const errorCount = issues.filter((i) => i.level === "error").length;
   const total = totalCards(rd);
+  const sideN = sideCount(rd);
   const isComplete =
     errorCount === 0 &&
     counts.legend === 1 &&
@@ -161,8 +164,11 @@ export function DeckSimulator({
   const handlePick = useCallback(
     (card: Card) => {
       cacheRef.current.set(card.id, card);
-      const plan = planAdd(deck, rd, card);
+      const plan = planAdd(deck, rd, card, poolTab === "side" ? "side" : "main");
       switch (plan.kind) {
+        case "side":
+          setDeck((d) => addSide(d, plan.id, 1));
+          break;
         case "legend":
           setDeck((d) => fillRunes(setLegend(d, plan.id), card, runesByDomain.current));
           flashMsg(`${card.name} 선택 · 룬 12장 자동 채움 → 다음: 챔피언`);
@@ -180,16 +186,24 @@ export function DeckSimulator({
           break; // blocked
       }
     },
-    [deck, rd],
+    [deck, rd, poolTab],
   );
 
   const changeEntry = useCallback((id: string, delta: number) => {
     setDeck((d) => addEntry(d, id, delta));
   }, []);
 
-  // 카드 풀의 "-" — 전설/선발 챔피언 카드면 슬롯을 비우고, 그 외는 일반 엔트리 -1.
+  const changeSide = useCallback((id: string, delta: number) => {
+    setDeck((d) => addSide(d, id, delta));
+  }, []);
+
+  // 카드 풀의 "-" — 사이드덱 탭이면 사이드 -1, 전설/선발 챔피언 카드면 슬롯을 비우고, 그 외는 일반 엔트리 -1.
   const handlePoolRemove = useCallback(
     (card: Card) => {
+      if (poolTab === "side") {
+        changeSide(card.id, -1);
+        return;
+      }
       if (rd.legend?.id === card.id) {
         setDeck((d) => fillRunes(setLegend(d, null), undefined, runesByDomain.current));
         return;
@@ -200,7 +214,7 @@ export function DeckSimulator({
       }
       changeEntry(card.id, -1);
     },
-    [rd.legend, rd.champion, changeEntry],
+    [poolTab, rd.legend, rd.champion, changeEntry, changeSide],
   );
 
   async function copyShareLink() {
@@ -226,7 +240,7 @@ export function DeckSimulator({
 
   const [imgBusy, setImgBusy] = useState(false);
   async function saveImage() {
-    if (imgBusy || total === 0) return;
+    if (imgBusy || (total === 0 && sideN === 0)) return;
     setImgBusy(true);
     try {
       const blob = await renderDeckImage(rd, {
@@ -266,7 +280,7 @@ export function DeckSimulator({
           className="min-w-40 flex-1 rounded-xl border border-line bg-subcanvas/50 px-3 py-2 text-title-md font-bold text-ink focus:border-primary focus:outline-none"
         />
         <span className="flex items-center gap-1.5 text-body-sm text-ink-soft">
-          총 {total}장
+          총 {total}장{sideN > 0 && ` · 사이드 ${sideN}장`}
           {isComplete ? (
             <span className="rounded-full bg-emerald/15 px-2 py-0.5 text-label-sm font-bold text-emerald">
               완성
@@ -311,6 +325,7 @@ export function DeckSimulator({
                 rd={rd}
                 issues={issues}
                 onChangeEntry={changeEntry}
+                onChangeSide={changeSide}
                 onClearLegend={() => setDeck((d) => fillRunes(setLegend(d, null), undefined, runesByDomain.current))}
                 onClearChampion={() => setDeck((d) => setChampion(d, null))}
                 onFocusPool={handleTabChange}
@@ -320,7 +335,7 @@ export function DeckSimulator({
                 deckName={deck.name}
                 code={isDeckCode(shareCode) ? shareCode : null}
                 legendName={rd.legend?.name ?? null}
-                empty={total === 0}
+                empty={total === 0 && sideN === 0}
                 onLoad={(loadCode) => router.push(`/deck-simulator?d=${loadCode}`)}
               />
 
