@@ -53,7 +53,7 @@ export async function TierBoard() {
             <ul className="grid flex-1 grid-cols-2 gap-2 p-2.5 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
               {decks.map((deck) => {
                 const legend = legendByName.get(deck.legendEn);
-                const art = legend?.localization.en.imageUrl ?? legend?.imageUrl;
+                const art = legend?.localization.ko?.imageUrl ?? legend?.localization.en.imageUrl ?? legend?.imageUrl;
                 const meta = bestDeck[deck.legendEn];
                 const href = meta
                   ? `/decks?legend=${encodeURIComponent(deck.legendEn)}`

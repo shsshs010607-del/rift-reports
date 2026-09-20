@@ -21,7 +21,8 @@ async function legendImages(): Promise<Record<string, string>> {
     const byName = new Map(legends.map((c) => [c.localization.en.name, c]));
     const out: Record<string, string> = {};
     for (const d of TIER_DECKS) {
-      const art = byName.get(d.legendEn)?.localization.en.imageUrl ?? byName.get(d.legendEn)?.imageUrl;
+      const legend = byName.get(d.legendEn);
+      const art = legend?.localization.ko?.imageUrl ?? legend?.localization.en.imageUrl ?? legend?.imageUrl;
       if (art) out[d.id] = art;
     }
     return out;

@@ -1,13 +1,16 @@
 // Rebuilds public/origins-cards.json (OGN-only slim dataset for public/origins-sim.html)
-// from data/cards.json. Run after `npm run sync:cards` picks up new/updated OGN cards.
+// from data/cards.json (playriftbound.com 공식 갤러리 스냅샷: { en, ko, setMax }).
+// Run after `npm run sync:cards`.
 //
-// Renames the existing overnumbered/signature "Ahri - Nine-Tailed Fox" entries to the
-// Korean-exclusive "아리 - 구미호 (한복)" homage card per user direction — this replaces
-// them outright in the simulator rather than adding a third variant. The image still
-// points at the original (non-Hanbok) art until a real Hanbok Ahri asset is supplied.
+// 카드 이름·이미지는 공식 한글판(ko-kr)을 쓴다 — 이름은 사이트 카드 DB(cardService)와 같은 규칙:
+//  · 레전드는 "챔피언 - 칭호" (챔피언 본명은 tags[0], 한글 챔피언명은 챔피언 유닛 카드에서 조회)
+//  · 야스오·징크스 6종은 기존 리프트나루 번역(data/cards-ko.json) 유지
+//  · 변형 접미사: (얼터네이트 아트) / (오버넘버드) / (시그니처)
 //
-// Also attaches a real KRW price per card (리바지지 시세 데이터, card_prints/price_snapshots
-// matched by collector number) so the simulator can show a per-pull price + running total.
+// 한국판 한정 "아리, 구미호(한복)": 오버넘버드·시그니처 아리(303, 303*)를 대체해 표시하고,
+// 이미지는 public/cards/ 의 한복 아리 스캔을 쓴다.
+//
+// 카드별 실제 KRW 시세(리바지지 시세, card_prints/price_snapshots 를 수집번호로 매칭)도 붙인다.
 // Needs .env.local (or CI secrets): NEXT_PUBLIC_SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY.
 const fs = require("fs");
 const path = require("path");
@@ -15,8 +18,24 @@ const { createClient } = require("@supabase/supabase-js");
 
 const ROOT = path.join(__dirname, "..");
 const SRC = path.join(ROOT, "data", "cards.json");
+const KO_OVERRIDE = path.join(ROOT, "data", "cards-ko.json");
 const OUT = path.join(ROOT, "public", "origins-cards.json");
 const FALLBACK_USD_KRW = 1385;
+
+const PRESERVE_RIFTNARU_KO = new Set([
+  "yasuo - remorseful",
+  "yasuo - windrider",
+  "yasuo - unforgiven",
+  "jinx - demolitionist",
+  "jinx - rebel",
+  "jinx - loose cannon",
+]);
+const HANBOK_IMG = {
+  overnumbered: "/cards/hanbok-ahri-overnumbered.png",
+  signature: "/cards/hanbok-ahri-signature.png",
+};
+const HANGUL = /[가-힣]/;
+const cap = (s) => (s ? s.charAt(0).toUpperCase() + s.slice(1) : s);
 
 function loadEnv() {
   const file = path.join(ROOT, ".env.local");
@@ -42,7 +61,7 @@ async function fetchUsdKrw() {
   }
 }
 
-// card_prints.number 는 "303 star /298" 형태(총 장수 접미사) — "/" 뒤를 떼면 origins-cards id 의 번호와 그대로 일치.
+// card_prints.number 는 "303*/298" 형태(총 장수 접미사) — "/" 뒤를 떼면 sim id 의 번호와 그대로 일치.
 async function fetchOgnPriceByNumber() {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
@@ -70,30 +89,68 @@ async function fetchOgnPriceByNumber() {
   return byNumber;
 }
 
+const has = (list, id) => (list || []).some((t) => t.id === id);
+const isLegend = (c) => has(c.cardType && c.cardType.type, "legend");
+
 async function main() {
   loadEnv();
 
   const data = JSON.parse(fs.readFileSync(SRC, "utf8"));
-  const ognCards = data.items.filter((c) => c.set && c.set.set_id === "OGN");
+  const koById = new Map(data.ko.map((c) => [c.id, c]));
+  const riftnaru = new Map(
+    Object.entries((JSON.parse(fs.readFileSync(KO_OVERRIDE, "utf8")).map) || {}),
+  );
 
-  const HANBOK_TARGET = /Ahri.*Nine-Tailed Fox \((Overnumbered|Signature)\)/;
+  // 영문 챔피언명 → 한글 챔피언명 (챔피언 유닛 카드의 name)
+  const championKo = new Map();
+  for (const c of data.en) {
+    if (!has(c.cardType && c.cardType.type, "unit") || !has(c.cardType && c.cardType.superType, "champion")) continue;
+    const k = koById.get(c.id);
+    const n = k && k.name && k.name.trim();
+    if (n && HANGUL.test(n) && !championKo.has(c.name.trim())) championKo.set(c.name.trim(), n);
+  }
 
   const [priceByNumber, usdKrw] = await Promise.all([fetchOgnPriceByNumber(), fetchUsdKrw()]);
 
+  const ogn = data.en.filter((c) => c.set && c.set.value && c.set.value.id === "OGN");
   let priced = 0;
-  const cards = ognCards.map((c) => {
-    const isHanbok = HANBOK_TARGET.test(c.name);
-    const num = String(c.riftbound_id.split("-")[1] || "").toLowerCase();
+  const cards = ogn.map((c) => {
+    const ko = koById.get(c.id) || c;
+    const tag = c.tags && c.tags.tags && c.tags.tags[0];
+    const legend = isLegend(c);
+
+    // 영문 전체 이름(번역 키) / 한글 전체 이름
+    const enFull = legend && tag ? `${tag} - ${c.name.trim()}` : c.subtitle ? `${c.name.trim()} - ${c.subtitle}` : c.name.trim();
+    let koName = ko.name.trim();
+    if (legend && tag && championKo.get(tag)) koName = `${championKo.get(tag)} - ${koName}`;
+    else if (ko.subtitle) koName = `${koName} - ${ko.subtitle}`;
+    const key = enFull.toLowerCase();
+    if (PRESERVE_RIFTNARU_KO.has(key) && riftnaru.has(key)) koName = riftnaru.get(key).n;
+
+    // sim 의 id 규칙: 시그니처 변형은 번호에 '*' (예: ogn-303*-298) — showcaseBucket 이 이걸로 구분한다.
+    const id = c.id.replace("-star", "*");
+    const num = id.split("-")[1].toLowerCase();
+    const rarity = cap(c.rarity.value.id);
+
+    let bucket = null;
+    if (rarity === "Showcase") {
+      bucket = num.includes("*") ? "signature" : parseInt(num, 10) >= 299 ? "overnumbered" : "altart";
+    }
+    const isHanbok = bucket !== null && bucket !== "altart" && /^Nine-Tailed Fox$/i.test(c.name.trim()) && tag === "Ahri";
+    if (isHanbok) koName = "아리 - 구미호 (한복)";
+    if (bucket) koName += ` (${{ signature: "시그니처", overnumbered: "오버넘버드", altart: "얼터네이트 아트" }[bucket]})`;
+
     const usd = priceByNumber.get(num);
     const price = typeof usd === "number" ? Math.max(1, Math.round(usd * usdKrw)) : undefined;
     if (price != null) priced++;
+
     return {
-      id: c.riftbound_id,
-      name: isHanbok ? c.name.replace("Ahri - Nine-Tailed Fox", "아리 - 구미호 (한복)") : c.name,
-      rarity: c.classification.rarity,
-      type: c.classification.type,
-      domain: c.classification.domain || [],
-      img: c.media.image_url,
+      id,
+      name: koName,
+      rarity,
+      type: cap(c.cardType.type[0].id),
+      domain: ((c.domain && c.domain.values) || []).map((d) => cap(d.id)),
+      img: isHanbok ? HANBOK_IMG[bucket] : (ko.cardImage && ko.cardImage.url) || c.cardImage.url,
       orientation: c.orientation,
       hanbok: isHanbok,
       ...(price != null ? { price } : {}),

@@ -41,7 +41,7 @@ export async function MetaSnapshot() {
       <ul className="grid grid-cols-3 gap-2">
         {picks.map((deck) => {
           const legend = legendByName.get(deck.legendEn);
-          const art = legend?.localization.en.imageUrl ?? legend?.imageUrl;
+          const art = legend?.localization.ko?.imageUrl ?? legend?.localization.en.imageUrl ?? legend?.imageUrl;
           return (
             <li key={deck.id}>
               <Link

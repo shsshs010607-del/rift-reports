@@ -71,11 +71,24 @@ const RAW = [
   ["Vengeance", "OGN-229-P", "regular", 0.35],
 ];
 
+// 이름은 공식 한글판 카드명(data/cards.json ko-kr)을 쓴다. 프로모 스캔(이미지)은 영문판뿐이라 그대로.
+// 수집번호(OGN-197b → 197)의 기본 카드 이름을 쓰고, 챔피언은 "이름 - 칭호".
+const CARDS = path.join(__dirname, "..", "data", "cards.json");
+const SUFFIX = { teemo: " (GG EZ)", rune: " (넥서스 나이트 프로모)", regular: "" };
+function koNameByNumber(code) {
+  const n = parseInt(code.split("-")[1], 10);
+  const data = JSON.parse(fs.readFileSync(CARDS, "utf8"));
+  const id = `ogn-${String(n).padStart(3, "0")}-298`;
+  const ko = data.ko.find((c) => c.id === id);
+  if (!ko) throw new Error("한글 카드명을 못 찾음: " + code);
+  return ko.subtitle ? `${ko.name} - ${ko.subtitle}` : ko.name;
+}
+
 async function main() {
   const usdKrw = await fetchUsdKrw();
-  const cards = RAW.map(([name, code, tier, usd]) => ({
+  const cards = RAW.map(([, code, tier, usd]) => ({
     id: code.toLowerCase() + "-298",
-    name,
+    name: koNameByNumber(code) + SUFFIX[tier],
     img: img(code),
     orientation: "portrait",
     tier,
