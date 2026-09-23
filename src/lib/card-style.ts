@@ -27,22 +27,22 @@ export const RARITY_STYLE: Record<
   { label: string; className: string; ring: string }
 > = {
   common: {
-    label: "커먼",
+    label: "일반",
     className: "bg-surface-container text-on-surface-variant",
     ring: "transparent",
   },
   uncommon: {
-    label: "언커먼",
+    label: "특별",
     className: "bg-tertiary-fixed text-on-tertiary-fixed",
     ring: "#4ede9f",
   },
   rare: {
-    label: "레어",
+    label: "희귀",
     className: "bg-primary-fixed text-on-primary-fixed-variant",
     ring: "#6063ee",
   },
   epic: {
-    label: "에픽",
+    label: "서사",
     className: "bg-secondary-fixed text-on-secondary-fixed-variant",
     ring: "#fea619",
   },

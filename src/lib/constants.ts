@@ -337,15 +337,15 @@ export const DECK_RULES = {
 } as const;
 
 /**
- * 게임상 레어도 (필터용). 원형(기본) 인쇄판 기준.
+ * 게임상 희귀도 (필터용). 원형(기본) 인쇄판 기준.
  * 오버넘버드 · 프로모 · 쇼케이스는 별도 필터가 아니라 "변형 인쇄판(printing)"으로 취급 —
  * 기본 카드를 눌러 모달에서 비교한다. (CardPrinting.treatment)
  */
 export const CARD_RARITIES = [
-  { slug: "common", label: "커먼" },
-  { slug: "uncommon", label: "언커먼" },
-  { slug: "rare", label: "레어" },
-  { slug: "epic", label: "에픽" },
+  { slug: "common", label: "일반" },
+  { slug: "uncommon", label: "특별" },
+  { slug: "rare", label: "희귀" },
+  { slug: "epic", label: "서사" },
 ] as const;
 
 /** 변형 인쇄판 표기 (모달 비교용 라벨). */

@@ -24,8 +24,8 @@ export function TurnPhases() {
         ))}
       </ol>
       <p className="mt-4 flex flex-wrap items-center gap-1.5 rounded-xl bg-primary-wash px-3 py-2 text-body-sm text-primary-strong">
-        각성 <ArrowRight className="h-3.5 w-3.5" /> 점거(점수) <ArrowRight className="h-3.5 w-3.5" /> 전개 2룬{" "}
-        <ArrowRight className="h-3.5 w-3.5" /> 뽑기 1 <ArrowRight className="h-3.5 w-3.5" /> 행동{" "}
+        각성 <ArrowRight className="h-3.5 w-3.5" /> 개시·점거(점수) <ArrowRight className="h-3.5 w-3.5" /> 전개 2룬{" "}
+        <ArrowRight className="h-3.5 w-3.5" /> 뽑기 1 <ArrowRight className="h-3.5 w-3.5" /> 주요{" "}
         <ArrowRight className="h-3.5 w-3.5" /> 종료
       </p>
     </div>

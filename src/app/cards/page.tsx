@@ -112,7 +112,7 @@ export default async function CardsPage(props: { searchParams: Promise<RawSearch
     <div>
       <PageHeading
         title="카드 정보 (Card DB)"
-        description="카드명·효과 텍스트 검색 + 영역 / 타입 / 확장팩 / 레어도 필터"
+        description="카드명·효과 텍스트 검색 + 영역 / 타입 / 확장팩 / 희귀도 필터"
       />
 
       <CardSearchBox initial={q} />

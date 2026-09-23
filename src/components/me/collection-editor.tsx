@@ -308,7 +308,7 @@ export function CollectionEditor({
           {owned.length > 0 && (
             <div className="mb-3 flex flex-col gap-2">
               {rarityOptions.length > 1 && (
-                <FilterRow label="레어도">
+                <FilterRow label="희귀도">
                   {rarityOptions.map((slug) => {
                     const style = rarityStyle(slug);
                     return (

@@ -246,7 +246,7 @@ export function CardModal({
               </Row>
             )}
             <Row label="타입">{TYPE_LABEL.get(card.type) ?? card.type}</Row>
-            <Row label="레어도">
+            <Row label="희귀도">
               <span className={cn("rounded-full px-2 py-0.5 text-label-sm font-bold", rarity.className)}>
                 {rarity.label}
               </span>

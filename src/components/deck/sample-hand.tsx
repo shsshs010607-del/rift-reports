@@ -139,7 +139,7 @@ export function SampleHand({
           <div className="flex flex-wrap items-center justify-between gap-2">
             <p className="text-label-sm text-ink-soft">
               {drewExtra
-                ? `손패 ${state.hand.length}장 · 남은 덱 ${state.library.length}장`
+                ? `손 ${state.hand.length}장 · 남은 덱 ${state.library.length}장`
                 : state.mulliganed
                   ? `멀리건 완료 · 남은 덱 ${state.library.length}장`
                   : selected.size > 0

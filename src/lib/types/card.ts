@@ -23,7 +23,7 @@ export type CardType = (typeof CARD_TYPES)[number]["slug"];
 export type CardSetCode = (typeof CARD_SETS)[number]["code"];
 
 /**
- * 레어도. `CARD_RARITIES` 의 슬러그가 표준값이지만,
+ * 희귀도. `CARD_RARITIES` 의 슬러그가 표준값이지만,
  * 소스마다 어휘가 달라 그 외 문자열도 허용한다(자동완성은 유지).
  */
 export type CardRarity = (typeof CARD_RARITIES)[number]["slug"] | (string & {});
@@ -72,7 +72,7 @@ export interface CardLocalization {
 // ── 인쇄판(변형) ────────────────────────────────────────────────
 
 /**
- * 한 카드의 인쇄판(printing). 게임 효과는 같고 아트·레어도·트리트먼트만 다르다.
+ * 한 카드의 인쇄판(printing). 게임 효과는 같고 아트·희귀도·트리트먼트만 다르다.
  * 기본(원형) 1개 + 얼터아트/쇼케이스/시그니처/오버넘버드/프로모 등.
  */
 export interface CardPrinting {
@@ -80,7 +80,7 @@ export interface CardPrinting {
   id: string;
   /** 트리트먼트 슬러그 (constants.CARD_TREATMENTS 키). */
   treatment: "base" | "alt_art" | "showcase" | "signature" | "overnumbered" | "promo";
-  /** 원본이 붙인 레어도 라벨 (Showcase/Promo 포함 가능). */
+  /** 원본이 붙인 희귀도 라벨 (Showcase/Promo 포함 가능). */
   rarity: string;
   collectorNumber: string | null;
   /** 이 인쇄판의 영문 이미지. */

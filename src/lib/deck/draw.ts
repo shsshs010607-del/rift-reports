@@ -48,7 +48,7 @@ export function drawOne(state: DrawState): DrawState {
 }
 
 /**
- * 멀리건: bottomIndices 로 지정한 손패 카드(최대 2장)를 덱 맨 아래로 내리고
+ * 멀리건: bottomIndices 로 지정한 손 카드(최대 2장)를 덱 맨 아래로 내리고
  * 같은 수만큼 덱 위에서 다시 뽑는다. 1회만.
  */
 export function mulligan(

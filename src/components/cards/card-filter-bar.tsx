@@ -18,13 +18,13 @@ const KEY_LABEL: Record<string, string> = {
   domain: "영역",
   type: "유형",
   setCode: "확장팩",
-  rarity: "레어도",
+  rarity: "희귀도",
   cost: "코스트",
 };
 const COSTS = ["0", "1", "2", "3", "4", "5", "6", "7"];
 
 /**
- * 카드 검색 필터 — 영역 색스와치 / 코스트 곡선 그래프 / 유형·확장팩·레어도.
+ * 카드 검색 필터 — 영역 색스와치 / 코스트 곡선 그래프 / 유형·확장팩·희귀도.
  * `facets` 로 각 옵션의 매칭 카드 수·코스트 분포를 시각화해 탐색 생산성을 높인다.
  * 선택 → URL 쿼리스트링 갱신(page 리셋). 서버 컴포넌트가 읽어 필터링.
  */
@@ -287,7 +287,7 @@ export function CardFilterBar({ facets }: { facets?: CardFacets | null }) {
             counts={facets?.type}
           />
 
-          {/* 상세 필터 — 확장팩 · 레어도 */}
+          {/* 상세 필터 — 확장팩 · 희귀도 */}
           <div className="border-t border-line/60 pt-3">
             <button
               type="button"
@@ -315,7 +315,7 @@ export function CardFilterBar({ facets }: { facets?: CardFacets | null }) {
                   counts={facets?.setCode}
                 />
                 <PillGroup
-                  title="레어도"
+                  title="희귀도"
                   items={CARD_RARITIES.map((r) => ({ key: r.slug, label: r.label }))}
                   isOn={(k) => active("rarity", k)}
                   onPick={(k) => toggle("rarity", k)}

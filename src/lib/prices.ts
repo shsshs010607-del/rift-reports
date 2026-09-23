@@ -171,7 +171,7 @@ export function getPrintVariants(printId: string) {
   }, []);
 }
 
-/** 같은 카드의 다른 언어·일러스트·레어도 프린트 + 각 대표가 */
+/** 같은 카드의 다른 언어·일러스트·희귀도 프린트 + 각 대표가 */
 export function getPrintGroup(groupId: string) {
   return safe<{ print: PrintWithKo; price: PriceSnapshot | null }[]>(async () => {
     const supabase = createPublicClient();

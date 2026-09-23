@@ -31,7 +31,7 @@ export function CardSearchBox({ initial = "" }: { initial?: string }) {
         type="search"
         value={value}
         onChange={(e) => setValue(e.target.value)}
-        placeholder="카드명 · 효과 · 용어 검색 (예: 아리, Ganking, 소환)"
+        placeholder="카드명 · 효과 · 용어 검색 (예: 아리, Ganking, 정복)"
         className="w-full rounded-2xl border-2 border-line bg-card py-4 pl-14 pr-32 text-body-lg text-ink shadow-e1 outline-none transition placeholder:text-ink-soft/60 focus:border-primary focus:shadow-e2 focus:ring-4 focus:ring-primary/10"
       />
       {value && (

@@ -74,7 +74,7 @@ export const GLOSSARY: GlossaryTerm[] = [
     symbol: "[탈진]",
     category: "기본",
     definition:
-      "지친 상태는 카드가 옆으로 눕혀진 상태로, 비용이나 이동으로 소모됨을 뜻한다. 각성 페이즈에 모두 준비 상태로 되돌아온다. 유닛은 기본적으로 지쳐서 등장한다.",
+      "지친 상태는 카드가 옆으로 눕혀진 상태로, 비용이나 이동으로 소모됨을 뜻한다. 각성 단계에 모두 준비 상태로 되돌아온다. 유닛은 기본적으로 지쳐서 등장한다.",
     related: ["Awaken Phase", "Accelerate"],
     cardSearchable: true,
   },
@@ -84,7 +84,7 @@ export const GLOSSARY: GlossaryTerm[] = [
     official: true,
     category: "기본",
     definition:
-      "게임 효과를 만들거나 행동의 전제가 되는 모든 요소 — 유닛, 룬, 레전드, 전장, 토큰, 체인 위의 능력, 버프 등.",
+      "게임 효과를 만들거나 행동의 전제가 되는 모든 요소 — 유닛, 룬, 전설, 전장, 토큰, 체인 위의 능력, 버프 등.",
   },
   {
     term: "토큰",
@@ -102,7 +102,7 @@ export const GLOSSARY: GlossaryTerm[] = [
     official: true,
     category: "기본",
     definition:
-      "유닛에 붙는 지속 강화. 일부 카드는 '버프가 없으면 +1 [M] 버프를 준다'처럼 버프 유무를 참조한다. 유닛이 비보드 존으로 가면 사라진다.",
+      "유닛에 붙는 지속 강화. 일부 카드는 '버프가 없으면 +1 [M] 버프를 준다'처럼 버프 유무를 참조한다. 유닛이 비보드 구역으로 가면 사라진다.",
     related: ["Might"],
     cardSearchable: true,
   },
@@ -114,7 +114,7 @@ export const GLOSSARY: GlossaryTerm[] = [
     official: true,
     category: "덱빌딩",
     definition:
-      "레전드 존에 두고 게임 내내 고정되는 카드. 덱의 영역 정체성과 챔피언 태그를 정한다. 이동·제거 불가.",
+      "전설 구역에 두고 게임 내내 고정되는 카드. 덱의 영역 정체성과 챔피언 태그를 정한다. 이동·제거 불가.",
     related: ["Domain Identity", "Chosen Champion", "Legend Zone / Champion Zone"],
   },
   {
@@ -123,7 +123,7 @@ export const GLOSSARY: GlossaryTerm[] = [
     official: true,
     category: "덱빌딩",
     definition:
-      "덱 구성 시 고른, 레전드와 같은 챔피언 태그를 가진 챔피언 유닛. 챔피언 존에서 시작하며 일반 카드처럼 플레이할 수 있다. 같은 이름의 다른 사본도 모두 '선발 챔피언'으로 취급.",
+      "덱 구성 시 고른, 전설과 같은 챔피언 태그를 가진 챔피언 유닛. 챔피언 구역에서 시작하며 일반 카드처럼 플레이할 수 있다. 같은 이름의 다른 사본도 모두 '선발 챔피언'으로 취급.",
     related: ["Champion Legend", "Legend Zone / Champion Zone"],
     cardSearchable: true,
   },
@@ -142,7 +142,7 @@ export const GLOSSARY: GlossaryTerm[] = [
     official: true,
     category: "덱빌딩",
     definition:
-      "정확히 12장의 룬. 레전드 영역 정체성에 맞아야 하며 주 덱과 분리해 셔플. 재활용된 룬은 룬 덱으로 돌아간다.",
+      "정확히 12장의 룬. 전설 영역 정체성에 맞아야 하며 주 덱과 분리해 셔플. 재활용된 룬은 룬 덱으로 돌아간다.",
     related: ["Rune", "Channel", "Recycle"],
   },
   {
@@ -151,7 +151,7 @@ export const GLOSSARY: GlossaryTerm[] = [
     official: true,
     category: "덱빌딩",
     definition:
-      "레전드와 같은 챔피언 태그를 가진 시그니처 카드는 이름과 무관하게 덱에 총 3장까지. 챔피언 유닛이 아니며 챔피언 존에 놓을 수 없다.",
+      "전설과 같은 챔피언 태그를 가진 시그니처 카드는 이름과 무관하게 덱에 총 3장까지. 챔피언 유닛이 아니며 챔피언 구역에 놓을 수 없다.",
     related: ["Main Deck", "Champion Legend"],
     cardSearchable: true,
   },
@@ -161,7 +161,7 @@ export const GLOSSARY: GlossaryTerm[] = [
     official: true,
     category: "덱빌딩",
     definition:
-      "챔피언·지역·세력·종족 등을 나타내는 분류. 자체 규칙은 없지만 카드 효과가 참조한다. 레전드·챔피언 유닛·시그니처를 잇는 태그를 챔피언 태그라 한다.",
+      "챔피언·지역·세력·종족 등을 나타내는 분류. 자체 규칙은 없지만 카드 효과가 참조한다. 전설·챔피언 유닛·시그니처를 잇는 태그를 챔피언 태그라 한다.",
     cardSearchable: true,
   },
 
@@ -193,7 +193,7 @@ export const GLOSSARY: GlossaryTerm[] = [
     official: true,
     category: "자원",
     definition:
-      "자원을 만드는 카드. 매 턴 전개 페이즈에 2장씩 전개. 지치게 해서 에너지 1, 재활용해서 힘 1 — 같은 턴에 둘 다 가능. 룬 능력은 Reaction(언제든 사용).",
+      "자원을 만드는 카드. 매 턴 전개 단계에 2장씩 전개. 지치게 해서 에너지 1, 재활용해서 힘 1 — 같은 턴에 둘 다 가능. 룬 능력은 Reaction(언제든 사용).",
     related: ["Energy", "Power", "Channel", "Recycle", "Seal"],
     cardSearchable: true,
   },
@@ -223,7 +223,7 @@ export const GLOSSARY: GlossaryTerm[] = [
     official: true,
     category: "자원",
     definition:
-      "만들어 둔 에너지·힘이 담기는 임시 공간. 뽑기 페이즈 끝과 턴 끝(만료 단계)에 비워지며 남은 자원은 사라진다.",
+      "만들어 둔 에너지·힘이 담기는 임시 공간. 뽑기 단계 끝과 턴 끝(만료 절차)에 비워지며 남은 자원은 사라진다.",
     related: ["Energy", "Power"],
   },
   {
@@ -274,7 +274,7 @@ export const GLOSSARY: GlossaryTerm[] = [
     official: true,
     category: "전투",
     definition:
-      "전장을 '조종'하는 상태. 유닛만 남기고 상대를 몰아내면 통제 확립. 점거·정복 점수의 기준.",
+      "전장을 '통제'하는 상태. 유닛만 남기고 상대를 몰아내면 통제 확립. 점거·정복 점수의 기준.",
     related: ["Conquer", "Hold", "Battlefield"],
     cardSearchable: true,
   },
@@ -284,7 +284,7 @@ export const GLOSSARY: GlossaryTerm[] = [
     official: true,
     category: "전투",
     definition:
-      "이번 턴 점수화하지 않았고 조종하지 않던 전장의 통제를 새로 얻으면 1점.",
+      "이번 턴 점수화하지 않았고 통제하지 않던 전장의 통제를 새로 얻으면 1점.",
     related: ["Hold", "Control"],
     cardSearchable: true,
   },
@@ -293,7 +293,7 @@ export const GLOSSARY: GlossaryTerm[] = [
     en: "Hold",
     official: true,
     category: "전투",
-    definition: "내 턴이 시작될 때(시작 페이즈) 조종 중인 전장 1개당 1점.",
+    definition: "내 턴이 시작될 때(개시 단계) 통제 중인 전장 1개당 1점.",
     related: ["Conquer", "Control"],
     cardSearchable: true,
   },
@@ -382,7 +382,7 @@ export const GLOSSARY: GlossaryTerm[] = [
     en: "Draw",
     official: true,
     category: "기본",
-    definition: "주 덱 맨 위 카드를 손으로 가져온다. 매 턴 뽑기 페이즈에 1장.",
+    definition: "주 덱 맨 위 카드를 손으로 가져온다. 매 턴 뽑기 단계에 1장.",
     related: ["Burn Out"],
     cardSearchable: true,
   },
@@ -392,7 +392,7 @@ export const GLOSSARY: GlossaryTerm[] = [
     official: true,
     category: "전투",
     definition:
-      "유닛을 위치 간에 옮기는 것. 기본 이동은 유닛을 지치게 해서 기지↔전장. 스펠·능력에 의한 이동은 상태를 바꾸지 않는다(명시 없으면).",
+      "유닛을 위치 간에 옮기는 것. 기본 이동은 유닛을 지치게 해서 기지↔전장. 주문·능력에 의한 이동은 상태를 바꾸지 않는다(명시 없으면).",
     related: ["Ganking", "Base", "Battlefield"],
     cardSearchable: true,
   },
@@ -417,7 +417,7 @@ export const GLOSSARY: GlossaryTerm[] = [
     symbol: "[반응]",
     category: "키워드",
     definition:
-      "행동의 모든 조건에 더해, 체인이 있을 때(폐쇄 상태)에도 플레이 가능. 체인 위 기존 항목보다 먼저 해결된다.",
+      "행동의 모든 조건에 더해, 체인이 있을 때(폐쇄 상태)에도 사용 가능. 체인 위 기존 항목보다 먼저 해결된다.",
     related: ["행동", "Chain"],
     cardSearchable: true,
   },
@@ -450,7 +450,7 @@ export const GLOSSARY: GlossaryTerm[] = [
     symbol: "[죽음의 종소리]",
     category: "키워드",
     definition:
-      "이 유닛이 처치될 때 발동하는 능력. 정리 단계에서 피해 회복 전에 트리거가 기록된다.",
+      "이 유닛이 처치될 때 발동하는 유발 스킬. 정리 단계에서 피해 회복 전에 관련 정보가 기록된다.",
     related: ["Kill"],
     cardSearchable: true,
   },
@@ -461,7 +461,7 @@ export const GLOSSARY: GlossaryTerm[] = [
     symbol: "[군단]",
     category: "키워드",
     definition:
-      "이번 턴에 (이 카드 외에) 카드를 1장 이상 플레이했으면 추가 효과를 얻는다. 토큰 플레이·능력 사용은 카드 플레이가 아니라 켜지 않는다.",
+      "이번 턴에 (이 카드 외에) 카드를 1장 이상 사용했으면 추가 효과를 얻는다. 토큰 생성·스킬 사용은 카드 사용이 아니라 켜지 않는다.",
     related: ["Token"],
     cardSearchable: true,
   },
@@ -604,14 +604,14 @@ export const GLOSSARY: GlossaryTerm[] = [
     cardSearchable: true,
   },
 
-  // ── 존 ────────────────────────────────────────────────
+  // ── 구역 ────────────────────────────────────────────────
   {
     term: "체인",
     en: "Chain",
     official: true,
     category: "구역",
     definition:
-      "카드가 플레이되거나 능력이 활성화될 때 임시로 존재하는 비보드 존. 한 번에 하나만. 가장 최근 항목이 먼저 해결된다(후입선출).",
+      "카드가 사용되거나 스킬이 활성화될 때 임시로 존재하는 비보드 구역. 한 번에 하나만. 가장 최근 항목이 먼저 해결된다(후입선출).",
     related: ["Showdown", "Reaction", "Priority"],
   },
   {
@@ -640,7 +640,7 @@ export const GLOSSARY: GlossaryTerm[] = [
     official: true,
     category: "구역",
     definition:
-      "각 전장에 딸린 하위 공간. 최대 1장. 그 전장을 조종하는 플레이어만 카드를 숨길 수 있고, 통제를 잃으면 다음 정리에 폐기장으로 간다.",
+      "각 전장에 딸린 하위 공간. 최대 1장. 그 전장을 통제하는 플레이어만 카드를 숨길 수 있고, 통제를 잃으면 다음 정리에 폐기장으로 간다.",
     related: ["Hidden", "Battlefield"],
   },
   {
@@ -649,7 +649,7 @@ export const GLOSSARY: GlossaryTerm[] = [
     official: true,
     category: "구역",
     definition:
-      "레전드 존은 챔피언 전설가 게임 내내 머무는 곳(이동 불가). 챔피언 존은 선발 챔피언이 게임 시작 시 놓이는 곳으로, 여기서 일반 카드처럼 플레이할 수 있다.",
+      "전설 구역은 챔피언 전설이 게임 내내 머무는 곳(이동 불가). 챔피언 구역은 선발 챔피언이 게임 시작 시 놓이는 곳으로, 여기서 일반 카드처럼 사용할 수 있다.",
     related: ["Champion Legend", "Chosen Champion"],
   },
   {
@@ -658,7 +658,7 @@ export const GLOSSARY: GlossaryTerm[] = [
     official: true,
     category: "전투",
     definition:
-      "결전(개방 상태)에서 적절한 시점에 행동할 수 있는 권한. 집중을 얻으면 우선권도 얻는다. 스펠·능력을 쓰지 않고 패스하면 집중이 넘어간다.",
+      "결전(개방 상태)에서 적절한 시점에 행동할 수 있는 권한. 집중을 얻으면 우선권도 얻는다. 주문·능력을 쓰지 않고 패스하면 집중이 넘어간다.",
     related: ["Showdown", "Priority"],
   },
   {
@@ -667,7 +667,7 @@ export const GLOSSARY: GlossaryTerm[] = [
     official: true,
     category: "전투",
     definition:
-      "재량 행동(카드 플레이·능력 활성화 등)을 할 수 있는 유일·배타적 권리. 내 행동 페이즈, 또는 집중을 얻었을 때, 또는 체인에서 내 항목 차례일 때 받는다.",
+      "재량 행동(카드 사용·스킬 활성화 등)을 할 수 있는 유일·배타적 권리. 내 주요 단계, 또는 집중을 얻었을 때, 또는 체인에서 내 항목 차례일 때 받는다.",
     related: ["Focus", "Chain"],
   },
 ];

@@ -178,7 +178,7 @@ export function CardPool({
         // 타입 필터가 없는 탭(전체·주 덱)은 전량을 받아 클라에서 색 정체성으로 거른다.
         // (limit 90 이면 수집번호 앞쪽 카드만 와서 색 하나가 통째로 빠지는 버그)
         const sp = new URLSearchParams({ limit: apiType ? String(LIMIT) : "500" });
-        // 영역·코스트·유형·레어도는 다중 선택 + 패싯 개수 때문에 서버가 아니라 클라에서 거른다.
+        // 영역·코스트·유형·희귀도는 다중 선택 + 패싯 개수 때문에 서버가 아니라 클라에서 거른다.
         if (q.trim()) sp.set("q", q.trim());
         if (setCode) sp.set("setCode", setCode);
         if (apiType) sp.set("type", apiType);
@@ -227,7 +227,7 @@ export function CardPool({
     [cards, ownedOnly, collection, tab, rd, deck, target, qtyById],
   );
 
-  // 이 탭에서 의미 있는 필터 그룹만 노출 (룬·전장엔 코스트/레어도 구분이 무의미).
+  // 이 탭에서 의미 있는 필터 그룹만 노출 (룬·전장엔 코스트/희귀도 구분이 무의미).
   const showCost = tab === "all" || tab === "main" || tab === "side" || tab === "champion";
   const typeOptions: CardType[] =
     tab === "all" ? (CARD_TYPES.map((t) => t.slug) as CardType[]) : tab === "main" || tab === "side" ? MAIN_TYPES : [];
@@ -388,7 +388,7 @@ export function CardPool({
         ))}
       </div>
 
-      {/* 상세 필터 — 코스트 곡선 · 유형 · 레어도 · 확장팩 */}
+      {/* 상세 필터 — 코스트 곡선 · 유형 · 희귀도 · 확장팩 */}
       <div className="rounded-xl bg-subcanvas/50 px-2.5 py-2">
         <button
           type="button"
@@ -537,7 +537,7 @@ export function CardPool({
               </PoolSection>
             )}
 
-            <PoolSection title="레어도">
+            <PoolSection title="희귀도">
               <div className="flex flex-wrap gap-1">
                 {CARD_RARITIES.map((r) => {
                   const on = filters.rarities.includes(r.slug);
@@ -584,7 +584,7 @@ export function CardPool({
             <ActiveTag key={`t-${t}`} label={`유형 · ${TYPE_LABEL[t] ?? t}`} onClear={() => toggleIn("types", t)} />
           ))}
           {filters.rarities.map((r) => (
-            <ActiveTag key={`r-${r}`} label={`레어도 · ${RARITY_LABEL[r] ?? r}`} onClear={() => toggleIn("rarities", r)} />
+            <ActiveTag key={`r-${r}`} label={`희귀도 · ${RARITY_LABEL[r] ?? r}`} onClear={() => toggleIn("rarities", r)} />
           ))}
           {filters.powers.map((p) => (
             <ActiveTag key={`p-${p}`} label={`위력 · ${p === "7" ? "7+" : p}`} onClear={() => toggleIn("powers", p)} />

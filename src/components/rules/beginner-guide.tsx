@@ -25,7 +25,7 @@ const DOMAIN_TRAITS: Record<string, string> = {
   mind: "정보·카드 이득. 뽑기, 통찰/예측, 반응. 상대를 읽는 컨트롤.",
   body: "전투·거점. 이동, 정복, 방패. 전장을 몸으로 밀어붙이는 압박.",
   chaos: "변칙·확률. 무작위 효과, 자기 희생, 판을 흔드는 고위험 고수익.",
-  order: "규율·군단. 토큰 소환, 광역 버프, 진형. 수로 밀어붙이는 물량.",
+  order: "규율·군단. 토큰 생성, 광역 버프, 진형. 수로 밀어붙이는 물량.",
 };
 
 /** 영역 문양 — 공식 룬 아이콘 대신 성향을 나타내는 대체 아이콘. */
@@ -42,10 +42,10 @@ const DOMAIN_ICONS: Record<string, typeof Flame> = {
 const BOARD_ZONES: { name: string; desc: string }[] = [
   {
     name: "기지 (Base)",
-    desc: "내 유닛·도구를 소환해 대기시키는 안전 구역. 전투가 없고, 상대는 여기 아무것도 둘 수 없다. 전개한 룬(룬 구성)도 여기 모인다.",
+    desc: "내 유닛·도구를 사용해 대기시키는 안전 구역. 전투가 없고, 상대는 여기 아무것도 둘 수 없다. 전개한 룬(룬 구성)도 여기 모인다.",
   },
   {
-    name: "전장 존 (Battlefield Zone)",
+    name: "전장 구역 (Battlefield Zone)",
     desc: "양쪽 플레이어가 공유하는 중앙. 여기 놓인 전장을 정복·점거해 점수를 얻는다. 1v1은 전장 2개(각자 덱의 전장 3장 중 1장씩 제공).",
   },
   {
@@ -58,18 +58,18 @@ const BOARD_ZONES: { name: string; desc: string }[] = [
   },
   {
     name: "전설 구역",
-    desc: "챔피언 전설를 놓는 자리. 게임 내내 고정 — 이동·제거되지 않는다.",
+    desc: "챔피언 전설을 놓는 자리. 게임 내내 고정 — 이동·제거되지 않는다.",
   },
 ];
 
 /** 판 밖(Non-Board) 구역 */
 const OFF_BOARD_ZONES: { name: string; desc: string }[] = [
-  { name: "챔피언 구역", desc: "선발 챔피언이 시작하는 자리. 여기서 일반 카드처럼 플레이한다." },
+  { name: "챔피언 구역", desc: "선발 챔피언이 시작하는 자리. 여기서 일반 카드처럼 사용한다." },
   { name: "주 덱 / 룬 덱", desc: "따로 셔플해 각자 자리에 뒷면으로 놓는다. 카드는 주 덱, 자원(룬)은 룬 덱에서." },
-  { name: "손패 (Hand)", desc: "뽑은 카드가 들어오는 곳. 나만 본다(비공개)." },
+  { name: "손 (Hand)", desc: "뽑은 카드가 들어오는 곳. 나만 본다(비공개)." },
   { name: "폐기장", desc: "처치·버림·사용된 카드가 가는 곳. 플레이어별로 따로 둔다." },
   { name: "추방지 (Banishment)", desc: "추방 효과로 게임에서 빠진 카드. 폐기장보다 되돌리기 어렵다." },
-  { name: "체인 (Chain)", desc: "플레이한 카드·능력이 해결을 기다리며 쌓이는 곳. 나중 것부터 해결." },
+  { name: "체인 (Chain)", desc: "사용한 카드·스킬이 해결을 기다리며 쌓이는 곳. 나중 것부터 해결." },
 ];
 
 function StepList({ section }: { section: GuideSection }) {
@@ -103,7 +103,7 @@ function Block({ id, title, children }: { id: string; title: string; children: R
   );
 }
 
-/** 게임판 배치 도해 — 두 플레이어가 마주 앉고, 전장 존을 가운데 공유한다. */
+/** 게임판 배치 도해 — 두 플레이어가 마주 앉고, 전장 구역을 가운데 공유한다. */
 function BoardDiagram() {
   const sub = "mt-0.5 block text-[10px] font-normal leading-tight text-ink-soft";
   const slot =
@@ -111,7 +111,7 @@ function BoardDiagram() {
   return (
     <div className="surface p-5">
       <p className="mb-3 text-body-sm text-ink-soft">
-        두 사람이 마주 앉고, <b className="text-ink">전장 존</b>을 가운데에 함께 놓습니다. 그 위아래로 각자
+        두 사람이 마주 앉고, <b className="text-ink">전장 구역</b>을 가운데에 함께 놓습니다. 그 위아래로 각자
         자기 구역을 펼칩니다. (아래는 내 시점)
       </p>
 
@@ -119,13 +119,13 @@ function BoardDiagram() {
         {/* 상대 진영 */}
         <div className="rounded-lg border border-dashed border-line/70 bg-subcanvas/40 px-3 py-2 text-center text-label-sm text-ink-soft">
           상대 진영
-          <span className={sub}>상대 전설 구역 · 챔피언 구역 · 기지 · 주/룬 덱 · 폐기장</span>
+          <span className={sub}>상대 전설 구역 · 챔피언 구역 · 기지 · 주/룬 덱 · 손 · 폐기장</span>
         </div>
 
-        {/* 전장 존 (공유) */}
+        {/* 전장 구역 (공유) */}
         <div className="rounded-xl border-2 border-primary/40 bg-primary/[0.06] p-2.5">
           <p className="mb-2 text-center text-label-sm font-bold text-primary-strong">
-            ⚔ 전장 존 · 양쪽 공유 (1v1 = 2개)
+            ⚔ 전장 구역 · 양쪽 공유 (1v1 = 2개)
           </p>
           <div className="grid grid-cols-2 gap-2">
             {["전장 A", "전장 B"].map((b) => (
@@ -144,7 +144,7 @@ function BoardDiagram() {
         <div className="rounded-xl border-2 border-emerald/40 bg-emerald/[0.06] px-3 py-2.5 text-center">
           <span className="text-label-sm font-bold text-emerald">🟢 내 기지 (Base)</span>
           <span className={sub}>
-            유닛·도구 소환·대기 (안전, 전투 없음) · 룬 구성 — 전개한 룬 에너지·힘이 여기 모임
+            유닛·도구 사용·대기 (안전, 전투 없음) · 룬 구성 — 전개한 룬 에너지·힘이 여기 모임
           </span>
         </div>
 
@@ -157,7 +157,7 @@ function BoardDiagram() {
             챔피언 구역<span className={sub}>선발 챔피언 시작</span>
           </div>
           <div className={slot}>
-            덱 · 폐기장<span className={sub}>주/룬 덱 · 추방지 · 손패</span>
+            덱 · 폐기장<span className={sub}>주/룬 덱 · 추방지 · 손</span>
           </div>
         </div>
       </div>
