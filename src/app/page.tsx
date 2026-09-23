@@ -70,6 +70,10 @@ export default function HomePage() {
           <Suspense fallback={<div className="h-64 animate-pulse rounded-2xl bg-subcanvas/50" />}>
             <HomePriceMini />
           </Suspense>
+          <p className="-mt-2 px-1 text-[11px] leading-relaxed text-ink-soft/80">
+            ※ 출시 직후라 카드 가격 변동이 큰 시기입니다. 표시된 시세는 실제 거래가와 다를 수 있으니
+            참고용으로만 봐주시고, 거래 시 유의해 주시기 바랍니다.
+          </p>
         </div>
       </div>
 
