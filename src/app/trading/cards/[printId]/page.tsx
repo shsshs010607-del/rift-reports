@@ -49,7 +49,7 @@ export default async function PrintPricePage(props: { params: Promise<{ printId:
 
   return (
     <div className="mx-auto max-w-3xl">
-      <div className="flex gap-5">
+      <div className="flex items-start gap-5">
         <div className="relative aspect-[5/7] w-40 shrink-0 overflow-hidden rounded-xl bg-subcanvas shadow-e1">
           {print.image_url && (
             <Image src={print.image_url} alt={print.name} fill sizes="160px" className="object-cover" />
