@@ -27,6 +27,11 @@ const SET_LABEL = Object.fromEntries(CARD_SETS.map((s) => [s.code, s.label]));
 const DOMAIN = Object.fromEntries(CARD_DOMAINS.map((d) => [d.slug, d]));
 const shortLegend = (name: string | null) => (name ?? "").split(/[,–-]/)[0].trim() || "레전드";
 
+/** "오로라 마이" 덱 전용 카드 우상단 뱃지 — 이 덱의 핵심 카드(Dazzling Aurora) 아트만 잘라낸 이미지. */
+const DECK_BADGE: Record<string, { src: string; alt: string }> = {
+  "cad062f9-1160-4b1f-b73b-2f0a4ec250e5": { src: "/decks/dazzling-aurora-badge.png", alt: "" },
+};
+
 export function MetaDeckBrowser({
   decks,
   images,
@@ -238,8 +243,18 @@ function DeckCard({
     });
   };
 
+  const badge = DECK_BADGE[deck.id];
+
   return (
-    <div className="flex overflow-hidden rounded-2xl border border-line/70 bg-card">
+    <div className="relative flex overflow-hidden rounded-2xl border border-line/70 bg-card">
+      {badge && (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img
+          src={badge.src}
+          alt={badge.alt}
+          className="absolute right-2 top-2 z-10 h-8 w-8 rounded-full border-2 border-card object-cover shadow-e1"
+        />
+      )}
       {/* 레전드 아트 */}
       <div className="relative w-[84px] shrink-0 bg-subcanvas sm:w-[104px]">
         {img ? (
