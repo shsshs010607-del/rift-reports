@@ -1,6 +1,4 @@
 import type { Metadata } from "next";
-import Link from "next/link";
-import { ExternalLink } from "lucide-react";
 
 import { PageHeading } from "@/components/ui/page-heading";
 import { MetaDeckBrowser } from "@/components/decks/meta-deck-browser";
@@ -87,18 +85,6 @@ export default async function DecksPage(
           isStaff={isStaff}
         />
       )}
-
-      <p className="mt-8 flex items-center gap-1.5 text-body-sm text-ink-soft">
-        덱 데이터 제공:
-        <Link
-          href="https://piltoverarchive.com/decks"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="inline-flex items-center gap-0.5 font-semibold text-primary-strong hover:underline"
-        >
-          Piltover Archive <ExternalLink className="h-3 w-3" />
-        </Link>
-      </p>
     </div>
   );
 }

@@ -81,6 +81,14 @@ export async function TierBoard() {
                             {deck.keyCard}
                           </div>
                         )}
+                        {deck.id === "yi" && (
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <img
+                            src="/decks/dazzling-aurora-badge.png"
+                            alt=""
+                            className="absolute right-1.5 top-1.5 z-10 h-7 w-7 rounded-full border-2 border-card object-cover shadow-e1"
+                          />
+                        )}
                       </div>
                       <div className="flex flex-1 flex-col gap-0.5 px-2.5 py-2">
                         <p className="truncate text-label-lg font-bold leading-tight text-ink">
