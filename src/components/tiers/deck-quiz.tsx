@@ -4,12 +4,11 @@ import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { Wand2, X, RotateCcw, ArrowRight, Share2, Check, Download, Sparkles, Gift } from "lucide-react";
+import { Wand2, X, RotateCcw, ArrowRight, Share2, Check, Download, Sparkles } from "lucide-react";
 
 import { TIER_DECKS } from "@/lib/data/tier-list";
 import { MBTI_TYPES, QUIZ_QUESTIONS, scoreQuiz, type QuizResult } from "@/lib/data/deck-quiz";
 import { renderQuizResultImage, type QuizImageTheme } from "@/lib/quiz/quiz-image";
-import { CAFE_EVENT } from "@/lib/constants";
 import { cn } from "@/lib/utils";
 
 const DECK_HREF = "/community/deck-guide";
@@ -289,24 +288,6 @@ export function DeckQuiz({ images = {} }: { images?: Record<string, string> }) {
                         )}
                       />
                     ))}
-                  </div>
-
-                  {/* 이벤트 안내 */}
-                  <div className="mt-6 rounded-2xl border border-[#e8b84b]/30 bg-[#e8b84b]/[0.08] p-3.5 text-center">
-                    <p className="text-body-sm font-bold text-[#ffe8a8]">
-                      🎁 이 이미지를 인스타그램에 공유(#리바지지MBTI덱)하고
-                      <br />
-                      네이버 카페 가입 + 인증하면 부스터 박스 추첨 응모 완료
-                    </p>
-                    <Link
-                      href={`/community/new?category=riftbound&tag=${encodeURIComponent(CAFE_EVENT.tag)}`}
-                      onClick={() => setOpen(false)}
-                      className="mt-2.5 inline-flex items-center gap-1.5 rounded-lg bg-[#e8b84b] px-4 py-2 text-label-sm font-bold text-[#241a00] transition hover:brightness-105"
-                    >
-                      <Gift className="h-3.5 w-3.5" />
-                      가입인증글 바로쓰기
-                      <ArrowRight className="h-3.5 w-3.5" />
-                    </Link>
                   </div>
 
                   {/* 액션 버튼 */}

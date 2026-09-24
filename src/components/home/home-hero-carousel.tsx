@@ -1,10 +1,9 @@
 import Link from "next/link";
 import Image from "next/image";
-import { ArrowRight, Gift, Layers, MessagesSquare, Package, TrendingUp, Wallet, Wand2 } from "lucide-react";
+import { ArrowRight, Layers, MessagesSquare, Package, TrendingUp, Wallet, Wand2 } from "lucide-react";
 
 import { CarouselClient } from "@/components/home/carousel-client";
 import { T1EditionBanner } from "@/components/home/t1-edition-banner";
-import { CAFE_EVENT } from "@/lib/constants";
 
 /**
  * 홈 상단 프로모 캐러셀 — 한 번에 1장, 번호 = 배너 순서.
@@ -13,7 +12,6 @@ import { CAFE_EVENT } from "@/lib/constants";
 export function HomeHeroCarousel() {
   return (
     <CarouselClient>
-      <CafeEventSlide />
       <IntroSlide />
       <MbtiSlide />
       <CollectionValueSlide />
@@ -50,42 +48,6 @@ function SlideShell({
       )}
       <div className="relative z-10">{children}</div>
     </div>
-  );
-}
-
-function CafeEventSlide() {
-  return (
-    <SlideShell className="border-[#03C75A]/30 bg-gradient-to-br from-[#03C75A]/[0.09] via-card to-card">
-      <div className="max-w-[78%] sm:max-w-[64%]">
-        <p className="inline-flex items-center gap-1.5 text-label-sm font-bold uppercase tracking-wide text-[#03C75A]">
-          <Gift className="h-3.5 w-3.5" />
-          카페 개설 · 한국 정식발매 기념
-        </p>
-        <h2 className="mt-1 font-display text-headline-md leading-tight text-ink">
-          부스터 박스 추첨 이벤트
-        </h2>
-        <p className="mt-1.5 text-body-sm leading-snug text-ink-soft">
-          네이버 카페 「리프트바운드 일등 카드거래소」 가입 + 리바지지 인증하면 응모 완료. 회원수
-          달성할수록 상품 추가(최대 T1 번들). 9/15 ~ 9/22.
-        </p>
-        <div className="mt-3.5 flex flex-wrap gap-2">
-          <Link
-            href={`/community/new?category=riftbound&tag=${encodeURIComponent(CAFE_EVENT.tag)}`}
-            className="inline-flex items-center gap-1.5 rounded-lg bg-[#03C75A] px-4 py-2 text-label-sm font-bold text-white transition hover:opacity-90"
-          >
-            <Gift className="h-4 w-4" />
-            가입인증글 바로쓰기
-            <ArrowRight className="h-4 w-4" />
-          </Link>
-          <Link
-            href={`/community/post/${CAFE_EVENT.postId}`}
-            className="inline-flex items-center gap-1.5 rounded-lg border border-line bg-card px-4 py-2 text-label-sm font-bold text-ink-soft transition hover:border-[#03C75A]/40 hover:text-ink"
-          >
-            자세히 보기
-          </Link>
-        </div>
-      </div>
-    </SlideShell>
   );
 }
 

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
 import { BoardToolbar } from "@/components/community/board-toolbar";
+import { CommunityMigrationNotice } from "@/components/community/community-migration-notice";
 import { CategoryTabs } from "@/components/community/category-tabs";
 import { PostList } from "@/components/community/post-list";
 import { Pagination } from "@/components/community/pagination";
@@ -58,6 +59,7 @@ export default async function CommunityHubPage(
       </header>
 
       <CategoryTabs />
+      <CommunityMigrationNotice className="mb-5" />
       <DiscordCta className="mb-5" />
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1fr)_290px] lg:items-start">
@@ -67,7 +69,7 @@ export default async function CommunityHubPage(
             {q ? `"${q}" 검색 결과` : tag ? `#${tag}` : popular ? "인기글" : "전체 최신글"}
           </h2>
           <Suspense fallback={<div className="mb-4 h-24" />}>
-            <BoardToolbar writeHref="/community/new" />
+            <BoardToolbar />
           </Suspense>
           <PostList
             posts={list.posts}

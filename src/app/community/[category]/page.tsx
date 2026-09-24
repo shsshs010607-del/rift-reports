@@ -5,6 +5,7 @@ import { notFound } from "next/navigation";
 import { ChevronLeft } from "lucide-react";
 import { AdSenseUnit } from "@/components/ads/adsense-unit";
 import { BoardToolbar } from "@/components/community/board-toolbar";
+import { CommunityMigrationNotice } from "@/components/community/community-migration-notice";
 import { CategoryTabs } from "@/components/community/category-tabs";
 import { PostList } from "@/components/community/post-list";
 import { Pagination } from "@/components/community/pagination";
@@ -97,8 +98,9 @@ export default async function BoardPage(
         )}
       </header>
       <CategoryTabs active={slug} />
+      <CommunityMigrationNotice className="mb-5" />
       <Suspense fallback={<div className="mb-4 h-24" />}>
-        <BoardToolbar writeHref={`/community/new?category=${slug}`} />
+        <BoardToolbar />
       </Suspense>
       <PostList
         posts={list.posts}

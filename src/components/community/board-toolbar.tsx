@@ -4,10 +4,11 @@ import Link from "next/link";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import { useState } from "react";
 import { Search, PenLine, X } from "lucide-react";
+import { SITE } from "@/lib/constants";
 import { cn } from "@/lib/utils";
 
-/** 최신 / 인기 탭 + 검색 + 글쓰기 */
-export function BoardToolbar({ writeHref }: { writeHref: string }) {
+/** 최신 / 인기 탭 + 검색 + (네이버 카페) 글쓰기 안내 */
+export function BoardToolbar() {
   const router = useRouter();
   const pathname = usePathname();
   const params = useSearchParams();
@@ -70,13 +71,15 @@ export function BoardToolbar({ writeHref }: { writeHref: string }) {
           >
             {searchOpen ? <X className="h-4 w-4" /> : <Search className="h-4 w-4" />}
           </button>
-          <Link
-            href={writeHref}
+          <a
+            href={SITE.naverCafeBoardByCategory.riftbound}
+            target="_blank"
+            rel="noopener noreferrer"
             className="inline-flex items-center gap-1.5 rounded-lg bg-primary px-4 py-2 text-label-md font-bold text-white transition hover:bg-primary-container"
           >
             <PenLine className="h-4 w-4" />
-            글쓰기
-          </Link>
+            카페에 글쓰기
+          </a>
         </div>
       </div>
 

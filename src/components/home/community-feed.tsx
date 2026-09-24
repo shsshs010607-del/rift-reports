@@ -7,6 +7,7 @@ import { MessageSquare, PenSquare, ArrowRight } from "lucide-react";
 import type { PostListItem } from "@/lib/community";
 import { fmtKstRelative } from "@/lib/datetime";
 import { CategoryBadge } from "@/components/community/category-meta";
+import { SITE } from "@/lib/constants";
 import { cn } from "@/lib/utils";
 
 const isFresh = (iso: string) => Date.now() - new Date(iso).getTime() < 1000 * 60 * 60 * 6;
@@ -44,13 +45,15 @@ export function CommunityFeed({
               </button>
             ))}
           </div>
-          <Link
-            href="/community/new"
+          <a
+            href={SITE.naverCafeBoardByCategory.riftbound}
+            target="_blank"
+            rel="noopener noreferrer"
             className="inline-flex items-center gap-1 rounded-lg bg-primary px-3 py-1.5 text-label-sm font-bold text-white transition hover:bg-primary-container"
           >
             <PenSquare className="h-3.5 w-3.5" />
-            글쓰기
-          </Link>
+            카페에 글쓰기
+          </a>
           <Link
             href="/community"
             className="inline-flex items-center gap-0.5 text-label-sm font-bold text-ink-soft hover:text-primary-strong"
@@ -66,12 +69,7 @@ export function CommunityFeed({
             {tab === "popular" ? (
               "아직 추천받은 글이 없습니다."
             ) : (
-              <>
-                아직 글이 없습니다.{" "}
-                <Link href="/community/new" className="font-bold text-primary-strong">
-                  첫 글 쓰기 →
-                </Link>
-              </>
+              "아직 글이 없습니다."
             )}
           </p>
         </div>

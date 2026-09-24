@@ -41,12 +41,6 @@ export const SITE = {
   officialTwitter: "https://x.com/playriftbound" as string,
 } as const;
 
-/** 네이버 카페 OPEN 기념 추첨 이벤트 (2026-09-15 ~ 09-22) — 공지 글 id · 응모 태그. */
-export const CAFE_EVENT = {
-  postId: "c7a23d3b-6ee5-42a2-b868-d78a79efa7f8",
-  tag: "이벤트응모",
-} as const;
-
 /**
  * 홈에 노출할 리프트바운드 공식 새소식 요약 (수동 큐레이션, playriftbound.com 기준).
  * 새 소식은 여기 맨 위에 추가. date 는 "YYYY-MM-DD".
@@ -216,12 +210,13 @@ export const TIER_STYLES: Record<
   },
 };
 
+// 2026-09-23 게시판 개편: 유저 글쓰기를 없애고 정보 전달용 3개 게시판만 남긴다
+// (새 글쓰기는 네이버 카페 자유게시판으로 안내). 덱 공략·구인구직은 탭에서 뺐지만
+// 기존 글은 지우지 않았다 — /community/post/[id] 로 직접 들어가면 그대로 보인다.
 export const COMMUNITY_CATEGORIES = [
   { slug: "report", label: "리프트 리포트", desc: "메타 분석 · 뉴스 · 번역" },
   { slug: "riftbound", label: "리프트바운드 게시판", desc: "자유 주제 · 잡담 · 질문" },
-  { slug: "deck-guide", label: "덱 공략 게시판", desc: "덱 리스트 · 운영법 · 매치업" },
   { slug: "tournament", label: "매장 정보", desc: "매장 위치 · 매장 대회 · 이벤트 · 후기" },
-  { slug: "recruit", label: "구인구직", desc: "팀원 · 길드 · 듀오 · 스태프" },
 ] as const;
 
 export type CommunityCategorySlug = (typeof COMMUNITY_CATEGORIES)[number]["slug"];

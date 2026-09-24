@@ -22,7 +22,7 @@ export const metadata: Metadata = { title: "내 프로필" };
 // 빌드 시 정적 생성 시도가 타임아웃난다 — 지우지 말 것.
 export const dynamic = "force-dynamic";
 
-const CAT = new Map(COMMUNITY_CATEGORIES.map((c) => [c.slug, c.label]));
+const CAT = new Map<string, string>(COMMUNITY_CATEGORIES.map((c) => [c.slug, c.label]));
 
 const ROLE_BADGE: Record<string, { label: string; cls: string }> = {
   admin: { label: "운영자", cls: "bg-secondary-fixed text-on-secondary-fixed-variant" },

@@ -1,18 +1,15 @@
 "use client";
 
 import { useState } from "react";
-import Link from "next/link";
-import { Pencil, Trash2, ChevronUp, ChevronDown } from "lucide-react";
+import { Trash2, ChevronUp, ChevronDown } from "lucide-react";
 import { deletePost, setNoticePriority } from "@/lib/actions/community";
 
 export function PostActions({
   postId,
-  canEdit = true,
   noticeOrder,
   noticePriority = 0,
 }: {
   postId: string;
-  canEdit?: boolean;
   /** true 면 공지 노출 순서 조절 컨트롤을 같이 보여준다 (스태프만 볼 수 있게 호출부에서 걸러줄 것). */
   noticeOrder?: boolean;
   noticePriority?: number;
@@ -55,15 +52,6 @@ export function PostActions({
             <ChevronDown className="h-3.5 w-3.5" />
           </button>
         </span>
-      )}
-      {canEdit && (
-        <Link
-          href={`/community/post/${postId}/edit`}
-          className="inline-flex items-center gap-1 rounded-lg border border-line px-2.5 py-1 text-body-sm text-ink-soft hover:border-primary hover:text-primary-strong"
-        >
-          <Pencil className="h-3.5 w-3.5" />
-          수정
-        </Link>
       )}
       <button
         type="button"

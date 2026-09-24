@@ -1,11 +1,12 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState, useTransition } from "react";
 import Link from "next/link";
-import { Bell, Megaphone, Sparkles, CalendarDays, MessageSquare, Check } from "lucide-react";
+import { Bell, Megaphone, Sparkles, CalendarDays, MessageSquare, Check, Trash2 } from "lucide-react";
 import { fmtKstRelative } from "@/lib/datetime";
 import { createClient } from "@/lib/supabase/client";
 import { hasSupabaseEnv } from "@/lib/supabase/env";
+import { clearAllNotifications } from "@/app/notifications/actions";
 import { cn } from "@/lib/utils";
 import type { Notification } from "@/lib/types/database";
 
@@ -21,6 +22,7 @@ const KIND_ICON = {
 export function NotificationBell() {
   const [feed, setFeed] = useState<Feed>({ items: [], unread: 0, signedIn: false });
   const [open, setOpen] = useState(false);
+  const [clearing, startClear] = useTransition();
   const ref = useRef<HTMLDivElement>(null);
 
   const load = useCallback(async () => {
@@ -83,6 +85,13 @@ export function NotificationBell() {
     });
   };
 
+  const clearAll = () => {
+    if (!feed.signedIn || feed.items.length === 0) return;
+    if (!confirm("받은 알림을 모두 삭제할까요? (내 화면에서만 사라집니다)")) return;
+    setFeed((f) => ({ ...f, items: [], unread: 0 }));
+    startClear(() => void clearAllNotifications());
+  };
+
   return (
     <div ref={ref} className="relative">
       <button
@@ -104,14 +113,25 @@ export function NotificationBell() {
           <div className="flex items-center justify-between border-b border-outline-variant/60 px-4 py-3">
             <span className="font-display text-headline-sm font-bold text-on-surface">알림</span>
             {feed.signedIn && feed.items.length > 0 && (
-              <button
-                type="button"
-                onClick={markSeen}
-                className="inline-flex items-center gap-1 text-label-sm font-bold text-on-surface-variant hover:text-primary"
-              >
-                <Check className="h-3.5 w-3.5" />
-                모두 읽음
-              </button>
+              <span className="flex items-center gap-3">
+                <button
+                  type="button"
+                  onClick={markSeen}
+                  className="inline-flex items-center gap-1 text-label-sm font-bold text-on-surface-variant hover:text-primary"
+                >
+                  <Check className="h-3.5 w-3.5" />
+                  모두 읽음
+                </button>
+                <button
+                  type="button"
+                  onClick={clearAll}
+                  disabled={clearing}
+                  className="inline-flex items-center gap-1 text-label-sm font-bold text-on-surface-variant hover:text-error disabled:opacity-50"
+                >
+                  <Trash2 className="h-3.5 w-3.5" />
+                  모두 지우기
+                </button>
+              </span>
             )}
           </div>
 

@@ -1,12 +1,12 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import { ChevronLeft, Gift, ArrowRight } from "lucide-react";
+import { ChevronLeft } from "lucide-react";
 import { fmtKstShort } from "@/lib/datetime";
 import { createClient } from "@/lib/supabase/server";
 import { getPost, getComments, getLikedPostIds } from "@/lib/community";
 import { thumbOf, excerptOf } from "@/lib/community-preview";
-import { COMMUNITY_CATEGORIES, SITE, CAFE_EVENT } from "@/lib/constants";
+import { COMMUNITY_CATEGORIES, SITE } from "@/lib/constants";
 import { cn } from "@/lib/utils";
 import { LikeButton } from "@/components/community/like-button";
 import { ViewCounter } from "@/components/community/view-counter";
@@ -140,37 +140,17 @@ export default async function PostDetailPage(props: { params: Promise<{ id: stri
         <PostBody text={post.body} />
       </div>
 
-      {post.id === CAFE_EVENT.postId ? (
+      {isOwner && (
         <div className="mt-6 px-1 sm:px-2">
-          <div className="rounded-2xl border border-[#03C75A]/30 bg-[#03C75A]/[0.07] p-4">
-            <p className="text-body-md font-bold text-ink">가입인증글 바로쓰기</p>
-            <p className="mt-0.5 text-body-sm text-ink-soft">
-              카페 가입 후, 자유게시판에 인증 글을 쓰면 응모 완료예요. 아래 버튼을 누르면 카테고리·태그가
-              자동으로 채워져요.
-            </p>
-            <Link
-              href={`/community/new?category=riftbound&tag=${encodeURIComponent(CAFE_EVENT.tag)}`}
-              className="mt-3 inline-flex items-center gap-1.5 rounded-lg bg-[#03C75A] px-4 py-2 text-label-md font-bold text-white transition hover:brightness-95"
-            >
-              <Gift className="h-4 w-4" />
-              가입인증글 바로쓰기
-              <ArrowRight className="h-4 w-4" />
-            </Link>
-          </div>
+          <CommunityCafeCrossPost
+            title={post.title}
+            categoryLabel={cat?.label ?? post.category}
+            body={post.body}
+            permalink={`${SITE.url}/community/post/${post.id}`}
+            tags={post.tags}
+            category={post.category}
+          />
         </div>
-      ) : (
-        isOwner && (
-          <div className="mt-6 px-1 sm:px-2">
-            <CommunityCafeCrossPost
-              title={post.title}
-              categoryLabel={cat?.label ?? post.category}
-              body={post.body}
-              permalink={`${SITE.url}/community/post/${post.id}`}
-              tags={post.tags}
-              category={post.category}
-            />
-          </div>
-        )
       )}
 
       <div className="mt-10 flex justify-center">

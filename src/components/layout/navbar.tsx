@@ -65,13 +65,15 @@ export function Navbar() {
           <ThemeToggle />
           <NotificationBell />
 
-          <Link
-            href="/community/new"
+          <a
+            href={SITE.naverCafeBoardByCategory.riftbound}
+            target="_blank"
+            rel="noopener noreferrer"
             className="hidden items-center gap-2 rounded-lg bg-primary px-4 py-2.5 text-body-md font-bold text-white shadow-[0_4px_14px_rgba(70,72,212,0.3)] transition hover:bg-primary-container sm:inline-flex"
           >
             <PenSquare className="h-[18px] w-[18px]" />
-            <span className="hidden lg:inline xl:hidden 2xl:inline">새 글 쓰기</span>
-          </Link>
+            <span className="hidden lg:inline xl:hidden 2xl:inline">카페에 글쓰기</span>
+          </a>
 
           {user ? (
             <Link
