@@ -32,13 +32,13 @@ jobs:
       - run: npx tsx scripts/sync-prices.ts
         env:
           JUSTTCG_API_KEY: ${{ secrets.JUSTTCG_API_KEY }}
-          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          NEXT_PUBLIC_SUPABASE_URL: https://ztnritiyzscirnrbxqlc.supabase.co # 공개 주소(시크릿 아님) — SUPABASE_URL 시크릿에 키가 잘못 들어가 있던 문제 회피
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
       # 박스깡 시뮬레이터(origins-sim.html) 카드 시세 스냅샷 — 위 시세 동기화 결과를 반영.
       # 이 파일은 커밋된 정적 스냅샷이라 여기서 자동으로 갱신하지 않으면 그대로 굳는다.
       - run: node scripts/build-origins-sim-data.js
         env:
-          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          NEXT_PUBLIC_SUPABASE_URL: https://ztnritiyzscirnrbxqlc.supabase.co # 공개 주소(시크릿 아님) — SUPABASE_URL 시크릿에 키가 잘못 들어가 있던 문제 회피
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
       - name: origins-cards.json 변경 시 커밋
         run: |
