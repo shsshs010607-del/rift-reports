@@ -381,7 +381,7 @@ export function ProxyBuilder() {
       </div>
 
       {/* 담은 목록 */}
-      <div className="note-card p-4 pr-6 lg:sticky lg:top-[128px]">
+      <div className="note-card p-4 pr-6 lg:sticky lg:top-[88px]">
         <div className="mb-3 flex items-center justify-between">
           <h2 className="text-label-lg font-bold text-ink">담은 카드</h2>
           <span className="text-label-sm text-ink-soft">

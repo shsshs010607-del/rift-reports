@@ -4,7 +4,8 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { Menu, X, Search, PenSquare, Home, ChevronDown } from "lucide-react";
-import { NAV_PRIMARY, NAV_SECONDARY, SITE } from "@/lib/constants";
+import { SITE } from "@/lib/constants";
+import { NAV_GROUPS, type NavGroup, type NavItem } from "@/lib/nav-groups";
 import { NotificationBell } from "@/components/layout/notification-bell";
 import { ThemeToggle } from "@/components/layout/theme-toggle";
 import { LogoMark } from "@/components/ui/logo";
@@ -19,7 +20,6 @@ export function Navbar() {
   const [open, setOpen] = useState(false);
   const [q, setQ] = useState("");
   const [user, setUser] = useState<User | null>(null);
-  const [expanded, setExpanded] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     if (!hasSupabaseEnv) return;
@@ -34,6 +34,13 @@ export function Navbar() {
   const isActive = (href: string) =>
     href === "/" ? pathname === "/" : pathname === href || pathname.startsWith(href + "/");
 
+  // /cards 와 /cards/proxy 처럼 접두사가 겹치면 가장 긴 경로만 활성으로 본다.
+  const bestPath = NAV_GROUPS.flatMap((g) => g.items.map((i) => i.href.split("?")[0]))
+    .filter((h) => h.startsWith("/") && !h.endsWith(".html") && isActive(h))
+    .sort((a, b) => b.length - a.length)[0];
+  const itemActive = (href: string) => !!bestPath && href.split("?")[0] === bestPath;
+  const groupActive = (g: NavGroup) => g.items.some((i) => itemActive(i.href));
+
   const submitSearch = (e: React.FormEvent) => {
     e.preventDefault();
     const term = q.trim();
@@ -42,26 +49,28 @@ export function Navbar() {
 
   return (
     <header className="fixed inset-x-0 top-0 z-50 bg-surface/95 shadow-header backdrop-blur-xl">
-      {/* ── 1행: 로고 · 주요 메뉴 · 알림/글쓰기/프로필 ── */}
       <div className="mx-auto flex h-[68px] max-w-[1280px] items-center gap-2 px-4 sm:gap-4 sm:px-gutter-desktop">
         <Link href="/" aria-label="리바지지 홈" className="flex shrink-0 items-center">
           <LogoMark className="shadow-e1" />
         </Link>
 
-        <nav className="hidden flex-1 items-center gap-1 xl:flex">
-          {NAV_PRIMARY.map((item) => (
-            <NavPill
-              key={item.href}
-              href={item.href}
-              label={item.label}
-              sub={item.children}
-              active={isActive(item.href)}
-              external={item.external}
-            />
+        <nav className="hidden flex-1 items-center gap-0.5 xl:flex">
+          {NAV_GROUPS.map((g) => (
+            <GroupMenu key={g.label} group={g} active={groupActive(g)} itemActive={itemActive} />
           ))}
         </nav>
 
         <div className="flex flex-1 items-center justify-end gap-1.5 sm:gap-2.5 xl:flex-none">
+          <form onSubmit={submitSearch} className="relative hidden items-center xl:flex">
+            <Search className="pointer-events-none absolute left-3 h-4 w-4 text-outline" />
+            <input
+              type="search"
+              value={q}
+              onChange={(e) => setQ(e.target.value)}
+              placeholder="커뮤니티 검색…"
+              className="w-36 rounded-full bg-surface-container-lowest py-2 pl-9 pr-3 text-body-sm text-on-surface shadow-xs placeholder:text-outline-variant focus:outline-none focus:ring-2 focus:ring-primary-container 2xl:w-52"
+            />
+          </form>
           <ThemeToggle />
           <NotificationBell />
 
@@ -107,56 +116,9 @@ export function Navbar() {
         </div>
       </div>
 
-      {/* ── 2행: 보조 메뉴(좌) · 검색(우) ── */}
-      <div className="hidden border-t border-outline-variant/40 bg-surface-container-low/40 xl:block">
-        <div className="mx-auto flex h-[48px] max-w-[1280px] items-center justify-between gap-4 px-gutter-desktop">
-          <nav className="flex items-center gap-1">
-            <Link
-              href="/"
-              aria-current={isActive("/") ? "page" : undefined}
-              aria-label="홈"
-              className={cn(
-                "flex items-center gap-1.5 rounded-full px-3 py-1.5 text-body-sm transition-all",
-                isActive("/")
-                  ? "bg-surface-container-high font-bold text-primary"
-                  : "text-on-surface-variant hover:bg-surface-container hover:text-on-surface",
-              )}
-            >
-              <Home className="h-4 w-4" />
-            </Link>
-            {NAV_SECONDARY.map((item) => (
-              <Link
-                key={item.href}
-                href={item.href}
-                aria-current={isActive(item.href) ? "page" : undefined}
-                className={cn(
-                  "whitespace-nowrap rounded-full px-3 py-1.5 text-body-sm transition-all",
-                  isActive(item.href)
-                    ? "bg-surface-container-high font-bold text-primary"
-                    : "text-on-surface-variant hover:bg-surface-container hover:text-on-surface",
-                )}
-              >
-                {item.label}
-              </Link>
-            ))}
-          </nav>
-
-          <form onSubmit={submitSearch} className="relative flex shrink-0 items-center">
-            <Search className="pointer-events-none absolute left-3.5 h-4 w-4 text-outline" />
-            <input
-              type="search"
-              value={q}
-              onChange={(e) => setQ(e.target.value)}
-              placeholder="커뮤니티 검색…"
-              className="w-48 rounded-full bg-surface-container-lowest py-1.5 pl-10 pr-4 text-body-sm text-on-surface shadow-xs placeholder:text-outline-variant focus:outline-none focus:ring-2 focus:ring-primary-container 2xl:w-60"
-            />
-          </form>
-        </div>
-      </div>
-
-      {/* ── 모바일 메뉴 ── */}
+      {/* ── 모바일 메뉴: 기능별 묶음 ── */}
       {open && (
-        <div className="border-t border-outline-variant/60 bg-surface xl:hidden">
+        <div className="max-h-[calc(100vh-68px)] overflow-y-auto border-t border-outline-variant/60 bg-surface xl:hidden">
           <div className="mx-auto flex max-w-[1280px] flex-col gap-1 px-gutter-desktop py-3">
             <form onSubmit={submitSearch} className="relative mb-1 flex items-center">
               <Search className="pointer-events-none absolute left-3.5 h-4 w-4 text-outline" />
@@ -180,96 +142,44 @@ export function Navbar() {
             >
               <Home className="h-[18px] w-[18px]" />홈
             </Link>
-            {[...NAV_PRIMARY, ...NAV_SECONDARY].map((item) => {
-              const hasChildren = "children" in item && !!item.children?.length;
-              const isExpanded = expanded.has(item.href);
-              return (
-                <div key={item.href}>
-                  <div
-                    className={cn(
-                      "flex items-center rounded-xl transition-colors",
-                      isActive(item.href)
-                        ? "bg-surface-container-high font-bold text-primary"
-                        : "text-on-surface-variant hover:bg-surface-container hover:text-on-surface",
-                    )}
-                  >
-                    {"external" in item && item.external ? (
-                      <a
-                        href={item.href}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="block flex-1 px-space-sm py-space-sm text-title-md"
-                      >
-                        {item.label}
-                      </a>
-                    ) : (
-                      <Link
-                        href={item.href}
-                        onClick={() => setOpen(false)}
-                        className="block flex-1 px-space-sm py-space-sm text-title-md"
-                      >
-                        {item.label}
-                      </Link>
-                    )}
-                    {hasChildren && (
-                      <button
-                        type="button"
-                        onClick={() =>
-                          setExpanded((prev) => {
-                            const next = new Set(prev);
-                            if (next.has(item.href)) next.delete(item.href);
-                            else next.add(item.href);
-                            return next;
-                          })
-                        }
-                        aria-label={`${item.label} 하위 메뉴`}
-                        aria-expanded={isExpanded}
-                        className="grid h-10 w-10 shrink-0 place-items-center"
-                      >
-                        <ChevronDown className={cn("h-4 w-4 transition", isExpanded && "rotate-180")} />
-                      </button>
-                    )}
-                  </div>
-                  {hasChildren && isExpanded && (
-                    <div className="pb-1">
-                      {item.children?.map((s) => {
-                        const { url, external, disabled } = subHref(s.href);
-                        if (disabled)
-                          return (
-                            <span
-                              key={s.href}
-                              className="block px-space-sm py-2 pl-8 text-body-md text-on-surface-variant/60"
-                            >
-                              {s.label} · 준비 중
-                            </span>
-                          );
-                        const subCls =
-                          "block px-space-sm py-2 pl-8 text-body-md text-on-surface-variant hover:text-on-surface";
-                        return external ? (
-                          <a
-                            key={s.href}
-                            href={url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className={subCls}
-                          >
-                            {s.label}
-                          </a>
-                        ) : (
-                          <Link key={s.href} href={url} onClick={() => setOpen(false)} className={subCls}>
-                            {s.label}
-                          </Link>
-                        );
-                      })}
-                    </div>
-                  )}
+            {NAV_GROUPS.map((g) => (
+              <div key={g.label} className="mt-2">
+                <div className="px-space-sm pb-1 text-label-sm font-bold uppercase tracking-wide text-outline">
+                  {g.label}
                 </div>
-              );
-            })}
+                {g.items.map((item) => {
+                  const { url, external, disabled } = subHref(item.href);
+                  if (disabled)
+                    return (
+                      <span
+                        key={item.href}
+                        className="block px-space-sm py-2 text-body-md text-on-surface-variant/60"
+                      >
+                        {item.label} · 준비 중
+                      </span>
+                    );
+                  const cls = cn(
+                    "block rounded-xl px-space-sm py-2.5 text-body-lg transition-colors",
+                    itemActive(item.href)
+                      ? "bg-surface-container-high font-bold text-primary"
+                      : "text-on-surface-variant hover:bg-surface-container hover:text-on-surface",
+                  );
+                  return external ? (
+                    <a key={item.href} href={url} target="_blank" rel="noopener noreferrer" className={cls}>
+                      {item.label}
+                    </a>
+                  ) : (
+                    <Link key={item.href} href={url} onClick={() => setOpen(false)} className={cls}>
+                      {item.label}
+                    </Link>
+                  );
+                })}
+              </div>
+            ))}
             <Link
               href={user ? "/me" : "/login"}
               onClick={() => setOpen(false)}
-              className="btn-primary mt-space-xs"
+              className="btn-primary mt-space-sm"
             >
               {user ? "내 프로필" : "로그인"}
             </Link>
@@ -279,8 +189,6 @@ export function Navbar() {
     </header>
   );
 }
-
-type SubItem = { href: string; label: string };
 
 /** report: 센티널 → 디스코드 신고 게시판. 아직 URL 없으면 비활성. */
 function subHref(href: string): { url: string; external: boolean; disabled: boolean } {
@@ -295,18 +203,14 @@ function subHref(href: string): { url: string; external: boolean; disabled: bool
   return { url: href, external: false, disabled: false };
 }
 
-function NavPill({
-  href,
-  label,
+function GroupMenu({
+  group,
   active,
-  sub,
-  external,
+  itemActive,
 }: {
-  href: string;
-  label: string;
+  group: NavGroup;
   active: boolean;
-  sub?: readonly SubItem[];
-  external?: boolean;
+  itemActive: (href: string) => boolean;
 }) {
   const [open, setOpen] = useState(false);
   const closeTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
@@ -319,97 +223,76 @@ function NavPill({
     closeTimer.current = setTimeout(() => setOpen(false), 120);
   };
 
-  const pillCls = cn(
-    "whitespace-nowrap rounded-full px-2.5 py-2 text-body-md transition-all xl:px-2 2xl:px-3.5",
-    active
-      ? "bg-surface-container-high font-bold text-primary"
-      : "text-on-surface-variant hover:bg-surface-container hover:text-on-surface",
-  );
-
-  if (!sub?.length) {
-    // 정적 HTML(예: /origins-sim.html) 등 외부 취급 링크는 <Link>가 아니라 <a>로 —
-    // <Link>는 target="_blank"를 줘도 앱 라우터 경로로 오인해 프리페치를 시도한다.
-    if (external) {
-      return (
-        <a href={href} target="_blank" rel="noopener noreferrer" className={pillCls}>
-          {label}
-        </a>
-      );
-    }
-    return (
-      <Link href={href} aria-current={active ? "page" : undefined} className={pillCls}>
-        {label}
-      </Link>
-    );
-  }
-
   return (
     <div className="relative" onMouseEnter={openNow} onMouseLeave={closeSoon}>
-      <div className={cn("flex items-center", pillCls, "gap-0.5 pr-2")}>
-        {external ? (
-          <a href={href} target="_blank" rel="noopener noreferrer" className="hover:underline">
-            {label}
-          </a>
-        ) : (
-          <Link href={href} aria-current={active ? "page" : undefined} className="hover:underline">
-            {label}
-          </Link>
+      <button
+        type="button"
+        onClick={() => {
+          clearTimeout(closeTimer.current);
+          setOpen((v) => !v);
+        }}
+        aria-expanded={open}
+        aria-haspopup="menu"
+        className={cn(
+          "flex items-center gap-1 whitespace-nowrap rounded-full px-3 py-2 text-body-md transition-all 2xl:px-4",
+          active
+            ? "bg-surface-container-high font-bold text-primary"
+            : "text-on-surface-variant hover:bg-surface-container hover:text-on-surface",
         )}
-        <button
-          type="button"
-          onClick={() => {
-            clearTimeout(closeTimer.current);
-            setOpen((v) => !v);
-          }}
-          aria-label={`${label} 하위 메뉴`}
-          aria-expanded={open}
-          className="grid h-5 w-5 place-items-center rounded-full hover:bg-surface-container-high"
-        >
-          <ChevronDown className={cn("h-3.5 w-3.5 transition", open && "rotate-180")} />
-        </button>
-      </div>
+      >
+        {group.label}
+        <ChevronDown className={cn("h-3.5 w-3.5 transition", open && "rotate-180")} />
+      </button>
 
       {open && (
-        // top-full + pt-2 = 팁과 메뉴 사이 간격을 "hover 가능한 다리"로 만들어
-        // 마우스가 내려오다 메뉴가 닫히는 문제를 막는다.
+        // pt-2 = 버튼과 메뉴 사이를 hover 가능한 다리로 만들어 메뉴가 닫히지 않게 한다.
         <div className="absolute left-0 top-full z-50 pt-2">
-          <div className="min-w-[160px] overflow-hidden rounded-xl border border-outline-variant/60 bg-surface-container-lowest py-1 shadow-e2">
-          {sub.map((s) => {
-            const { url, external, disabled } = subHref(s.href);
-            if (disabled) {
-              return (
-                <span
-                  key={s.href}
-                  className="flex items-center justify-between px-3.5 py-2 text-body-sm text-on-surface-variant/60"
-                >
-                  {s.label}
-                  <span className="text-label-sm">준비 중</span>
-                </span>
-              );
-            }
-            const ddCls =
-              "block px-3.5 py-2 text-body-sm text-on-surface transition-colors hover:bg-surface-container hover:text-primary";
-            if (external) {
-              return (
-                <a key={s.href} href={url} target="_blank" rel="noopener noreferrer" className={ddCls}>
-                  {s.label}
-                </a>
-              );
-            }
-            return (
-              <Link
-                key={s.href}
-                href={url}
-                onClick={() => setOpen(false)}
-                className={ddCls}
-              >
-                {s.label}
-              </Link>
-            );
-          })}
+          <div className="min-w-[210px] overflow-hidden rounded-xl border border-outline-variant/60 bg-surface-container-lowest py-1 shadow-e2">
+            {group.items.map((item) => (
+              <MenuItem key={item.href} item={item} active={itemActive(item.href)} onNavigate={() => setOpen(false)} />
+            ))}
           </div>
         </div>
       )}
     </div>
+  );
+}
+
+function MenuItem({
+  item,
+  active,
+  onNavigate,
+}: {
+  item: NavItem;
+  active: boolean;
+  onNavigate: () => void;
+}) {
+  const { url, external, disabled } = subHref(item.href);
+  if (disabled) {
+    return (
+      <span className="flex items-center justify-between px-3.5 py-2 text-body-sm text-on-surface-variant/60">
+        {item.label}
+        <span className="text-label-sm">준비 중</span>
+      </span>
+    );
+  }
+  const cls = cn(
+    "block px-3.5 py-2 transition-colors hover:bg-surface-container",
+    active ? "text-primary" : "text-on-surface",
+  );
+  const body = (
+    <>
+      <span className={cn("block text-body-md", active && "font-bold")}>{item.label}</span>
+      {item.desc && <span className="block text-label-sm text-on-surface-variant">{item.desc}</span>}
+    </>
+  );
+  return external ? (
+    <a href={url} target="_blank" rel="noopener noreferrer" className={cls}>
+      {body}
+    </a>
+  ) : (
+    <Link href={url} onClick={onNavigate} className={cls} aria-current={active ? "page" : undefined}>
+      {body}
+    </Link>
   );
 }

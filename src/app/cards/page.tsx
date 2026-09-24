@@ -139,7 +139,7 @@ export default async function CardsPage(props: { searchParams: Promise<RawSearch
 
       <div className="mt-6 grid grid-cols-1 gap-6 xl:grid-cols-[minmax(0,1fr)_320px] xl:items-start">
         {/* 필터 — 데스크톱 우측 고정, 모든 필터 한눈에 */}
-        <div className="xl:order-2 xl:sticky xl:top-[128px] xl:max-h-[calc(100vh-144px)] xl:overflow-y-auto xl:pr-1">
+        <div className="xl:order-2 xl:sticky xl:top-[88px] xl:max-h-[calc(100vh-104px)] xl:overflow-y-auto xl:pr-1">
           <Suspense fallback={<div className="h-28" />}>
             <CardFilterPanel query={query} />
           </Suspense>

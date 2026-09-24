@@ -19,7 +19,7 @@ export function CommunitySidebar({
   recent: Record<CommunityCategory, PostListItem[]>;
 }) {
   return (
-    <aside className="flex flex-col gap-4 lg:sticky lg:top-[120px]">
+    <aside className="flex flex-col gap-4 lg:sticky lg:top-[88px]">
       {trending.length > 0 && (
         <section className="rounded-xl border border-line/70 bg-card p-3.5">
           <h2 className="mb-2 flex items-center gap-1.5 text-label-lg font-bold text-ink">

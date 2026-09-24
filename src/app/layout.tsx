@@ -107,7 +107,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           본문 바로가기
         </a>
         <Navbar />
-        <main id="main" className="w-full flex-1 pt-[68px] xl:pt-[116px]">
+        <main id="main" className="w-full flex-1 pt-[68px] xl:pt-[68px]">
           <div className="mx-auto w-full max-w-[1280px] px-gutter-desktop py-space-xl">{children}</div>
         </main>
         <Footer />
