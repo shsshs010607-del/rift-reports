@@ -57,6 +57,8 @@ const chunk = <T>(a: T[], n: number) => Array.from({ length: Math.ceil(a.length 
 
 async function main() {
   console.log(`[sync-prices]${DRY ? " (dry)" : ""} game=${cfg.game}`);
+  // DB 키가 없으면 수 분짜리 JustTCG 수집(무료 월 1,000콜 소모)을 하기 전에 바로 실패시킨다.
+  if (!DRY) { requireEnv("NEXT_PUBLIC_SUPABASE_URL"); requireEnv("SUPABASE_SERVICE_ROLE_KEY"); }
 
   const raw = await fetchAllCards(cfg, (remain) => console.log(`  … 수집 중 (남은 콜: ${remain})`));
 
