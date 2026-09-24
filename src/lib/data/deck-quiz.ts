@@ -163,7 +163,7 @@ export const MBTI_TYPES: Record<MbtiCode, MbtiType> = {
       "티어표보다 자기 분석을 더 믿는다",
     ],
     deckId: "kaisa",
-    worstDeckId: "yi",
+    worstDeckId: "yi-mid",
   },
   ISTP: {
     code: "ISTP",
@@ -177,7 +177,7 @@ export const MBTI_TYPES: Record<MbtiCode, MbtiType> = {
       "위기 상황에서 오히려 침착해진다",
     ],
     deckId: "leesin",
-    worstDeckId: "yi",
+    worstDeckId: "yi-mid",
   },
   ISFP: {
     code: "ISFP",
@@ -190,7 +190,7 @@ export const MBTI_TYPES: Record<MbtiCode, MbtiType> = {
       "느낌이 오는 타이밍을 놓치지 않는다",
       "튀는 걸 원하진 않지만 실력은 확실하다",
     ],
-    deckId: "yi",
+    deckId: "yi-mid",
     worstDeckId: "teemo",
   },
   INFP: {
@@ -247,7 +247,7 @@ export const MBTI_TYPES: Record<MbtiCode, MbtiType> = {
       "분위기 띄우는 데 진심",
     ],
     deckId: "jinx",
-    worstDeckId: "yi",
+    worstDeckId: "yi-mid",
   },
   ENFP: {
     code: "ENFP",

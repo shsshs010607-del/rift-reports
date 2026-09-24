@@ -40,7 +40,7 @@ const RAW_DECKS: Omit<TierDeck, "guidePostId">[] = [
   // ── S ──────────────────────────────────────────────
   {
     id: "yi",
-    tier: "S",
+    tier: "A",
     name: "오로라 마이",
     subtitle: "오로라 우주 검사 연계 폭딜",
     legendEn: "Master Yi - Wuju Bladesman (Starter)",
