@@ -30,6 +30,7 @@ export function requireEnv(name: string): string {
       console.error(`${name} 값이 URL 형식이 아닙니다 (예: https://xxxx.supabase.co) — 앞 4글자: "${v.slice(0, 4)}"`);
       process.exit(1);
     }
+    console.log(`[env] Supabase host = ${new URL(v).host}`); // 공개 주소라 로그에 남겨도 안전 — CI 시크릿 오입력 진단용
   }
   return v;
 }
