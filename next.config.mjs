@@ -23,6 +23,11 @@ const nextConfig = {
       { protocol: "https", hostname: "i.ytimg.com" },
       // 구글 OAuth 프로필 사진 (구글 로그인 유저 아바타)
       { protocol: "https", hostname: "lh3.googleusercontent.com" },
+      // 카카오 프로필 사진 — 저장된 URL 이 http:// 라서 http 도 허용해야 한다 (서버가 받아 https 로 내려줌).
+      { protocol: "http", hostname: "*.kakaocdn.net" },
+      { protocol: "https", hostname: "*.kakaocdn.net" },
+      // 디스코드 프로필 사진
+      { protocol: "https", hostname: "cdn.discordapp.com" },
     ],
   },
   // 기본 보안 헤더. CSP 는 AdSense/폰트/OAuth 조합을 실제 배포에서 검증 없이
