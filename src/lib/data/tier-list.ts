@@ -41,8 +41,16 @@ const RAW_DECKS: Omit<TierDeck, "guidePostId">[] = [
   {
     id: "yi",
     tier: "S",
-    name: "마스터 이",
-    subtitle: "우주 검사 연계 폭딜",
+    name: "오로라 마이",
+    subtitle: "오로라 우주 검사 연계 폭딜",
+    legendEn: "Master Yi - Wuju Bladesman (Starter)",
+    keyCard: "마스터 이",
+  },
+  {
+    id: "yi-mid",
+    tier: "S",
+    name: "미드레인지 마이",
+    subtitle: "안정적인 중속 마스터 이",
     legendEn: "Master Yi - Wuju Bladesman (Starter)",
     keyCard: "마스터 이",
   },
