@@ -28,11 +28,11 @@ export const SITE = {
    * 전용 게시판이 아직 없는 카테고리는 리프트바운드 게시판(menus/7)으로 통일.
    */
   naverCafeBoardByCategory: {
-    report: "https://cafe.naver.com/f-e/cafes/31788328/menus/7",
-    riftbound: "https://cafe.naver.com/f-e/cafes/31788328/menus/7",
-    "deck-guide": "https://cafe.naver.com/f-e/cafes/31788328/menus/7",
-    tournament: "https://cafe.naver.com/f-e/cafes/31788328/menus/7",
-    recruit: "https://cafe.naver.com/f-e/cafes/31788328/menus/7",
+    report: "https://cafe.naver.com/f-e/cafes/31788328/menus/7?viewType=L",
+    riftbound: "https://cafe.naver.com/f-e/cafes/31788328/menus/7?viewType=L",
+    "deck-guide": "https://cafe.naver.com/f-e/cafes/31788328/menus/7?viewType=L",
+    tournament: "https://cafe.naver.com/f-e/cafes/31788328/menus/7?viewType=L",
+    recruit: "https://cafe.naver.com/f-e/cafes/31788328/menus/7?viewType=L",
   } as Record<string, string>,
   /** 리프트바운드 공식 채널 (Riot Games) */
   officialYoutube: "https://www.youtube.com/@riftbound" as string,

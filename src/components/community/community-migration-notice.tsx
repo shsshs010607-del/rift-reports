@@ -3,7 +3,7 @@ import { SITE } from "@/lib/constants";
 import { cn } from "@/lib/utils";
 
 /**
- * 게시판 개편 안내 — 새 글쓰기는 네이버 카페 자유게시판으로 이동, 여기는 정보 전달용.
+ * 커뮤니티 통합 안내 — 커뮤니티는 네이버 카페 자유게시판으로 통합(목록은 여기서 연동 표시).
  * 기존 글은 그대로 보이니 삭제 안내는 아님.
  */
 export function CommunityMigrationNotice({ className }: { className?: string }) {
@@ -16,8 +16,9 @@ export function CommunityMigrationNotice({ className }: { className?: string }) 
     >
       <Megaphone className="h-4 w-4 shrink-0 text-[#03C75A]" />
       <p className="min-w-0 flex-1">
-        <strong className="text-ink">게시판 개편 안내</strong> — 이제부터 새 글은 네이버 카페
-        자유게시판에서 써주세요. 여기 있던 글은 그대로 볼 수 있어요.
+        <strong className="text-ink">커뮤니티 통합 안내</strong> — 리바지지 커뮤니티가 네이버 카페
+        자유게시판으로 통합됩니다. 카페 새 글이 여기에도 바로 올라오고, 글쓰기·댓글은 카페에서
+        해주세요. 예전 글은 그대로 볼 수 있어요.
       </p>
       <a
         href={SITE.naverCafeBoardByCategory.riftbound}
