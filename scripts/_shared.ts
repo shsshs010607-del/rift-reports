@@ -15,10 +15,21 @@ export function loadEnv() {
 }
 
 export function requireEnv(name: string): string {
-  const v = process.env[name];
+  // CI 시크릿에 따옴표·공백·줄바꿈이 섞여 들어가는 흔한 실수를 흡수한다.
+  let v = process.env[name]?.trim().replace(/^["']|["']$/g, "").trim();
   if (!v) {
     console.error(`환경변수 ${name} 가 없습니다 (.env.local 또는 CI secret).`);
     process.exit(1);
+  }
+  if (name === "NEXT_PUBLIC_SUPABASE_URL") {
+    if (!/^https?:\/\//i.test(v)) v = `https://${v}`;
+    v = v.replace(/\/+$/, "");
+    try {
+      new URL(v);
+    } catch {
+      console.error(`${name} 값이 URL 형식이 아닙니다 (예: https://xxxx.supabase.co) — 앞 4글자: "${v.slice(0, 4)}"`);
+      process.exit(1);
+    }
   }
   return v;
 }
