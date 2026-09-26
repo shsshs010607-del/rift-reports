@@ -11,7 +11,7 @@
  * 데이터 출처: Piltover Archive (https://piltoverarchive.com) — 사이트에 출처 표기.
  */
 import { readFileSync } from "node:fs";
-import { loadEnv, supabaseAdmin } from "./_shared";
+import { loadEnv, loadLegacyCards, supabaseAdmin } from "./_shared";
 
 loadEnv();
 
@@ -61,10 +61,8 @@ type OurCard = { setId: string; num: number };
 
 /** data/cards.json → "OGN:39" 형태의 보유 카드 집합. 덱이 우리 풀에 다 있는지 검증용. */
 function loadOurPool(): Set<string> {
-  const raw = JSON.parse(readFileSync(new URL("../data/cards.json", import.meta.url), "utf8"));
-  const arr: any[] = Array.isArray(raw) ? raw : raw.cards ?? raw.items ?? [];
   const s = new Set<string>();
-  for (const c of arr) {
+  for (const c of loadLegacyCards()) {
     const setId = c.set?.set_id;
     const num = Number(c.collector_number);
     if (setId && Number.isFinite(num)) s.add(`${setId}:${num}`);

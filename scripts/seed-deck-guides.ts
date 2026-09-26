@@ -7,7 +7,7 @@
  * env: NEXT_PUBLIC_SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY
  */
 import { readFileSync } from "node:fs";
-import { loadEnv, supabaseAdmin } from "./_shared";
+import { loadEnv, loadLegacyCards, supabaseAdmin } from "./_shared";
 import { TIER_DECKS } from "../src/lib/data/tier-list";
 
 loadEnv();
@@ -25,8 +25,7 @@ const DOMAIN_TRAIT: Record<string, string> = {
 type RawLegend = { name: string; classification: { domain: string[] } };
 
 function legendInfo() {
-  const raw = JSON.parse(readFileSync(new URL("../data/cards.json", import.meta.url), "utf8"));
-  const arr: RawLegend[] = Array.isArray(raw) ? raw : raw.cards ?? raw.items ?? [];
+  const arr: RawLegend[] = loadLegacyCards();
   const map = new Map<string, string[]>();
   for (const c of arr) {
     if (!/legend/i.test((c as any).classification?.type ?? "")) continue;

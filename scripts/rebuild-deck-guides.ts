@@ -7,7 +7,7 @@
  * env: NEXT_PUBLIC_SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY
  */
 import { readFileSync } from "node:fs";
-import { loadEnv, supabaseAdmin } from "./_shared";
+import { loadEnv, loadLegacyCards, supabaseAdmin } from "./_shared";
 import { TIER_DECKS } from "../src/lib/data/tier-list";
 
 loadEnv();
@@ -21,8 +21,7 @@ type RawCard = {
   name: string;
   classification?: { type?: string; domain?: string[] };
 };
-const raw = JSON.parse(readFileSync(new URL("../data/cards.json", import.meta.url), "utf8"));
-const CARDS: RawCard[] = Array.isArray(raw) ? raw : raw.cards ?? raw.items ?? [];
+const CARDS: RawCard[] = loadLegacyCards();
 const KO: Record<string, { n?: string; t?: string }> = JSON.parse(
   readFileSync(new URL("../data/cards-ko.json", import.meta.url), "utf8"),
 ).map;
