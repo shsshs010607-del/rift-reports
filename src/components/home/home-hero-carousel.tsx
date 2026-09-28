@@ -113,7 +113,7 @@ function MbtiSlide() {
               className="absolute left-0 top-1/2 block w-[60px] overflow-hidden rounded-[4px] shadow-lg ring-1 ring-black/10"
               style={{ transform: `translateX(${i * 48}%) translateY(-50%) rotate(${i ? 10 : -10}deg)`, zIndex: i ? 10 : 20 }}
             >
-              <Image src={src} alt="" width={60} height={84} className="h-auto w-full" />
+              <Image src={src} alt="" width={60} height={84} sizes="60px" className="h-auto w-full" />
             </span>
           ))}
         </div>

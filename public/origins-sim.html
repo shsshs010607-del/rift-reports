@@ -636,7 +636,7 @@
       return '' +
         '<div class="rg-card">' +
           '<div class="rg-img" style="--r-color:' + color + ';--r-glow:' + glow + '">' +
-            '<img src="' + sized(card.img, 184) + '" alt="' + card.name + '" loading="lazy">' +
+            '<img src="' + sized(card.img, 184) + '" alt="' + card.name + '">' +
           '</div>' +
           '<div class="rg-label" style="--rg-color:' + color + '">' + RARITY_LABEL[r] + '</div>' +
           '<div class="rg-pct">' + (RARITY_GUIDE_NOTE[r] || '') + '</div>' +
@@ -1003,7 +1003,7 @@
           var price = cardPrice(c);
           return '<div class="hl-card' + (c.hanbok?' hanbok':'') + '" style="--r-color:' + v.color + ';--r-glow:' + v.glow + ';animation-delay:' + Math.min(i*15,600) + 'ms">' +
             (c.hanbok ? '<div class="hl-ribbon">한정</div>' : '') +
-            '<img src="' + sized(c.img, 220) + '" alt="' + c.name + '" loading="lazy">' +
+            '<img src="' + sized(c.img, 220) + '" alt="' + c.name + '">' +
             '<div class="hl-name">' + c.name + (price != null ? '<span class="hl-price">' + formatWon(price) + '</span>' : '') + '</div>' +
           '</div>';
         }).join('') +
