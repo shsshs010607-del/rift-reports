@@ -42,7 +42,7 @@ export function CardGrid({
       <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
         {cards.map((card, i) => (
           <li key={card.id}>
-            <CardTile card={card} onOpen={() => setIndex(i)} priceByNumber={priceByNumber} />
+            <CardTile card={card} onOpen={() => setIndex(i)} priceByNumber={priceByNumber} priority={i < 4} />
           </li>
         ))}
       </ul>
@@ -67,10 +67,13 @@ function CardTile({
   card,
   onOpen,
   priceByNumber,
+  priority,
 }: {
   card: Card;
   onOpen: () => void;
   priceByNumber?: Record<string, number>;
+  /** 화면 맨 위 첫 줄 카드 — lazy 대신 즉시 로드해 빈 칸이 안 보이게 */
+  priority?: boolean;
 }) {
   const ko = resolveCardText(card, "ko");
   const variants = card.printings.length - 1;
@@ -97,6 +100,7 @@ function CardTile({
         <LocalizedCard
           card={card}
           sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
+          priority={priority}
           className="!rounded-none transition duration-300 group-hover:scale-[1.04]"
         />
         {/* 호버 시 카드 위로 흐르는 광택 */}

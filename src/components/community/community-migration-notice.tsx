@@ -10,12 +10,12 @@ export function CommunityMigrationNotice({ className }: { className?: string }) 
   return (
     <div
       className={cn(
-        "flex flex-wrap items-center gap-2 rounded-xl border border-[#03C75A]/25 bg-[#03C75A]/[0.06] px-3.5 py-2.5 text-body-sm text-ink-soft",
+        "flex flex-col gap-2 rounded-xl border border-[#03C75A]/25 bg-[#03C75A]/[0.06] px-3.5 py-2.5 text-body-sm text-ink-soft sm:flex-row sm:flex-wrap sm:items-center",
         className,
       )}
     >
-      <Megaphone className="h-4 w-4 shrink-0 text-[#03C75A]" />
-      <p className="min-w-0 flex-1">
+      <Megaphone className="hidden h-4 w-4 shrink-0 text-[#03C75A] sm:block" />
+      <p className="min-w-0 sm:flex-1">
         <strong className="text-ink">커뮤니티 통합 안내</strong> — 리바지지 커뮤니티가 네이버 카페
         자유게시판으로 통합됩니다. 카페 새 글이 여기에도 바로 올라오고, 글쓰기·댓글은 카페에서
         해주세요. 예전 글은 그대로 볼 수 있어요.

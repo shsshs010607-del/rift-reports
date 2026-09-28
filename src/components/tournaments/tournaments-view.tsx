@@ -32,7 +32,8 @@ export function TournamentsView({ tournaments }: { tournaments: Tournament[] }) 
   const [cat, setCat] = useState<Cat>("all");
   const [region, setRegion] = useState<string>("all");
   const [evType, setEvType] = useState<EvType>("all");
-  const [calendarOpen, setCalendarOpen] = useState(true);
+  // null = 사용자가 아직 안 만짐 → 데스크톱(md+)은 펼침, 모바일은 접힘(달력이 목록을 화면 아래로 밀어내서). CSS 로 갈라 하이드레이션 깜빡임이 없다.
+  const [calendarOpen, setCalendarOpen] = useState<boolean | null>(null);
 
   const eventTypes = useMemo(
     () => EVENT_TYPES.filter((et) => tournaments.some((t) => eventTypeOf(t) === et)),
@@ -106,15 +107,23 @@ export function TournamentsView({ tournaments }: { tournaments: Tournament[] }) 
       <section>
         <button
           type="button"
-          onClick={() => setCalendarOpen((v) => !v)}
+          onClick={() =>
+            setCalendarOpen((v) => !(v ?? window.matchMedia("(min-width: 768px)").matches))
+          }
+          aria-expanded={calendarOpen ?? undefined}
           className="section-title mb-3 flex w-full items-center gap-1.5 text-left"
         >
           달력
           <ChevronDown
-            className={cn("h-4 w-4 text-ink-soft transition-transform", !calendarOpen && "-rotate-90")}
+            className={cn(
+              "h-4 w-4 text-ink-soft transition-transform",
+              calendarOpen === null ? "-rotate-90 md:rotate-0" : !calendarOpen && "-rotate-90",
+            )}
           />
         </button>
-        {calendarOpen && <TournamentCalendar tournaments={filtered} />}
+        <div className={calendarOpen === null ? "hidden md:block" : calendarOpen ? "block" : "hidden"}>
+          <TournamentCalendar tournaments={filtered} />
+        </div>
       </section>
 
       {groups.length === 0 ? (

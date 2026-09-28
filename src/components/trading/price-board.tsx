@@ -188,7 +188,7 @@ export function PriceBoard({ rows, fx }: { rows: PriceRow[]; fx: FxRate }) {
                     )}
                   </span>
                   <span className="min-w-0 flex-1">
-                    <span className="block truncate text-body-md font-medium text-ink">
+                    <span className="line-clamp-2 break-keep text-body-md font-medium leading-snug text-ink sm:block sm:truncate">
                       {r.print?.ko_name || r.print?.name || "—"}
                     </span>
                     <span className="block truncate text-[13px] text-ink-soft">
