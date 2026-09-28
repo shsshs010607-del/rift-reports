@@ -5,8 +5,10 @@ name: dc-events
 # (Supabase 주소는 공개값이라 아래에 직접 적는다.)
 
 on:
-  schedule:
-    - cron: "17 */3 * * *" # 3시간마다
+  # 자동 스케줄은 ANTHROPIC_API_KEY / DISCORD_WEBHOOK_URL_STORE 시크릿을 넣은 뒤에 아래 두 줄 주석을 풀면 켜진다.
+  # (시크릿 없이 켜두면 3시간마다 실패 알림 메일이 온다.)
+  # schedule:
+  #   - cron: "17 */3 * * *" # 3시간마다
   workflow_dispatch: {}
 
 permissions:
