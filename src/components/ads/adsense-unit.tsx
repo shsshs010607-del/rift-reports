@@ -25,7 +25,9 @@ export function AdSenseUnit({ slot, className }: { slot?: string; className?: st
   const [allowed, setAllowed] = useState(false);
   const [unfilled, setUnfilled] = useState(false);
 
-  useEffect(() => setAllowed(adsAllowedHere()), []);
+  // pathname 이 deps 에 없으면 최초 마운트 시점(footer는 루트 레이아웃에서 한 번만 마운트) 한 번만
+  // 평가돼서, 클라이언트 라우팅으로 광고 차단 경로(/community)를 오가도 값이 안 바뀌었다 — 추가.
+  useEffect(() => setAllowed(adsAllowedHere()), [pathname]);
 
   // 구글이 채울 광고가 없으면 <ins data-ad-status="unfilled"> 로 표시한다 — 빈 칸과 "광고" 라벨만 남지 않게 접는다.
   useEffect(() => {
