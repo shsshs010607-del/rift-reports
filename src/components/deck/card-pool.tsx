@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Minus, Search, Layers, X, SlidersHorizontal, ChevronDown } from "lucide-react";
+import { Minus, Plus, Search, Layers, X, SlidersHorizontal, ChevronDown } from "lucide-react";
 
 import type { Card, CardType } from "@/lib/types/card";
 import type { Deck, ResolvedDeck } from "@/lib/types/deck";
@@ -706,16 +706,33 @@ export function CardPool({
                     </div>
                     <p className="truncate px-1.5 py-1 text-label-sm text-ink">{card.name}</p>
                   </button>
-                  {inDeck > 0 && (
+                  {/* 카드 이미지 위 -/+ — 모바일에서도 손가락으로 바로 넣고 뺄 수 있게 항상 노출 */}
+                  <div className="pointer-events-none absolute inset-x-1 bottom-8 flex items-center justify-between">
                     <button
                       type="button"
                       onClick={() => onRemove(card)}
+                      disabled={inDeck === 0}
                       title="한 장 빼기"
-                      className="absolute right-1 bottom-8 grid h-6 w-6 place-items-center rounded-full bg-black/70 text-white shadow-xs transition hover:bg-error"
+                      className={cn(
+                        "pointer-events-auto grid h-7 w-7 place-items-center rounded-full bg-black/70 text-white shadow-xs transition",
+                        inDeck > 0 ? "hover:bg-error active:scale-95" : "invisible",
+                      )}
                     >
-                      <Minus className="h-3.5 w-3.5" />
+                      <Minus className="h-4 w-4" />
                     </button>
-                  )}
+                    <button
+                      type="button"
+                      onClick={() => onPick(card)}
+                      disabled={plusDisabled}
+                      title={plusTitle}
+                      className={cn(
+                        "pointer-events-auto grid h-7 w-7 place-items-center rounded-full bg-black/70 text-white shadow-xs transition",
+                        plusDisabled ? "invisible" : "hover:bg-primary active:scale-95",
+                      )}
+                    >
+                      <Plus className="h-4 w-4" />
+                    </button>
+                  </div>
                 </div>
               </li>
             );

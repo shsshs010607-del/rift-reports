@@ -130,13 +130,13 @@ export function DeckList({
         onPeek={setPeek}
       />
 
-      {/* 사이드덱 — 0장 또는 10장 */}
+      {/* 사이드덱 — 0~10장 자유 */}
       <EntrySection
         title="사이드덱"
-        subtitle="0장 또는 10장"
+        subtitle={`0~${DECK_RULES.sideCount}장`}
         n={sideN}
-        target={String(DECK_RULES.sideCount)}
-        ok={sideN === 0 || sideN === DECK_RULES.sideCount}
+        target={`0~${DECK_RULES.sideCount}`}
+        ok={sideN <= DECK_RULES.sideCount}
         entries={rd.side}
         emptyLabel="사이드덱 추가 (선택)"
         onEmpty={() => onFocusPool("side")}

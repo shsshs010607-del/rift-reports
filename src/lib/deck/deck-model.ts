@@ -198,12 +198,12 @@ export function validateDeck(rd: ResolvedDeck): DeckIssue[] {
       message: `전장은 ${DECK_RULES.battlefieldCount}장이어야 합니다 (현재 ${c.battlefield}장).`,
     });
 
-  // 사이드덱 — 0장 또는 정확히 10장, 주 덱과 같은 종류의 카드만.
+  // 사이드덱 — 0~10장 자유(정확한 장수 제한 없음), 주 덱과 같은 종류의 카드만.
   const sideN = sideCount(rd);
-  if (sideN !== 0 && sideN !== DECK_RULES.sideCount)
+  if (sideN > DECK_RULES.sideCount)
     issues.push({
       level: "error",
-      message: `사이드덱은 0장 또는 정확히 ${DECK_RULES.sideCount}장이어야 합니다 (현재 ${sideN}장).`,
+      message: `사이드덱은 최대 ${DECK_RULES.sideCount}장까지입니다 (현재 ${sideN}장).`,
     });
   for (const e of rd.side)
     if (!SIDE_TYPES.includes(e.card.type) || e.card.supertype === "token")
