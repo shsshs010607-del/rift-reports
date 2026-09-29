@@ -203,6 +203,7 @@ export async function deleteMetaDeck(id: string): Promise<AdminState> {
   if (error) return { error: error.message };
 
   revalidatePath("/decks");
+  revalidatePath("/tiers");
   revalidatePath("/admin");
   return { ok: "메타 덱을 삭제했습니다" };
 }
@@ -235,6 +236,7 @@ export async function updateMetaDeck(
   if (error) return { error: error.message };
 
   revalidatePath("/decks");
+  revalidatePath("/tiers");
   revalidatePath("/admin");
   return { ok: `"${d.name}" 저장됨` };
 }

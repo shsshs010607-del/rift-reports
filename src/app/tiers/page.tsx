@@ -13,7 +13,9 @@ export const metadata: Metadata = {
   alternates: { canonical: "/tiers" },
 };
 // DeckQuiz 의 ?quiz 오픈은 useSearchParams(클라이언트, Suspense 격리)라 페이지 자체는 정적/ISR 가능.
-export const revalidate = 3600;
+// meta_decks 는 scripts/sync-meta-decks.ts(오프라인 스크립트, revalidatePath 호출 불가)로도 채워지므로
+// 새 덱을 등록하면 "덱을 누르면 시뮬레이터로" 링크가 반영될 때까지 최대 이 시간만큼 걸린다 — 짧게 유지.
+export const revalidate = 60;
 
 async function legendImages(): Promise<Record<string, string>> {
   try {
@@ -39,7 +41,7 @@ export default async function TiersPage() {
       <div className="mb-4 flex flex-wrap items-end justify-between gap-3">
         <PageHeading
           title="덱 티어리스트"
-          description="현재 메타 예상 기준 · 덱을 누르면 공략으로 이동"
+          description="현재 메타 예상 기준 · 덱을 누르면 시뮬레이터로, 등록된 메타 덱이 없으면 공략으로 이동"
         />
         <Suspense fallback={null}>
           <DeckQuiz images={images} />
