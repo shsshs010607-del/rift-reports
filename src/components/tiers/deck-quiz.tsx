@@ -11,9 +11,7 @@ import { MBTI_TYPES, QUIZ_QUESTIONS, scoreQuiz, type QuizResult } from "@/lib/da
 import { renderQuizResultImage, type QuizImageTheme } from "@/lib/quiz/quiz-image";
 import { cn } from "@/lib/utils";
 
-const DECK_HREF = "/decks";
-const listHref = (d: { guidePostId?: string }) =>
-  d.guidePostId ? `/community/post/${d.guidePostId}` : DECK_HREF;
+const listHref = (d: { legendEn: string }) => `/decks?legend=${encodeURIComponent(d.legendEn)}`;
 const deckOf = (id: string) => TIER_DECKS.find((d) => d.id === id) ?? null;
 
 const THEME_SWATCH: { id: QuizImageTheme; label: string; cls: string }[] = [
@@ -375,7 +373,7 @@ function MatchCard({
 }: {
   label: string;
   tone: "good" | "bad";
-  deck: { id: string; name: string; keyCard: string; guidePostId?: string };
+  deck: { id: string; name: string; keyCard: string; legendEn: string };
   img?: string;
   onNav: () => void;
 }) {

@@ -6,8 +6,6 @@ import { getCardService } from "@/lib/services/cardService";
 import type { Card } from "@/lib/types/card";
 import { TIER_DECKS } from "@/lib/data/tier-list";
 
-const DECK_HREF = "/decks";
-
 /** 홈 — 추천 메타(S 티어) 압축. 전체는 /tiers. */
 export async function MetaSnapshot() {
   let legendByName = new Map<string, Card>();
@@ -45,7 +43,7 @@ export async function MetaSnapshot() {
           return (
             <li key={deck.id}>
               <Link
-                href={deck.guidePostId ? `/community/post/${deck.guidePostId}` : DECK_HREF}
+                href={`/decks?legend=${encodeURIComponent(deck.legendEn)}`}
                 className="note-card group flex h-full flex-col overflow-hidden transition hover:-translate-y-0.5 hover:shadow-e2"
               >
                 <div className="relative aspect-[16/10] w-full overflow-hidden bg-subcanvas">
