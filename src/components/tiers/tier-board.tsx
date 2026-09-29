@@ -10,8 +10,6 @@ import { TIER_DECKS, TIER_META } from "@/lib/data/tier-list";
 import { getBestMetaDeckByLegend, getMetaDecks } from "@/lib/meta-decks";
 import { cn } from "@/lib/utils";
 
-const DECK_HREF = "/decks";
-
 /**
  * 덱 티어리스트 보드 (S·A·B·C·Z). 완성 덱 연동 전까지 레전드 기준 임시 데이터.
  */
@@ -62,12 +60,10 @@ export async function TierBoard() {
               {decks.map((deck) => {
                 const legend = legendByName.get(deck.legendEn);
                 const art = legend?.localization.ko?.imageUrl ?? legend?.localization.en.imageUrl ?? legend?.imageUrl;
-                const meta = bestDeck[deck.legendEn];
+                const meta = (deck.metaDeckId && metaById.get(deck.metaDeckId)) || bestDeck[deck.legendEn];
                 const href = meta
-                  ? `/decks?legend=${encodeURIComponent(deck.legendEn)}`
-                  : deck.guidePostId
-                    ? `/community/post/${deck.guidePostId}`
-                    : DECK_HREF;
+                  ? `/deck-simulator?d=${encodeURIComponent(meta.deck_code)}`
+                  : `/decks?legend=${encodeURIComponent(deck.legendEn)}`;
                 return (
                   <li key={deck.id}>
                     <Link
