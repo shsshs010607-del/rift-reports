@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { ChevronLeft } from "lucide-react";
 import { AdSenseUnit } from "@/components/ads/adsense-unit";
 import { BoardToolbar } from "@/components/community/board-toolbar";
@@ -12,10 +12,16 @@ import { Pagination } from "@/components/community/pagination";
 import { RecentBoards } from "@/components/community/recent-boards";
 import { metaFor } from "@/components/community/category-meta";
 import { getPosts, getPopularPosts, getRecentByCategory } from "@/lib/community";
-import { COMMUNITY_CATEGORIES, POSTS_PER_PAGE } from "@/lib/constants";
+import { COMMUNITY_CATEGORIES, POSTS_PER_PAGE, SITE } from "@/lib/constants";
 import type { CommunityCategory } from "@/lib/types/database";
 
 export const revalidate = 30;
+
+// 2026-09-23 개편으로 탭에서 뺀 게시판 — 옛 링크·북마크·옛 글의 "게시판으로" 링크가 404 나지 않게 넘긴다.
+const RETIRED_BOARDS: Record<string, string> = {
+  "deck-guide": "/decks",
+  recruit: SITE.naverCafeBoardByCategory.recruit,
+};
 
 export function generateStaticParams() {
   return COMMUNITY_CATEGORIES.map((c) => ({ category: c.slug }));
@@ -39,7 +45,11 @@ export default async function BoardPage(
   const searchParams = await props.searchParams;
   const params = await props.params;
   const category = COMMUNITY_CATEGORIES.find((c) => c.slug === params.category);
-  if (!category) notFound();
+  if (!category) {
+    const to = RETIRED_BOARDS[params.category];
+    if (to) redirect(to);
+    notFound();
+  }
   const slug = category.slug as CommunityCategory;
 
   const page = Number(searchParams.page) || 1;

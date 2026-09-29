@@ -6,7 +6,7 @@ import { getCardService } from "@/lib/services/cardService";
 import type { Card } from "@/lib/types/card";
 import { TIER_DECKS } from "@/lib/data/tier-list";
 
-const DECK_HREF = "/community/deck-guide";
+const DECK_HREF = "/decks";
 
 /** 홈 — 추천 메타(S 티어) 압축. 전체는 /tiers. */
 export async function MetaSnapshot() {

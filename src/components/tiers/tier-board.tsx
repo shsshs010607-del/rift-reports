@@ -7,10 +7,10 @@ import type { Card } from "@/lib/types/card";
 import { TIERS, TIER_STYLES } from "@/lib/constants";
 import type { Tier } from "@/lib/types/database";
 import { TIER_DECKS, TIER_META } from "@/lib/data/tier-list";
-import { getBestMetaDeckByLegend } from "@/lib/meta-decks";
+import { getBestMetaDeckByLegend, getMetaDecks } from "@/lib/meta-decks";
 import { cn } from "@/lib/utils";
 
-const DECK_HREF = "/community/deck-guide";
+const DECK_HREF = "/decks";
 
 /**
  * 덱 티어리스트 보드 (S·A·B·C·Z). 완성 덱 연동 전까지 레전드 기준 임시 데이터.
@@ -25,6 +25,14 @@ export async function TierBoard() {
   }
 
   const bestDeck = await getBestMetaDeckByLegend(TIER_DECKS.map((d) => d.legendEn));
+  // metaDeckId 를 지정한 타일(같은 레전드로 타일이 여럿일 때)은 "레전드당 1개"인
+  // bestDeck 대신 정확히 그 덱을 쓴다.
+  const deckIds = TIER_DECKS.map((d) => d.metaDeckId).filter((id): id is string => Boolean(id));
+  const metaById = new Map<string, Awaited<ReturnType<typeof getMetaDecks>>[number]>();
+  if (deckIds.length > 0) {
+    const all = await getMetaDecks();
+    for (const d of all) if (deckIds.includes(d.id)) metaById.set(d.id, d);
+  }
 
   return (
     <div className="flex flex-col gap-3">

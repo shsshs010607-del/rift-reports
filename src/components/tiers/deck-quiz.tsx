@@ -11,7 +11,7 @@ import { MBTI_TYPES, QUIZ_QUESTIONS, scoreQuiz, type QuizResult } from "@/lib/da
 import { renderQuizResultImage, type QuizImageTheme } from "@/lib/quiz/quiz-image";
 import { cn } from "@/lib/utils";
 
-const DECK_HREF = "/community/deck-guide";
+const DECK_HREF = "/decks";
 const listHref = (d: { guidePostId?: string }) =>
   d.guidePostId ? `/community/post/${d.guidePostId}` : DECK_HREF;
 const deckOf = (id: string) => TIER_DECKS.find((d) => d.id === id) ?? null;
