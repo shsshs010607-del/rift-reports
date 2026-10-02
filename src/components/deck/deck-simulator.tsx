@@ -33,7 +33,8 @@ import { DeckList } from "@/components/deck/deck-list";
 import { DeckSteps } from "@/components/deck/deck-steps";
 import { SampleHand } from "@/components/deck/sample-hand";
 import { ImportDialog } from "@/components/deck/import-dialog";
-import { DECK_RULES } from "@/lib/constants";
+import { DECK_RULES, SITE } from "@/lib/constants";
+import { createDeckShare } from "@/lib/deck/deck-share";
 import { cn } from "@/lib/utils";
 
 /**
@@ -79,6 +80,7 @@ export function DeckSimulator({
   const [poolTab, setPoolTab] = useState<PoolTab>(initialDeck.legendId ? "main" : "legend");
   const [rightTab, setRightTab] = useState<"deck" | "hand">("deck");
   const [copied, setCopied] = useState(false);
+  const [sharing, setSharing] = useState(false);
   const [importOpen, setImportOpen] = useState(false);
   const [flash, setFlash] = useState<string | null>(null);
   const flashMsg = useCallback((m: string) => {
@@ -220,13 +222,24 @@ export function DeckSimulator({
     [poolTab, rd.legend, rd.champion, changeEntry, changeSide],
   );
 
+  // 카드가 많은 덱은 ?d=... URL이 200자 넘게 길어져 디스코드·카페에 붙여넣으면 지저분하다.
+  // 짧은 링크(riba.gg/d/<id>)를 발급해 복사하고, 실패하면(네트워크 등) 기존 긴 URL로 대체한다.
   async function copyShareLink() {
+    if (sharing) return;
+    setSharing(true);
     try {
-      await navigator.clipboard.writeText(window.location.href);
+      let url = window.location.href;
+      if (shareCode) {
+        const result = await createDeckShare(shareCode);
+        if ("id" in result) url = `${SITE.url}/d/${result.id}`;
+      }
+      await navigator.clipboard.writeText(url);
       setCopied(true);
       setTimeout(() => setCopied(false), 1500);
     } catch {
       /* 무시 */
+    } finally {
+      setSharing(false);
     }
   }
 
@@ -360,7 +373,7 @@ export function DeckSimulator({
                   덱 코드
                 </ActionButton>
                 <ActionButton onClick={copyShareLink} icon={copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}>
-                  {copied ? "복사됨" : "공유"}
+                  {copied ? "복사됨" : sharing ? "링크 만드는 중…" : "공유"}
                 </ActionButton>
                 <ActionButton
                   onClick={() => setDeck((d) => clearDeck(d))}

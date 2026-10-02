@@ -214,6 +214,12 @@ export interface Database {
         Update: Partial<Database["public"]["Tables"]["saved_decks"]["Insert"]>;
         Relationships: [];
       };
+      deck_shares: {
+        Row: { id: string; code: string; created_at: string };
+        Insert: { id: string; code: string; created_at?: string };
+        Update: Partial<Database["public"]["Tables"]["deck_shares"]["Insert"]>;
+        Relationships: [];
+      };
       meta_decks: {
         Row: {
           id: string;
