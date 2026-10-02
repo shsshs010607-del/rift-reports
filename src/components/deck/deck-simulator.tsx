@@ -33,6 +33,7 @@ import { DeckList } from "@/components/deck/deck-list";
 import { DeckSteps } from "@/components/deck/deck-steps";
 import { SampleHand } from "@/components/deck/sample-hand";
 import { ImportDialog } from "@/components/deck/import-dialog";
+import { DECK_RULES } from "@/lib/constants";
 import { cn } from "@/lib/utils";
 
 /**
@@ -110,6 +111,8 @@ export function DeckSimulator({
           if (!d.legendId) return d;
           const legendCard = cacheRef.current.get(d.legendId);
           if (!legendCard || runesByDomain.current.size === 0) return d;
+          // 룬 12장이 이미 맞춰진 덱(7+5 같은 비대칭 배분 포함)은 그대로 둔다.
+          if (zoneCounts(resolveDeck(d, cacheRef.current)).rune === DECK_RULES.runeCount) return d;
           return fillRunes(d, legendCard, runesByDomain.current);
         });
       } catch {
