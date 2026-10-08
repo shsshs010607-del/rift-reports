@@ -42,6 +42,7 @@
 <title>리프트바운드 오리진 언박싱 시뮬레이터</title>
 <meta name="description" content="리프트바운드 오리진(OGN) 부스터 팩·박스·카톤 개봉 시뮬레이터 — 실제 카드 데이터로 뽑아봅니다.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://cmsassets.rgpub.io" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=Chakra+Petch:wght@500;600;700&family=Noto+Sans+KR:wght@400;500;700;900&display=swap">
 <style>
   :root{
@@ -681,8 +682,10 @@
    * out of memory 로 죽는다. Sanity CDN(cmsassets.rgpub.io)이 ?w= 리사이즈를 지원해서
    * 렌더 크기에 맞는 폭만 요청한다 — 이 한 줄이 없으면 위 문제가 실제로 재현된다.
    */
+  // 리엇 카드 CDN(Sanity)은 w=/fm=/q= 로 리사이즈·변환을 해준다 — webp 로 받으면 PNG 대비 약 6배 작다.
   function sized(url, w){
-    return url + (url.indexOf('?') > -1 ? '&' : '?') + 'w=' + w;
+    var u = url + (url.indexOf('?') > -1 ? '&' : '?') + 'w=' + w;
+    return /cmsassets.rgpub.io/.test(url) ? u + '&fm=webp&q=70' : u;
   }
 
   function drawOne(rarity){

@@ -11,6 +11,11 @@ const nextConfig = {
     "/trading/cards/[printId]": ["./data/cards-ko.json"],
   },
   images: {
+    // 카드 이미지는 URL 에 해시가 박힌 불변 파일 — 최적화본을 한 달 캐시해 "처음 한 번 1초+" 를 줄인다.
+    minimumCacheTTL: 60 * 60 * 24 * 31,
+    // 변환 폭 종류를 줄여 같은 이미지가 여러 폭으로 따로 캐시·변환되는 걸 막는다(캐시 적중률 ↑).
+    imageSizes: [96, 192, 384],
+    deviceSizes: [640, 828, 1200, 1920],
     remotePatterns: [
       // Supabase Storage public bucket
       { protocol: "https", hostname: "*.supabase.co", pathname: "/storage/v1/object/public/**" },
