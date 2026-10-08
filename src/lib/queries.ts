@@ -90,16 +90,23 @@ const DEFAULT_DURATION_MS = 6 * 3600 * 1000;
  * (운영진이 수동으로 finished 로 바꾼 건 그대로 존중.)
  * 종료 시각이 없으면 시작+6시간, 시작이 KST 00:00(시간 미정)이면 그날 하루 종일로 본다.
  */
+function endOf(t: Tournament): number {
+  const start = new Date(t.starts_at).getTime();
+  const kstMidnight = (start + KST_OFFSET_MS) % (24 * 3600 * 1000) === 0;
+  return t.ends_at
+    ? new Date(t.ends_at).getTime()
+    : start + (kstMidnight ? 24 * 3600 * 1000 : DEFAULT_DURATION_MS);
+}
+
 function withLiveStatus(t: Tournament, now = Date.now()): Tournament {
   if (t.status === "finished") return t;
   const start = new Date(t.starts_at).getTime();
-  const kstMidnight = (start + KST_OFFSET_MS) % (24 * 3600 * 1000) === 0;
-  const end = t.ends_at
-    ? new Date(t.ends_at).getTime()
-    : start + (kstMidnight ? 24 * 3600 * 1000 : DEFAULT_DURATION_MS);
-  const status = now >= end ? "finished" : now >= start ? "ongoing" : "upcoming";
+  const status = now >= endOf(t) ? "finished" : now >= start ? "ongoing" : "upcoming";
   return status === t.status ? t : { ...t, status };
 }
+
+/** 목록·캘린더에서는 끝난 지 하루가 지난 대회를 숨긴다 (상세 페이지 /tournaments/[slug] 는 그대로 열린다). */
+const HIDE_FINISHED_AFTER_MS = 24 * 3600 * 1000;
 
 export function getTournaments() {
   return safe<Tournament[]>(async () => {
@@ -109,7 +116,10 @@ export function getTournaments() {
       .select("*")
       .order("starts_at", { ascending: false });
     if (error) throw error;
-    return (data ?? []).map((t) => withLiveStatus(t));
+    const now = Date.now();
+    return (data ?? [])
+      .filter((t) => now - endOf(t) < HIDE_FINISHED_AFTER_MS)
+      .map((t) => withLiveStatus(t, now));
   }, []);
 }
 
