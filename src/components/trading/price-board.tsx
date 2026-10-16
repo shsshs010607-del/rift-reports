@@ -174,7 +174,7 @@ export function PriceBoard({ rows, fx }: { rows: PriceRow[]; fx: FxRate }) {
         </p>
       ) : (
         <ul className="divide-y divide-line/50 overflow-hidden rounded-2xl border border-line/70 bg-card">
-          {shown.map((r) => {
+          {shown.map((r, idx) => {
             const up = (r.change_7d ?? 0) >= 0;
             return (
               <li key={r.id}>
@@ -184,7 +184,7 @@ export function PriceBoard({ rows, fx }: { rows: PriceRow[]; fx: FxRate }) {
                 >
                   <span className="relative h-12 w-9 shrink-0 overflow-hidden rounded bg-subcanvas">
                     {r.print?.image_url && (
-                      <Image src={r.print.image_url} alt="" fill sizes="36px" className="object-cover" />
+                      <Image src={r.print.image_url} alt="" fill sizes="36px" className="object-cover" priority={idx < 8} />
                     )}
                   </span>
                   <span className="min-w-0 flex-1">

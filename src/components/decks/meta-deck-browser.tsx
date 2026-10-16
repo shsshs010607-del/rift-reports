@@ -152,9 +152,10 @@ export function MetaDeckBrowser({
         <p className="py-14 text-center text-body-sm text-ink-soft">해당하는 덱이 없습니다.</p>
       ) : (
         <div className="mt-4 grid gap-3 md:grid-cols-2">
-          {shown.map((d) => (
+          {shown.map((d, i) => (
             <DeckCard
               key={d.id}
+              priority={i < 6}
               deck={d}
               img={d.legend_ref ? images[d.legend_ref] : undefined}
               onDelete={isStaff ? () => onDelete(d) : undefined}
@@ -208,7 +209,10 @@ function DeckCard({
   img,
   onDelete,
   deleting,
+  priority,
 }: {
+  /** 첫 화면에 보이는 카드 — 지연 로딩하면 일부 브라우저에서 레전드 아트가 늦게/안 뜬다. */
+  priority?: boolean;
   deck: MetaDeckView;
   img?: string;
   onDelete?: () => void;
@@ -248,6 +252,7 @@ function DeckCard({
             alt=""
             fill
             sizes="104px"
+            priority={priority}
             className="object-cover object-[50%_18%]"
           />
         ) : (

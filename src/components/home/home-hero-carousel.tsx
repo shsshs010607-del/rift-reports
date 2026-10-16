@@ -24,10 +24,13 @@ export function HomeHeroCarousel() {
 function SlideShell({
   className,
   art,
+  priority,
   children,
 }: {
   className?: string;
   art?: string;
+  /** 첫 화면에 바로 보이는 슬라이드 — 지연 로딩하면 가로 스크롤 영역 안에서 이미지가 안 뜨는 브라우저가 있다. */
+  priority?: boolean;
   children: React.ReactNode;
 }) {
   return (
@@ -42,6 +45,7 @@ function SlideShell({
             fill
             className="object-cover object-top opacity-90"
             sizes="(max-width:640px) 54vw, 320px"
+            priority={priority}
           />
           <div className="absolute inset-0 bg-gradient-to-r from-card via-card/55 to-transparent" />
         </div>
@@ -62,6 +66,7 @@ function IntroSlide() {
     <SlideShell
       className="border-primary/20 bg-gradient-to-br from-primary-wash via-card to-card"
       art={INTRO_ART}
+      priority
     >
       <div className="max-w-[68%] sm:max-w-[58%]">
         <p className="text-label-sm font-bold uppercase tracking-wide text-primary-strong">
