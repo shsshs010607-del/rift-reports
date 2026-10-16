@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { usePathname } from "next/navigation";
 import { ADSENSE } from "@/lib/constants";
-import { adsAllowedHere } from "@/lib/ads";
+import { adUnitsAllowedAt } from "@/lib/ads";
 
 declare global {
   interface Window {
@@ -25,9 +25,9 @@ export function AdSenseUnit({ slot, className }: { slot?: string; className?: st
   const [allowed, setAllowed] = useState(false);
   const [unfilled, setUnfilled] = useState(false);
 
-  // pathname 이 deps 에 없으면 최초 마운트 시점(footer는 루트 레이아웃에서 한 번만 마운트) 한 번만
-  // 평가돼서, 클라이언트 라우팅으로 광고 차단 경로(/community)를 오가도 값이 안 바뀌었다 — 추가.
-  useEffect(() => setAllowed(adsAllowedHere()), [pathname]);
+  // 페이지 이동(클라이언트 라우팅)마다 다시 평가한다 — 푸터는 루트 레이아웃에 한 번만 마운트되고,
+  // 광고 칸은 자체 콘텐츠가 충분한 페이지(adUnitsAllowedAt)에서만 둔다.
+  useEffect(() => setAllowed(adUnitsAllowedAt(pathname)), [pathname]);
 
   // 구글이 채울 광고가 없으면 <ins data-ad-status="unfilled"> 로 표시한다 — 빈 칸과 "광고" 라벨만 남지 않게 접는다.
   useEffect(() => {
