@@ -14,8 +14,9 @@ export const metadata: Metadata = {
 };
 // DeckQuiz 의 ?quiz 오픈은 useSearchParams(클라이언트, Suspense 격리)라 페이지 자체는 정적/ISR 가능.
 // meta_decks 는 scripts/sync-meta-decks.ts(오프라인 스크립트, revalidatePath 호출 불가)로도 채워지므로
-// 새 덱을 등록하면 "덱을 누르면 시뮬레이터로" 링크가 반영될 때까지 최대 이 시간만큼 걸린다 — 짧게 유지.
-export const revalidate = 60;
+// 새 덱을 등록하면 "덱을 누르면 시뮬레이터로" 링크가 반영될 때까지 최대 이 시간만큼 걸린다.
+// (관리자 삭제는 revalidatePath("/tiers")로 즉시 반영. 티어 데이터는 거의 안 바뀌어 30분으로 둔다.)
+export const revalidate = 1800;
 
 async function legendImages(): Promise<Record<string, string>> {
   try {
