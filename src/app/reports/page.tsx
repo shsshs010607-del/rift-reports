@@ -6,7 +6,7 @@ import { PageHeading } from "@/components/ui/page-heading";
 import { getReports } from "@/lib/queries";
 
 export const metadata: Metadata = { title: "리포트", alternates: { canonical: "/reports" } };
-export const revalidate = 120;
+export const revalidate = 1800; // 발행·수정은 관리자 액션이 revalidatePath 로 즉시 반영
 
 export default async function ReportsListPage() {
   const reports = await getReports();
