@@ -18,8 +18,9 @@ export async function dismissNotification(id: string): Promise<{ error?: string 
     .from("notification_dismissals")
     .upsert({ notification_id: id, user_id: userId });
   if (error) return { error: error.message };
+  // 알림 벨은 클라이언트에서 /api/notifications(no-store)로 읽고, /notifications 는 force-dynamic 이다.
+  // revalidatePath("/", "layout") 는 사이트 전체 ISR 캐시를 무효화해 방문마다 재생성(=ISR Write)을 유발한다.
   revalidatePath("/notifications");
-  revalidatePath("/", "layout");
   return {};
 }
 
@@ -35,8 +36,9 @@ export async function clearAllNotifications(): Promise<{ error?: string }> {
   if (rows.length === 0) return {};
   const { error } = await supabase.from("notification_dismissals").upsert(rows);
   if (error) return { error: error.message };
+  // 알림 벨은 클라이언트에서 /api/notifications(no-store)로 읽고, /notifications 는 force-dynamic 이다.
+  // revalidatePath("/", "layout") 는 사이트 전체 ISR 캐시를 무효화해 방문마다 재생성(=ISR Write)을 유발한다.
   revalidatePath("/notifications");
-  revalidatePath("/", "layout");
   return {};
 }
 
@@ -48,7 +50,8 @@ export async function markNotificationsSeen(): Promise<{ error?: string }> {
     .update({ notifications_seen_at: new Date().toISOString() })
     .eq("id", userId);
   if (error) return { error: error.message };
+  // 알림 벨은 클라이언트에서 /api/notifications(no-store)로 읽고, /notifications 는 force-dynamic 이다.
+  // revalidatePath("/", "layout") 는 사이트 전체 ISR 캐시를 무효화해 방문마다 재생성(=ISR Write)을 유발한다.
   revalidatePath("/notifications");
-  revalidatePath("/", "layout");
   return {};
 }
