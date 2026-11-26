@@ -6,7 +6,7 @@ import { getTournaments } from "@/lib/queries";
 import { TournamentsView } from "@/components/tournaments/tournaments-view";
 
 export const metadata: Metadata = { title: "다가오는 대회", alternates: { canonical: "/tournaments" } };
-export const revalidate = 120;
+export const revalidate = 1800; // 대회 등록·수정은 액션이 revalidatePath 로 즉시 반영
 
 export default async function TournamentsPage() {
   const all = await getTournaments();
