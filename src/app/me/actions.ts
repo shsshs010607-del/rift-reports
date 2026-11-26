@@ -68,7 +68,7 @@ export async function setAvatar(url: string | null): Promise<ProfileState> {
   const { error } = await supabase.from("profiles").update({ avatar_url: url }).eq("id", user.id);
   if (error) return { error: error.message };
 
+  // /me 는 force-dynamic, 네비바 아바타는 클라이언트 세션 기반 → layout 전체 퍼지는 불필요
   revalidatePath("/me");
-  revalidatePath("/", "layout");
   return { ok: true };
 }
