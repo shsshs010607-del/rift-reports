@@ -8,7 +8,7 @@ import { getReport } from "@/lib/queries";
 import { ViewCounter } from "@/components/community/view-counter";
 import { PostBody } from "@/components/community/post-body";
 
-export const revalidate = 120;
+export const revalidate = 1800; // 본문 수정은 관리자 액션이 revalidatePath 로 즉시 반영
 
 export async function generateMetadata(
   props: {
