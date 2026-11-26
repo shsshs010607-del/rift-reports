@@ -13,7 +13,7 @@ import {
 } from "@/components/tournaments/tournament-card";
 import { cn } from "@/lib/utils";
 
-export const revalidate = 120;
+export const revalidate = 1800; // 대회 정보 수정은 액션이 revalidatePath 로 즉시 반영
 
 export async function generateMetadata(
   props: {
