@@ -9,7 +9,9 @@ import { getUsdKrw } from "@/lib/fx";
 import { SITE } from "@/lib/constants";
 
 export const metadata: Metadata = { title: "트레이딩", alternates: { canonical: "/trading" } };
-export const revalidate = 900;
+// 시세 원본은 sync-prices 워크플로가 2일 주기(03:00 UTC)로만 갱신한다.
+// 15분 재생성은 같은 데이터를 계속 다시 쓰는 것이라 ISR Write 만 쌓인다 → 6시간.
+export const revalidate = 21600;
 
 export default async function TradingPage() {
   const [fx, gainers, losers, board] = await Promise.all([
