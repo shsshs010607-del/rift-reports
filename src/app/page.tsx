@@ -23,7 +23,10 @@ import { HomeReports } from "@/components/home/home-reports";
 import { HomePriceMini } from "@/components/home/home-price-mini";
 import { HomeExtras } from "@/components/home/home-extras";
 
-export const revalidate = 60;
+// 홈은 최신글·시세 미리보기·다가오는 대회를 모아 보여준다.
+// 홈 자체의 새 글은 작성 액션(revalidatePath("/"))이 즉시 반영하고, 카페 글은 fetch 캐시 5분,
+// 시세는 2일 주기 동기화라 60초 재생성은 ISR Write 만 늘린다 → 1시간.
+export const revalidate = 3600;
 
 // canonical 은 원래 layout.tsx 루트에 "/" 로 박혀 있었는데, 하위 페이지가 각자
 // canonical 을 안 정하면 그대로 상속돼서 사이트 전체 페이지가 죄다 홈을 표준
