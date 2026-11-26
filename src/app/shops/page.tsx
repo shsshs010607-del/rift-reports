@@ -4,7 +4,7 @@ import { ShopExplorer } from "@/components/shops/shop-explorer";
 import { getShops } from "@/lib/shops";
 
 export const metadata: Metadata = { title: "주변 매장", alternates: { canonical: "/shops" } };
-export const revalidate = 300;
+export const revalidate = 3600; // 매장·이벤트는 카페 동기화(3시간)·관리자 액션이 반영
 
 export default async function ShopsPage() {
   const shops = await getShops();
