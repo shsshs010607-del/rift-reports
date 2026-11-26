@@ -12,7 +12,7 @@ import { cn } from "@/lib/utils";
 import { PriceSparkline } from "@/components/trading/price-sparkline";
 import { FxNote } from "@/components/trading/fx-note";
 
-export const revalidate = 900;
+export const revalidate = 21600; // 시세 원본이 2일 주기 동기화라 15분 재생성은 Write 만 쌓인다
 
 // 카드마다 canonical 을 안 정해서 루트 레이아웃의 홈("/") canonical 을 그대로
 // 상속하던 게 Search Console "표준 없는 중복 페이지" 원인 중 하나였다.
