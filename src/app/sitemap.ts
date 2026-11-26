@@ -58,17 +58,17 @@ async function dynamicEntries(base: string): Promise<MetadataRoute.Sitemap> {
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const base = SITE.url.replace(/\/$/, "");
-  const now = new Date();
 
+  // 고정 경로에는 lastModified 를 넣지 않는다. 매 생성 시각(= 매시간)을 "변경됨"으로 알리면
+  // 검색로봇이 모든 URL 을 계속 다시 받아가서, 방문마다 ISR 재생성(=Write)을 유발한다.
+  // 개별 글·대회·리포트는 실제 updated_at 을 그대로 쓴다.
   return [
     ...STATIC_PATHS.map((p) => ({
       url: `${base}${p}`,
-      lastModified: now,
       changeFrequency: (p === "" || p === "/trading" ? "daily" : "weekly") as "daily" | "weekly",
     })),
     ...COMMUNITY_CATEGORIES.map((c) => ({
       url: `${base}/community/${c.slug}`,
-      lastModified: now,
       changeFrequency: "daily" as const,
     })),
     ...(await dynamicEntries(base)),
